@@ -1,0 +1,25 @@
+{
+  "extends": "../../packages/config/typescript/tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "jsx": "preserve",
+    "paths": {
+      "@prometheus-fe/store": ["../../packages/store/src"],
+      "@prometheus-fe/api": ["../../packages/api/src"]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

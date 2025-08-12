@@ -1,0 +1,34 @@
+{
+  "$schema": "https://turborepo.org/schema.json",
+  "globalDependencies": [
+    "tsconfig.json",
+    "packages/config/typescript/tsconfig.base.json",
+    "pnpm-lock.yaml"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+    },
+    "lint": {
+      "outputs": []
+    },
+    "lint-fix": {
+      "dependsOn": ["lint"],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "outputs": ["coverage/**"]
+    },
+    "dev": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
+    "clean": {
+      "cache": false
+    }
+  }
+}
+

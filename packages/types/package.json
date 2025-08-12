@@ -1,0 +1,20 @@
+{
+  "name": "@prometheus-fe/types",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --dts-only",
+    "dev": "tsup src/index.ts --format esm --dts --dts-only --watch",
+    "clean": "rm -rf dist .tsbuildinfo"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.2",
+    "typescript": "^5"
+  },
+  "exports": {
+    ".": "./dist"
+  }
+}
+

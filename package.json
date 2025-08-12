@@ -1,0 +1,29 @@
+{
+  "name": "prometheus-fe",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": "22.x"
+  },
+  "packageManager": "pnpm@10.10.0",
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "lint-fix": "turbo lint-fix",
+    "test": "turbo test",
+    "clean": "turbo clean",
+    "format": "prettier --cache --write ."
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@typescript-eslint/eslint-plugin": "^8",
+    "@typescript-eslint/parser": "^8",
+    "eslint": "^9",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "turbo": "^2.5.2",
+    "typescript": "^5"
+  }
+}
+

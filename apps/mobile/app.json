@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "Prometheus",
+    "slug": "prometheus",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "prometheus",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.prometheus.app"
+    },
+    "android": {
+      "package": "com.prometheus.app",
+      "versionCode": 1
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}
+
