@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
-import { ApiClient, createAuthApi } from '../../../../packages/api/src';
-import { useAuthStore } from '../../../../packages/store/src';
+import { createApiClient, createAuthApi } from '@prometheus-fe/api';
+import { useAuthStore } from '@prometheus-fe/store';
 
 export default function GoogleCallbackPage() {
   const [error, setError] = useState<string | null>(null);
@@ -22,14 +22,12 @@ export default function GoogleCallbackPage() {
         return;
       }
 
-      const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000/api/v1';
-      const client = new ApiClient({
-        baseUrl: apiBase,
+      const client = createApiClient({
         getAccessToken: () => useAuthStore.getState().accessToken ?? undefined,
       });
       const authApi = createAuthApi(client);
       try {
-        const tokens = await authApi.googleCallback(code, `${window.location.origin}/auth/google`);
+        const tokens = await authApi.googleCallback({ code });
         setTokens(tokens.access_token, tokens.refresh_token);
         const user = await authApi.me();
         setUser(user);

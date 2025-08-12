@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from 'react';
 import { useRequireAdmin } from '../../../src/hooks/useRequireAdmin';
-import { getApi } from '../../../src/lib/apiClient';
+import { useApi } from '../../../src/contexts/ApiProvider';
 
 export default function AdminMemberPage() {
   const { ready } = useRequireAdmin();
@@ -11,6 +11,7 @@ export default function AdminMemberPage() {
   const [size] = useState(20);
   const [filters, setFilters] = useState<any>({ search: '', grant_filter: '', gen_filter: '', status_filter: '' });
   const pages = useMemo(() => Math.max(1, Math.ceil(total / size)), [total, size]);
+  const { admin } = useApi();
 
   useEffect(() => {
     if (!ready) return;
@@ -19,8 +20,8 @@ export default function AdminMemberPage() {
       Object.entries(filters).forEach(([k, v]) => {
         if (v !== '' && v !== null && v !== undefined) params[k] = v;
       });
-      const res = await getApi().admin.getMembers(params);
-      const members = (res.members ?? res.users ?? []);
+      const res = await admin.getMembers(params);
+      const members = res.members ?? [];
       setList(members);
       setTotal(res.total ?? members.length ?? 0);
     };

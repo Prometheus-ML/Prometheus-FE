@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useMemo, useState } from 'react';
 import { useRequireAdmin } from '../../../src/hooks/useRequireAdmin';
-import { getApi } from '../../../src/lib/apiClient';
+import { useApi } from '../../../src/contexts/ApiProvider';
 
 export default function AdminProjectPage() {
   const { ready } = useRequireAdmin();
+  const { projects: projectsApi } = useApi();
   const [projects, setProjects] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -14,7 +15,7 @@ export default function AdminProjectPage() {
   useEffect(() => {
     if (!ready) return;
     const run = async () => {
-      const res = await getApi().projects.list({ page, size });
+      const res = await projectsApi.list({ page, size });
       setProjects(res.projects ?? []);
       setTotal(res.total ?? 0);
     };

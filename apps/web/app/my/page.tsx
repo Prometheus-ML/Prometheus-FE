@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useRef, useState } from 'react';
 import { useRequireAuth } from '../../src/hooks/useRequireAuth';
-import { getApi } from '../../src/lib/apiClient';
+import { useApi } from '../../src/contexts/ApiProvider';
+import Image from 'next/image';
 
 export default function MyPage() {
   const { ready } = useRequireAuth();
+  const { auth, storage, user } = useApi();
   const [profile, setProfile] = useState<any>(null);
   const [draft, setDraft] = useState<any>({});
   const [submitting, setSubmitting] = useState(false);
@@ -13,7 +15,7 @@ export default function MyPage() {
   useEffect(() => {
     if (!ready) return;
     const run = async () => {
-      const me = await getApi().auth.me();
+      const me = await auth.me();
       setProfile(me);
       setDraft({
         github: me.github ?? '',
@@ -34,18 +36,15 @@ export default function MyPage() {
   const onChange = (key: string, value: any) => setDraft((d: any) => ({ ...d, [key]: value }));
 
   const uploadImage = async (file: File) => {
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('category', 'member');
-    const res: any = await getApi().storage.upload(fd);
+    const res: any = await storage.upload(file, 'member');
     return res.publicCdnUrl || res.publicEmbedUrl || res.publicEmbedUrlAlt || '';
   };
 
   const onSubmit = async () => {
     try {
       setSubmitting(true);
-      await getApi().user.updateMyProfile(draft);
-      const me = await getApi().auth.me();
+      await user.updateMe(draft);
+      const me = await auth.me();
       setProfile(me);
       alert('저장되었습니다');
     } finally {
@@ -60,7 +59,7 @@ export default function MyPage() {
     <div style={{ padding: 24 }}>
       <h1>내 정보</h1>
       <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 12 }}>
-        <img
+        <Image
           alt="profile"
           src={draft.profile_image_url || '/default-avatar.png'}
           style={{ width: 80, height: 80, borderRadius: 40, objectFit: 'cover', border: '1px solid #ddd' }}

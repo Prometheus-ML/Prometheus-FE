@@ -1,19 +1,16 @@
 import React from 'react';
-import { useAuthHydration } from '../src/hooks/useAuthHydration';
+import ClientProviders from '../src/components/ClientProviders';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   // Note: hooks cannot be used in Server Components; we wrap children instead
   return (
     <html lang="ko">
       <body>
-        <ClientAuthHydrator>{children}</ClientAuthHydrator>
+        <ClientProviders>{children}</ClientProviders>
       </body>
     </html>
   );
 }
 
-function ClientAuthHydrator({ children }: { children: React.ReactNode }) {
-  useAuthHydration();
-  return <>{children}</>;
-}
+// No client hooks in server file
 

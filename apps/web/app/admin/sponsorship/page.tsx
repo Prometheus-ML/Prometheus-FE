@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useMemo, useState } from 'react';
 import { useRequireAdmin } from '../../../src/hooks/useRequireAdmin';
-import { getApi } from '../../../src/lib/apiClient';
+import { useApi } from '../../../src/contexts/ApiProvider';
 
 export default function AdminSponsorshipPage() {
   const { ready } = useRequireAdmin();
+  const { sponsorship } = useApi();
   const [list, setList] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -17,7 +18,7 @@ export default function AdminSponsorshipPage() {
     const run = async () => {
       const params: any = { page, size };
       if (isActive) params.is_active = isActive === 'true';
-      const res = await getApi().sponsorship.getSponsors(params);
+      const res = await sponsorship.getSponsors(params);
       setList(res.sponsors ?? []);
       setTotal(res.total ?? 0);
     };

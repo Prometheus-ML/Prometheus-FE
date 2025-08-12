@@ -5,13 +5,16 @@
   "type": "module",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --dts-only",
-    "dev": "tsup src/index.ts --format esm --dts --dts-only --watch",
+    "build": "tsc --emitDeclarationOnly --project tsconfig.json",
+    "dev": "tsc -w --emitDeclarationOnly --project tsconfig.json",
     "clean": "rm -rf dist .tsbuildinfo"
   },
   "devDependencies": {
-    "tsup": "^8.0.2",
-    "typescript": "^5"
+    "tsup": "8.0.2",
+    "typescript": "^5",
+    "@prometheus-fe/eslint-config": "workspace:*",
+    "@prometheus-fe/typescript-config": "workspace:*",
+    "eslint": "^9"
   },
   "exports": {
     ".": "./dist"

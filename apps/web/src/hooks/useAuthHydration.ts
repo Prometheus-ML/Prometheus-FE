@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from 'react';
-import { useAuthStore } from '../../../../packages/store/src';
+import { useAuthStore } from '@prometheus-fe/store';
 
 export function useAuthHydration() {
   const setTokens = useAuthStore((s) => s.setTokens);

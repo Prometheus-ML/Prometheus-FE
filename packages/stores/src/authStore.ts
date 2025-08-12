@@ -1,13 +1,8 @@
 import { create } from 'zustand';
+import type { UserInfo } from '@prometheus-fe/types';
 
 export interface AuthState {
-  user: {
-    id: number;
-    email: string;
-    name: string;
-    grant?: string;
-    grant_weight?: number;
-  } | null;
+  user: UserInfo | null;
   accessToken: string | null;
   refreshToken: string | null;
   isLoading: boolean;
@@ -15,7 +10,7 @@ export interface AuthState {
   isAuthenticated: () => boolean;
   setTokens: (access: string, refresh: string) => void;
   clearTokens: () => void;
-  setUser: (user: AuthState['user']) => void;
+  setUser: (user: UserInfo | null) => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({

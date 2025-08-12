@@ -2,13 +2,14 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useRequireAdmin } from '../../../../src/hooks/useRequireAdmin';
-import { getApi } from '../../../../src/lib/apiClient';
+import { useApi } from '../../../../src/contexts/ApiProvider';
 
 export default function AdminProjectDetailPage() {
   const { ready } = useRequireAdmin();
   const params = useParams<{ projectId: string }>();
   const projectId = params?.projectId!;
   const [project, setProject] = useState<any>(null);
+  const { projects } = useApi();
   const [members, setMembers] = useState<any[]>([]);
   const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,10 +17,10 @@ export default function AdminProjectDetailPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const p = await getApi().projects.get(projectId);
+      const p = await projects.get(projectId);
       setProject(p);
       setTitle(p.title ?? '');
-      const ms = await getApi().projects.listMembers(projectId, { page: 1, size: 100 });
+      const ms = await projects.listMembers(projectId, { page: 1, size: 100 });
       setMembers(ms.members ?? []);
     } finally {
       setLoading(false);
@@ -32,12 +33,12 @@ export default function AdminProjectDetailPage() {
   }, [ready]);
 
   const save = async () => {
-    await getApi().projects.update(projectId, { title });
+    await projects.update(projectId, { title });
     await load();
   };
   const del = async () => {
     if (!confirm('삭제하시겠습니까?')) return;
-    await getApi().projects.remove(projectId);
+    await projects.remove(projectId);
     history.back();
   };
 

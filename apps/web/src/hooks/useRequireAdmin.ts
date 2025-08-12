@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '../../../../packages/store/src';
-import { getApi } from '../lib/apiClient';
+import { useAuthStore } from '@prometheus-fe/store';
+import { useApi } from '../contexts/ApiProvider';
 
 const grantWeights: Record<string, number> = {
   Super: 0,
@@ -16,6 +16,7 @@ export function useRequireAdmin() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
+  const { auth } = useApi();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export function useRequireAdmin() {
       let currentUser = user;
       if (!currentUser) {
         try {
-          currentUser = await getApi().auth.me();
+          currentUser = await auth.me();
           setUser(currentUser);
         } catch {
           router.replace('/auth/login');

@@ -2,10 +2,11 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { useRequireAdmin } from '../../../../src/hooks/useRequireAdmin';
-import { getApi } from '../../../../src/lib/apiClient';
+import { useApi } from '../../../../src/contexts/ApiProvider';
 
 export default function AttendancePage() {
   const { ready } = useRequireAdmin(); // 출석은 Manager 이상 API라 관리자 가드 사용
+  const { schedules } = useApi();
   const params = useParams<{ scheduleId: string }>();
   const scheduleId = params?.scheduleId!;
   const [items, setItems] = useState<any[]>([]);
@@ -18,7 +19,7 @@ export default function AttendancePage() {
     try {
       const params: any = {};
       if (statusFilter) params.status_filter = statusFilter;
-      const res = await getApi().schedules.listAttendance(scheduleId, params);
+      const res = await schedules.listAttendance(scheduleId, params);
       setItems(res.attendances ?? []);
       setTotal(res.total ?? 0);
     } finally {
@@ -34,18 +35,18 @@ export default function AttendancePage() {
   const [newMemberId, setNewMemberId] = useState('');
   const [newStatus, setNewStatus] = useState('present');
   const create = async () => {
-    await getApi().schedules.createAttendance(scheduleId, { member_id: newMemberId, status: newStatus });
+    await schedules.createAttendance(scheduleId, { member_id: newMemberId, status: newStatus });
     setNewMemberId('');
     setNewStatus('present');
     await load();
   };
 
   const update = async (attendanceId: any, status: string) => {
-    await getApi().schedules.updateAttendance(scheduleId, attendanceId, { status });
+    await schedules.updateAttendance(scheduleId, attendanceId, { status });
     await load();
   };
   const remove = async (attendanceId: any) => {
-    await getApi().schedules.deleteAttendance(scheduleId, attendanceId);
+    await schedules.deleteAttendance(scheduleId, attendanceId);
     await load();
   };
 

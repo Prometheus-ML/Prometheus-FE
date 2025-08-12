@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useMemo, useState } from 'react';
 import { useRequireAuth } from '../../../src/hooks/useRequireAuth';
-import { getApi } from '../../../src/lib/apiClient';
+import { useApi } from '../../../src/contexts/ApiProvider';
 
 export default function CoffeeChatPage() {
   const { ready } = useRequireAuth();
+  const { coffeeChat } = useApi();
   const [tab, setTab] = useState<'available' | 'sent' | 'received'>('available');
 
   // available users
@@ -28,7 +29,7 @@ export default function CoffeeChatPage() {
       const params: any = { page: aPage, size: aSize };
       if (aSearch) params.search = aSearch;
       if (aGen) params.gen_filter = Number(aGen);
-      const res = await getApi().coffeeChat.getAvailableUsers(params);
+      const res = await coffeeChat.getAvailableUsers(params);
       setAvailable(res.users ?? []);
       setATotal(res.total ?? 0);
     };
@@ -38,13 +39,13 @@ export default function CoffeeChatPage() {
   const loadSent = async () => {
     const params: any = { page: 1, size: 20 };
     if (sentStatus) params.status_filter = sentStatus;
-    const res = await getApi().coffeeChat.getSentRequests(params);
+    const res = await coffeeChat.getSentRequests(params);
     setSent(res.requests ?? []);
   };
   const loadReceived = async () => {
     const params: any = { page: 1, size: 20 };
     if (receivedStatus) params.status_filter = receivedStatus;
-    const res = await getApi().coffeeChat.getReceivedRequests(params);
+    const res = await coffeeChat.getReceivedRequests(params);
     setReceived(res.requests ?? []);
   };
   useEffect(() => {
@@ -54,13 +55,13 @@ export default function CoffeeChatPage() {
   }, [ready, sentStatus, receivedStatus]);
 
   const request = async (u: any) => {
-    await getApi().coffeeChat.createRequest({ recipient_id: u.id });
+    await coffeeChat.createRequest({ recipient_id: u.id });
     alert('요청 보냈습니다');
     loadSent();
   };
 
   const respond = async (r: any, status: 'accepted' | 'rejected') => {
-    await getApi().coffeeChat.respondRequest(r.id, { status });
+    await coffeeChat.respondRequest(r.id, { status });
     await loadReceived();
   };
 

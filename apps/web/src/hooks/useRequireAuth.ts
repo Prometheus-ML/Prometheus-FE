@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '../../../../packages/store/src';
-import { getApi } from '../lib/apiClient';
+import { useAuthStore } from '@prometheus-fe/store';
+import { useApi } from '../contexts/ApiProvider';
 
 export function useRequireAuth() {
   const router = useRouter();
@@ -10,6 +10,7 @@ export function useRequireAuth() {
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
   const [ready, setReady] = useState(false);
+  const { auth } = useApi();
 
   useEffect(() => {
     const ensure = async () => {
@@ -19,7 +20,7 @@ export function useRequireAuth() {
       }
       if (!user) {
         try {
-          const me = await getApi().auth.me();
+          const me = await auth.me();
           setUser(me);
         } catch {
           router.replace('/auth/login');

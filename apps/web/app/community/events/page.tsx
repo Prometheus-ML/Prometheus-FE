@@ -2,10 +2,11 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useRequireAuth } from '../../../src/hooks/useRequireAuth';
-import { getApi } from '../../../src/lib/apiClient';
+import { useApi } from '../../../src/contexts/ApiProvider';
 
 export default function EventsPage() {
   const { ready } = useRequireAuth();
+  const { community } = useApi();
   const [items, setItems] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -18,7 +19,7 @@ export default function EventsPage() {
   useEffect(() => {
     if (!ready) return;
     const run = async () => {
-      const res = await getApi().community.listEvents({ page, size });
+      const res = await community.listEvents({ page, size });
       setItems(res.items ?? []);
       setTotal(res.total ?? 0);
     };
@@ -29,9 +30,9 @@ export default function EventsPage() {
     if (!form.name.trim()) return;
     try {
       setCreating(true);
-      await getApi().community.createEvent({ ...form });
+      await community.createEvent({ ...form });
       setForm({ name: '', description: '', visibility: 'private' });
-      const res = await getApi().community.listEvents({ page: 1, size });
+      const res = await community.listEvents({ page: 1, size });
       setItems(res.items ?? []);
       setTotal(res.total ?? 0);
       setPage(1);

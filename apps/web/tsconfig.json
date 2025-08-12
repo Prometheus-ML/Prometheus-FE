@@ -1,11 +1,12 @@
 {
-  "extends": "../../packages/config/typescript/tsconfig.base.json",
+  "extends": "@prometheus-fe/typescript-config/base",
   "compilerOptions": {
     "baseUrl": ".",
     "jsx": "preserve",
     "paths": {
-      "@prometheus-fe/store": ["../../packages/store/src"],
-      "@prometheus-fe/api": ["../../packages/api/src"]
+      "@/*": ["src/*"],
+      "@prometheus-fe/store": ["../../packages/stores/dist"],
+      "@prometheus-fe/api": ["../../packages/api/dist"]
     },
     "plugins": [
       {

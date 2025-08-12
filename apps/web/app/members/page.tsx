@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from 'react';
-import { getApi } from '../../src/lib/apiClient';
-import { useAuthStore } from '../../../packages/store/src';
+import { useApi } from '../../src/contexts/ApiProvider';
+import { useAuthStore } from '@prometheus-fe/store';
 
 type UserBrief = any;
 
@@ -17,6 +17,7 @@ export default function MembersPage() {
   const [loading, setLoading] = useState(false);
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / size)), [total, size]);
+  const { user } = useApi();
 
   useEffect(() => {
     const run = async () => {
@@ -26,10 +27,9 @@ export default function MembersPage() {
         if (search) params.search = search;
         if (grant) params.grant = grant;
         if (gen) params.gen = Number(gen);
-        const api = getApi();
         const res = isAuthenticated
-          ? await api.user.getUsersPrivate(params)
-          : await api.user.getUsersPublic(params);
+          ? await user.listPrivate(params)
+          : await user.listPublic(params);
         setUsers(res.users ?? []);
         setTotal(res.total ?? (res.users?.length ?? 0));
       } finally {

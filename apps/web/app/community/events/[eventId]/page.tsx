@@ -2,10 +2,11 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useRequireAuth } from '../../../../src/hooks/useRequireAuth';
-import { getApi } from '../../../../src/lib/apiClient';
+import { useApi } from '../../../../src/contexts/ApiProvider';
 
 export default function EventDetailPage() {
   const { ready } = useRequireAuth();
+  const { community } = useApi();
   const params = useParams<{ eventId: string }>();
   const id = params?.eventId;
   const [event, setEvent] = useState<any>(null);
@@ -17,9 +18,8 @@ export default function EventDetailPage() {
     const run = async () => {
       setLoading(true);
       try {
-        const api = getApi();
-        const ev = await api.community.getEvent(id);
-        const ms = await api.community.listMembers(id);
+        const ev = await community.getEvent(id);
+        const ms = await community.listMembers(id);
         setEvent(ev);
         setMembers(ms ?? []);
       } finally {
@@ -30,7 +30,7 @@ export default function EventDetailPage() {
   }, [ready, id]);
 
   const requestJoin = async () => {
-    await getApi().community.requestJoin(id!);
+    await community.requestJoin(id!);
     alert('참여 요청 보냈습니다');
   };
 

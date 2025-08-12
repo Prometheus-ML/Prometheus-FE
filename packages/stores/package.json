@@ -1,5 +1,5 @@
 {
-  "name": "@prometheus-fe/api",
+  "name": "@prometheus-fe/store",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -13,13 +13,13 @@
     "clean": "rm -rf dist .tsbuildinfo"
   },
   "dependencies": {
-    "ky": "^1.7.2"
+    "zustand": "^5.0.0",
+    "@prometheus-fe/types": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.0.2",
     "typescript": "^5",
-    "@prometheus-fe/typescript-config": "workspace:*",
-    "@prometheus-fe/types": "workspace:*"
+    "@prometheus-fe/typescript-config": "workspace:*"
   },
   "exports": {
     ".": {

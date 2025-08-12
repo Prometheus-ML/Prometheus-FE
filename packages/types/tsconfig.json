@@ -3,19 +3,18 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "baseUrl": ".",
-    "paths": {
-      "@prometheus-fe/types": ["../types/dist"],
-      "@prometheus-fe/types/*": ["../types/dist/*"]
-    },
+    "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "composite": true,
     "noEmit": false,
+    "baseUrl": ".",
+    "paths": {
+      "@prometheus-fe/types/*": ["src/*"]
+    },
     "incremental": true,
     "tsBuildInfoFile": "./.tsbuildinfo"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"],
-  "references": [{ "path": "../types" }]
+  "references": []
 }

@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useMemo, useState } from 'react';
 import { useRequireAdmin } from '../../../src/hooks/useRequireAdmin';
-import { getApi } from '../../../src/lib/apiClient';
+import { useApi } from '../../../src/contexts/ApiProvider';
 
 export default function AdminApprovalsPage() {
   const { ready } = useRequireAdmin();
+  const { admin } = useApi();
   const [items, setItems] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -14,8 +15,8 @@ export default function AdminApprovalsPage() {
   useEffect(() => {
     if (!ready) return;
     const run = async () => {
-      const res = await getApi().admin.getPendingApprovals({ page, size });
-      const list = (res.items ?? res.users ?? []) as any[];
+      const res = await admin.getPendingApprovals({ page, size });
+      const list = (res.users ?? []) as any[];
       setItems(list);
       setTotal(res.total ?? list.length ?? 0);
     };
