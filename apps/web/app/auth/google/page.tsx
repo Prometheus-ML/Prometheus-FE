@@ -29,7 +29,7 @@ export default function GoogleCallbackPage() {
       try {
         const tokens = await authApi.googleCallback({ code });
         setTokens(tokens.access_token, tokens.refresh_token);
-        const user = await authApi.me();
+        const user = await authApi.verify();
         setUser(user);
         window.location.replace('/');
       } catch (e) {

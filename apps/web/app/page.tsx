@@ -5,14 +5,14 @@ import { useAuthStore } from '@prometheus-fe/stores';
 import Link from 'next/link';
 
 export default function Page() {
-  const isAuthenticated = useAuthStore((s: any) => s.isAuthenticated());
+  const isAuthenticated = useAuthStore((s: any) => s.isAuthenticated);
   const [me, setMe] = useState<any>(null);
   const { auth } = useApi();
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated()) return;
     auth
-      .me()
+      .verify()
       .then(setMe)
       .catch(() => setMe(null));
   }, [isAuthenticated]);

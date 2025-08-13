@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { UserInfo } from '@prometheus-fe/types';
 
 export interface AuthState {
@@ -21,11 +22,13 @@ export interface AuthState {
   refreshUserInfo: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
-  user: null,
-  accessToken: null,
-  refreshToken: null,
-  isLoading: false,
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      user: null,
+      accessToken: null,
+      refreshToken: null,
+      isLoading: false,
 
   isAuthenticated: () => !!get().accessToken,
   getUserGrant: () => get().user?.grant || null,
@@ -100,22 +103,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   setTokens: (access, refresh) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('access_token', access);
-      localStorage.setItem('refresh_token', refresh);
-    }
     set({ accessToken: access, refreshToken: refresh });
   },
 
   clearTokens: () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-    }
     set({ accessToken: null, refreshToken: null, user: null });
   },
 
   setUser: (user) => set({ user }),
-}));
+    }),
+    {
+      name: 'auth-store',
+      partialize: (state) => ({
+        user: state.user,
+        accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
+      }),
+    }
+  )
+);
 
 
