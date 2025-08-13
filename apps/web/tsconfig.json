@@ -4,7 +4,7 @@
     "baseUrl": ".",
     "jsx": "preserve",
     "paths": {
-      "@/*": ["src/*"],
+      "@/*": ["./*"],
       "@prometheus-fe/types": ["../../packages/types/dist"],
       "@prometheus-fe/stores": ["../../packages/stores/dist"],
       "@prometheus-fe/api": ["../../packages/api/dist"],
