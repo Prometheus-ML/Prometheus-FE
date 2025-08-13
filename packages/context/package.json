@@ -1,5 +1,5 @@
 {
-  "name": "@prometheus-fe/stores",
+  "name": "@prometheus-fe/context",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -15,16 +15,18 @@
   },
   "dependencies": {
     "@prometheus-fe/api": "workspace:*",
-    "zustand": "^5.0.3"
+    "@prometheus-fe/stores": "workspace:*"
   },
   "peerDependencies": {
-    "react": "^19"
+    "react": "^19",
+    "react-dom": "19",
+    "next": "15.2.4"
   },
   "devDependencies": {
-    "@types/react": "^18",
     "@prometheus-fe/types": "workspace:*",
     "@prometheus-fe/eslint-config": "workspace:*",
     "@prometheus-fe/typescript-config": "workspace:*",
+    "concurrently": "^8.2.2",
     "eslint": "^9",
     "tsup": "^8.0.2",
     "typescript": "^5"

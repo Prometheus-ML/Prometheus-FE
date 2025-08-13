@@ -1,5 +1,5 @@
 {
-  "name": "@prometheus-fe/stores",
+  "name": "@prometheus-fe/hooks",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -14,14 +14,14 @@
     "clean": "rm -rf dist .tsbuildinfo"
   },
   "dependencies": {
+    "@prometheus-fe/stores": "workspace:*",
     "@prometheus-fe/api": "workspace:*",
-    "zustand": "^5.0.3"
+    "@prometheus-fe/context": "workspace:*"
   },
   "peerDependencies": {
     "react": "^19"
   },
   "devDependencies": {
-    "@types/react": "^18",
     "@prometheus-fe/types": "workspace:*",
     "@prometheus-fe/eslint-config": "workspace:*",
     "@prometheus-fe/typescript-config": "workspace:*",

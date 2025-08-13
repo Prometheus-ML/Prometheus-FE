@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { createApiClient, createAuthApi } from '@prometheus-fe/api';
-import { useAuthStore } from '@prometheus-fe/store';
+import { useAuthStore } from '@prometheus-fe/stores';
 
 export default function GoogleCallbackPage() {
   const [error, setError] = useState<string | null>(null);

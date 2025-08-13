@@ -5,8 +5,10 @@
     "jsx": "preserve",
     "paths": {
       "@/*": ["src/*"],
-      "@prometheus-fe/store": ["../../packages/stores/dist"],
-      "@prometheus-fe/api": ["../../packages/api/dist"]
+      "@prometheus-fe/types": ["../../packages/types/dist"],
+      "@prometheus-fe/stores": ["../../packages/stores/dist"],
+      "@prometheus-fe/api": ["../../packages/api/dist"],
+      "@prometheus-fe/context": ["../../packages/context/dist"]
     },
     "plugins": [
       {
@@ -23,5 +25,11 @@
   ],
   "exclude": [
     "node_modules"
+  ],
+  "references": [
+    { "path": "../../packages/types" },
+    { "path": "../../packages/api" },
+    { "path": "../../packages/stores" },
+    { "path": "../../packages/context" }
   ]
 }

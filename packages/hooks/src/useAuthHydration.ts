@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from 'react';
-import { useAuthStore } from '@prometheus-fe/store';
+import { useAuthStore } from '@prometheus-fe/stores';
 
 export function useAuthHydration() {
   const setTokens = useAuthStore((s) => s.setTokens);
@@ -15,5 +15,3 @@ export function useAuthHydration() {
     setHydrated(true);
   }, [setTokens]);
 }
-
-

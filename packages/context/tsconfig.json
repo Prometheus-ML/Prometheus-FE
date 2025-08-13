@@ -1,0 +1,32 @@
+{
+  "extends": "@prometheus-fe/typescript-config/base",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "baseUrl": ".",
+    "paths": {
+      "@prometheus-fe/types": ["../types/dist"],
+      "@prometheus-fe/types/*": ["../types/dist/*"],
+      "@prometheus-fe/api": ["../api/dist"],
+      "@prometheus-fe/api/*": ["../api/dist/*"],
+      "@prometheus-fe/stores": ["../stores/dist"],
+      "@prometheus-fe/stores/*": ["../stores/dist/*"],
+      "@prometheus-fe/hooks": ["../hooks/dist"],
+      "@prometheus-fe/hooks/*": ["../hooks/dist/*"]
+    },
+    "jsx": "react-jsx",
+    "declaration": true,
+    "declarationMap": true,
+    "composite": true,
+    "noEmit": false,
+    "incremental": true,
+    "tsBuildInfoFile": "./.tsbuildinfo"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"],
+  "references": [
+    { "path": "../types" },
+    { "path": "../api" },
+    { "path": "../stores" }
+  ]
+}

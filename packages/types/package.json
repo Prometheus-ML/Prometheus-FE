@@ -6,18 +6,17 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc --emitDeclarationOnly --project tsconfig.json",
-    "dev": "tsc -w --emitDeclarationOnly --project tsconfig.json",
+    "dev": "tsc --emitDeclarationOnly --project tsconfig.json --watch",
     "clean": "rm -rf dist .tsbuildinfo"
   },
   "devDependencies": {
-    "tsup": "8.0.2",
-    "typescript": "^5",
     "@prometheus-fe/eslint-config": "workspace:*",
     "@prometheus-fe/typescript-config": "workspace:*",
-    "eslint": "^9"
+    "eslint": "^9",
+    "tsup": "^8.0.2",
+    "typescript": "^5"
   },
   "exports": {
     ".": "./dist"
   }
 }
-

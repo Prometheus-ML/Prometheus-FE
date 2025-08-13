@@ -22,7 +22,7 @@ import {
   StorageApi,
   CommunityApi,
 } from '@prometheus-fe/api';
-import { useAuthStore } from '@prometheus-fe/store';
+import { useAuthStore } from '@prometheus-fe/stores';
 
 type ApiInstances = {
   client: ApiClient;
@@ -73,5 +73,3 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
 
   return <ApiContext.Provider value={api}>{children}</ApiContext.Provider>;
 };
-
-

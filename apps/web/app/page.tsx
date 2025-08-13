@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
-import { useApi } from '../src/contexts/ApiProvider';
-import { useAuthStore } from '@prometheus-fe/store';
+import { useApi } from '@prometheus-fe/context';
+import { useAuthStore } from '@prometheus-fe/stores';
 import Link from 'next/link';
 
 export default function Page() {
