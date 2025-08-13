@@ -25,8 +25,8 @@ export class AuthApi {
     return this.api.post<TokenResponse>('/auth/refresh', { refresh_token });
   }
 
-  me() {
-    return this.api.get<import('@prometheus-fe/types').UserInfo>('/auth/me');
+  verify() {
+    return this.api.get<import('@prometheus-fe/types').UserInfo>('/auth/verify');
   }
 }
 
