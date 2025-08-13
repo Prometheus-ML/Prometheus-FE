@@ -3,7 +3,7 @@ import type { ImageUploadResponse, ImageInfoResponse, ImageCategory } from '@pro
 
 export class StorageApi {
   private readonly api: ApiClient;
-  private readonly base = '/v1/storage/image';
+  private readonly base = '/storage/image';
 
   constructor(apiClient: ApiClient) {
     this.api = apiClient;

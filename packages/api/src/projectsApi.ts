@@ -13,7 +13,7 @@ import type {
 
 export class ProjectsApi {
   private readonly api: ApiClient;
-  private readonly base = '/v1/projects';
+  private readonly base = '/projects';
 
   constructor(apiClient: ApiClient) {
     this.api = apiClient;

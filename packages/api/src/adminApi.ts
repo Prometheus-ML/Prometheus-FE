@@ -19,7 +19,7 @@ export interface PendingApprovalsResponse {
 
 export class AdminApi {
   private readonly api: ApiClient;
-  private readonly base = '/v1/admin';
+  private readonly base = '/admin';
 
   constructor(apiClient: ApiClient) {
     this.api = apiClient;

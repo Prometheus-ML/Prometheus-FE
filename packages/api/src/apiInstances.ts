@@ -3,7 +3,6 @@ import { ApiClient, ApiClientOptions, AuthCallbacks } from './apiClient';
 export const createApiClientOptions = (): ApiClientOptions => {
   const baseUrl =
     process.env.NEXT_PUBLIC_API_URI ||
-    process.env.NEXT_PUBLIC_API_BASE_URL ||
     process.env.EXPO_PUBLIC_API_URI ||
     '';
   return {

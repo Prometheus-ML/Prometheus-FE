@@ -4,7 +4,8 @@ import React from "react";
 export default function LoginPage() {
   const handleGoogleLogin = () => {
     const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    const redirectUri = `${window.location.origin}/auth/google`;
+    const frontUri = process.env.NEXT_PUBLIC_FRONT_URI;
+    const redirectUri = `${frontUri}/auth/google`;
     if (!googleClientId) {
       alert("Google Client ID가 설정되지 않았습니다.");
       return;

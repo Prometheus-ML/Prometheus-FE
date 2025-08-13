@@ -10,7 +10,7 @@ import type {
 
 export class CommunityApi {
   private readonly api: ApiClient;
-  private readonly base = '/v1/community/events';
+  private readonly base = '/community/events';
 
   constructor(apiClient: ApiClient) {
     this.api = apiClient;

@@ -22,7 +22,7 @@ export class UserApi {
       if (value !== undefined && value !== null) searchParams.set(key, String(value));
     });
     const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
-    return this.api.get<UserPublicListResponse>(`/v1/users/public${query}`);
+    return this.api.get<UserPublicListResponse>(`/users/public${query}`);
   }
 
   listPrivate(params?: Record<string, string | number | undefined>) {
@@ -31,31 +31,31 @@ export class UserApi {
       if (v !== undefined && v !== null) searchParams.set(k, String(v));
     });
     const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
-    return this.api.get<UserPrivateListResponse>(`/v1/users/private${query}`);
+    return this.api.get<UserPrivateListResponse>(`/users/private${query}`);
   }
 
   me() {
-    return this.api.get<MyProfileResponse>('/v1/users/me');
+    return this.api.get<MyProfileResponse>('/users/me');
   }
 
   updateMe(payload: MyProfileUpdateRequest) {
-    return this.api.put<MyProfileResponse>('/v1/users/me', payload);
+    return this.api.put<MyProfileResponse>('/users/me', payload);
   }
 
   updateUser(userId: string, payload: Partial<UserDetailResponse>) {
-    return this.api.put<UserDetailResponse>(`/v1/users/${userId}`, payload);
+    return this.api.put<UserDetailResponse>(`/users/${userId}`, payload);
   }
 
   deleteUser(userId: string) {
-    return this.api.delete<void>(`/v1/users/${userId}`);
+    return this.api.delete<void>(`/users/${userId}`);
   }
 
   updateGrant(userId: string, payload: GrantUpdateRequest) {
-    return this.api.put<UserDetailResponse>(`/v1/users/${userId}/grant`, payload);
+    return this.api.put<UserDetailResponse>(`/users/${userId}/grant`, payload);
   }
 
   updateStatus(userId: string, payload: StatusUpdateRequest) {
-    return this.api.put<UserDetailResponse>(`/v1/users/${userId}/status`, payload);
+    return this.api.put<UserDetailResponse>(`/users/${userId}/status`, payload);
   }
 }
 

@@ -11,7 +11,7 @@ import type {
 
 export class SchedulesApi {
   private readonly api: ApiClient;
-  private readonly base = '/v1/schedules';
+  private readonly base = '/schedules';
 
   constructor(apiClient: ApiClient) {
     this.api = apiClient;

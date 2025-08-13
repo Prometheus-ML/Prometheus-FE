@@ -16,7 +16,7 @@ import type {
 
 export class SponsorshipApi {
   private readonly api: ApiClient;
-  private readonly base = '/v1/sponsorship';
+  private readonly base = '/sponsorship';
 
   constructor(apiClient: ApiClient) {
     this.api = apiClient;

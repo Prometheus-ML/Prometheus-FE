@@ -8,7 +8,7 @@ import type {
 
 export class CoffeeChatApi {
   private readonly api: ApiClient;
-  private readonly base = '/v1/users/coffee-chats';
+  private readonly base = '/users/coffee-chats';
 
   constructor(apiClient: ApiClient) {
     this.api = apiClient;
