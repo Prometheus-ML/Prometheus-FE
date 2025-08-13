@@ -1,14 +1,14 @@
 "use client";
 import { useParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
-import { useRequireAdmin } from '../../../../src/hooks/useRequireAdmin';
-import { useApi } from '../../../../src/contexts/ApiProvider';
+import { useRequireAdmin } from '../../../src/hooks/useRequireAdmin';
+import { useApi } from '../../../src/contexts/ApiProvider';
 
-export default function AttendancePage() {
+export default function EventPage() {
   const { ready } = useRequireAdmin(); // 출석은 Manager 이상 API라 관리자 가드 사용
   const { schedules } = useApi();
-  const params = useParams<{ scheduleId: string }>();
-  const scheduleId = params?.scheduleId!;
+  const params = useParams<{ eventId: string }>();
+  const eventId = params?.eventId!;
   const [items, setItems] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [statusFilter, setStatusFilter] = useState('');
@@ -19,7 +19,7 @@ export default function AttendancePage() {
     try {
       const params: any = {};
       if (statusFilter) params.status_filter = statusFilter;
-      const res = await schedules.listAttendance(scheduleId, params);
+      const res = await schedules.listAttendance(eventId, params);
       setItems(res.attendances ?? []);
       setTotal(res.total ?? 0);
     } finally {
@@ -35,18 +35,18 @@ export default function AttendancePage() {
   const [newMemberId, setNewMemberId] = useState('');
   const [newStatus, setNewStatus] = useState('present');
   const create = async () => {
-    await schedules.createAttendance(scheduleId, { member_id: newMemberId, status: newStatus });
+    await schedules.createAttendance(eventId, { member_id: newMemberId, status: newStatus });
     setNewMemberId('');
     setNewStatus('present');
     await load();
   };
 
   const update = async (attendanceId: any, status: string) => {
-    await schedules.updateAttendance(scheduleId, attendanceId, { status });
+    await schedules.updateAttendance(eventId, attendanceId, { status });
     await load();
   };
   const remove = async (attendanceId: any) => {
-    await schedules.deleteAttendance(scheduleId, attendanceId);
+    await schedules.deleteAttendance(eventId, attendanceId);
     await load();
   };
 

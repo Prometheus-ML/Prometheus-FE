@@ -4,6 +4,7 @@ import { useAuthStore } from '@prometheus-fe/store';
 
 export function useAuthHydration() {
   const setTokens = useAuthStore((s) => s.setTokens);
+  const setHydrated = useAuthStore((s) => s.setHydrated);
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const access = localStorage.getItem('access_token');
@@ -11,6 +12,7 @@ export function useAuthHydration() {
     if (access && refresh) {
       setTokens(access, refresh);
     }
+    setHydrated(true);
   }, [setTokens]);
 }
 

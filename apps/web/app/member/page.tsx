@@ -5,7 +5,7 @@ import { useAuthStore } from '@prometheus-fe/store';
 
 type UserBrief = any;
 
-export default function MembersPage() {
+export default function MemberPage() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
   const [users, setUsers] = useState<UserBrief[]>([]);
   const [total, setTotal] = useState(0);

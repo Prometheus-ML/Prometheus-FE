@@ -6,11 +6,13 @@ export interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   isLoading: boolean;
+  hydrated: boolean;
 
   isAuthenticated: () => boolean;
   setTokens: (access: string, refresh: string) => void;
   clearTokens: () => void;
   setUser: (user: UserInfo | null) => void;
+  setHydrated: (value: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -18,6 +20,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   accessToken: null,
   refreshToken: null,
   isLoading: false,
+  hydrated: false,
 
   isAuthenticated: () => !!get().accessToken,
   setTokens: (access, refresh) => {
@@ -35,6 +38,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ accessToken: null, refreshToken: null, user: null });
   },
   setUser: (user) => set({ user }),
+  setHydrated: (value) => set({ hydrated: value }),
 }));
 
 

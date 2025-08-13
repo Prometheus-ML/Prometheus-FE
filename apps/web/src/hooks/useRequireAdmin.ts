@@ -5,10 +5,11 @@ import { useAuthStore } from '@prometheus-fe/store';
 import { useApi } from '../contexts/ApiProvider';
 
 const grantWeights: Record<string, number> = {
-  Super: 0,
-  Administrator: 1,
-  Manager: 2,
-  Member: 3,
+  Root: 0,
+  Super: 1,
+  Administrator: 2,
+  Manager: 3,
+  Member: 4,
 };
 
 export function useRequireAdmin() {
@@ -16,11 +17,13 @@ export function useRequireAdmin() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
+  const hydrated = useAuthStore((s) => s.hydrated);
   const { auth } = useApi();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const ensure = async () => {
+      if (!hydrated) return;
       if (!isAuthenticated) {
         router.replace('/auth/login');
         return;
@@ -36,14 +39,14 @@ export function useRequireAdmin() {
         }
       }
       const weight = currentUser?.grant ? grantWeights[currentUser.grant] ?? 999 : 999;
-      if (weight > 2) {
+      if (weight > 3) {
         router.replace('/');
         return;
       }
       setReady(true);
     };
     ensure();
-  }, [isAuthenticated, user, setUser, router]);
+  }, [hydrated, isAuthenticated, user, setUser, router]);
 
   return { ready };
 }

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRequireAdmin } from '../../../src/hooks/useRequireAdmin';
 import { useApi } from '../../../src/contexts/ApiProvider';
 
-export default function AdminApprovalsPage() {
+export default function AdminApprovalPage() {
   const { ready } = useRequireAdmin();
   const { admin } = useApi();
   const [items, setItems] = useState<any[]>([]);
