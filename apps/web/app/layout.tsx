@@ -1,5 +1,6 @@
 import React from 'react';
 import ClientProviders from '../src/components/ClientProviders';
+import './globals.css';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   // Note: hooks cannot be used in Server Components; we wrap children instead

@@ -17,6 +17,7 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    "app/globals.css",
     "next-env.d.ts",
     ".next/types/**/*.ts"
   ],
