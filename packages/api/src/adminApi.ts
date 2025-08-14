@@ -1,4 +1,14 @@
 import { ApiClient } from './apiClient';
+import type {
+  AdminMemberListResponse,
+  AdminMemberResponse,
+  AdminMemberCreateRequest,
+  AdminMemberUpdateRequest,
+  AdminBulkMemberCreateRequest,
+  AdminBulkMemberUpdateRequest,
+  AdminMemberStatsResponse,
+  AdminMemberSearchParams
+} from '@prometheus-fe/types';
 
 export interface PendingApprovalsResponse {
   users: Array<{
@@ -25,6 +35,7 @@ export class AdminApi {
     this.api = apiClient;
   }
 
+  // 기존 메서드 유지
   getPendingApprovals(params?: { page?: number; size?: number }) {
     const searchParams = new URLSearchParams();
     if (params?.page) searchParams.set('page', String(params.page));
@@ -33,15 +44,8 @@ export class AdminApi {
     return this.api.get<PendingApprovalsResponse>(`${this.base}/pending-approvals${query}`);
   }
 
-  getMembers(params?: {
-    page?: number;
-    size?: number;
-    search?: string;
-    grant_filter?: string;
-    gen_filter?: number;
-    status_filter?: string;
-    active_gens_filter?: string;
-  }) {
+  // 멤버 관리 API
+  getMembers(params?: AdminMemberSearchParams) {
     const searchParams = new URLSearchParams();
     if (params?.page) searchParams.set('page', String(params.page));
     if (params?.size) searchParams.set('size', String(params.size));
@@ -51,7 +55,43 @@ export class AdminApi {
     if (params?.status_filter) searchParams.set('status_filter', params.status_filter);
     if (params?.active_gens_filter) searchParams.set('active_gens_filter', params.active_gens_filter);
     const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
-    return this.api.get<{ members: any[]; total: number; page: number; size: number }>(`${this.base}/members${query}`);
+    return this.api.get<AdminMemberListResponse>(`${this.base}/member-list${query}`);
+  }
+
+  getMember(memberId: string) {
+    return this.api.get<AdminMemberResponse>(`${this.base}/${memberId}`);
+  }
+
+  createMember(data: AdminMemberCreateRequest) {
+    return this.api.post<AdminMemberResponse>(`${this.base}/members/create`, data);
+  }
+
+  updateMember(memberId: string, data: AdminMemberUpdateRequest) {
+    return this.api.put<AdminMemberResponse>(`${this.base}/members/update/${memberId}`, data);
+  }
+
+  deleteMember(memberId: string) {
+    return this.api.delete<{ message: string }>(`${this.base}/members/delete/${memberId}`);
+  }
+
+  bulkCreateMembers(data: AdminBulkMemberCreateRequest) {
+    return this.api.post<{
+      message: string;
+      created_count: number;
+      failed_creations: Array<{ email: string; error: string }>;
+    }>(`${this.base}/members/bulk-create`, data);
+  }
+
+  bulkUpdateMembers(data: AdminBulkMemberUpdateRequest) {
+    return this.api.post<{
+      message: string;
+      updated_count: number;
+      failed_updates: Array<{ member_id: string; error: string }>;
+    }>(`${this.base}/members/bulk-update`, data);
+  }
+
+  getMemberStats() {
+    return this.api.get<AdminMemberStatsResponse>(`${this.base}/members/stats`);
   }
 }
 

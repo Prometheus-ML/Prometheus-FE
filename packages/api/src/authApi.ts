@@ -1,5 +1,5 @@
 import { ApiClient } from './apiClient';
-import type { TokenResponse, GoogleAuthUrlResponse, GoogleCallbackRequest } from '@prometheus-fe/types';
+import type { TokenResponse, GoogleAuthUrlResponse, GoogleCallbackRequest, UserInfo } from '@prometheus-fe/types';
 
 export class AuthApi {
   private readonly api: ApiClient;
@@ -26,7 +26,7 @@ export class AuthApi {
   }
 
   verify() {
-    return this.api.get<import('@prometheus-fe/types').UserInfo>('/auth/verify');
+    return this.api.get<UserInfo>('/auth/verify');
   }
 }
 

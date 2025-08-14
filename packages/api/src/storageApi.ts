@@ -16,6 +16,10 @@ export class StorageApi {
     return this.api.post<ImageUploadResponse>(`${this.base}/upload`, form);
   }
 
+  uploadFormData(formData: FormData) {
+    return this.api.post<ImageUploadResponse>(`${this.base}/upload`, formData);
+  }
+
   getInfo(fileId: string) {
     return this.api.get<ImageInfoResponse>(`${this.base}/${fileId}`);
   }
