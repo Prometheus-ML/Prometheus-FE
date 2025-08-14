@@ -1,5 +1,5 @@
-// 공통 응답 인터페이스
-export interface BaseResponse {
+// 공통 응답 인터페이스 (내부에서만 사용)
+interface BaseResponse {
   success: boolean;
   message?: string;
 }

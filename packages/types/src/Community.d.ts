@@ -1,11 +1,5 @@
-// Post Types
-export interface PostCreateRequest {
-  category: 'free' | 'activity' | 'career' | 'promotion' | 'study_group' | 'casual_group' | 'announcement';
-  title: string;
-  content: string;
-}
-
-export interface PostResponse {
+// Post 기본 타입 (Entity)
+export interface Post {
   id: number;
   author_id: string;
   category: string;
@@ -16,17 +10,8 @@ export interface PostResponse {
   updated_at: string;
 }
 
-export interface PostListResponse {
-  total: number;
-  items: PostResponse[];
-}
-
-// Comment Types
-export interface CommentCreateRequest {
-  content: string;
-}
-
-export interface CommentResponse {
+// Comment 기본 타입 (Entity)
+export interface Comment {
   id: number;
   post_id: number;
   author_id: string;
@@ -36,16 +21,8 @@ export interface CommentResponse {
   updated_at: string;
 }
 
-// Legacy Event Types (keeping for backward compatibility)
-export interface EventCreateRequest {
-  name: string;
-  description?: string | null;
-  visibility?: 'public' | 'private';
-  recruitment_start_at?: string | null; // ISO
-  recruitment_end_at?: string | null; // ISO
-}
-
-export interface EventResponse {
+// Event 기본 타입 (Entity)
+export interface Event {
   id: number;
   name: string;
   description?: string | null;
@@ -58,12 +35,8 @@ export interface EventResponse {
   updated_at: string;
 }
 
-export interface EventListResponse {
-  total: number;
-  items: EventResponse[];
-}
-
-export interface EventMemberResponse {
+// EventMember 기본 타입 (Entity)
+export interface EventMember {
   id: number;
   event_id: number;
   member_id: string;
@@ -72,12 +45,8 @@ export interface EventMemberResponse {
   joined_at?: string | null;
 }
 
-export interface EventNoteCreateRequest {
-  title: string;
-  content: string;
-}
-
-export interface EventNoteResponse {
+// EventNote 기본 타입 (Entity)
+export interface EventNote {
   id: number;
   event_id: number;
   author_id: string;

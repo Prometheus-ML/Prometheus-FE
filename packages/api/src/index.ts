@@ -13,6 +13,11 @@ export * from './storageApi';
 export * from './communityApi';
 export * from './groupApi';
 
+// DTO Types
+export * from './dto/project.dto';
+export * from './dto/community.dto';
+export * from './dto/admin.dto';
+
 // Types
 export type { ApiClientOptions } from './apiClient';
 
