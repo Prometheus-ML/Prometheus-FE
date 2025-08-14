@@ -21,6 +21,7 @@ export interface CreateProjectRequest {
   github_url?: string | null;
   demo_url?: string | null;
   panel_url?: string | null;
+  thumbnail_url?: string | null;
   gen: number;
 }
 
@@ -61,6 +62,7 @@ export interface UpdateProjectRequest {
   github_url?: string | null;
   demo_url?: string | null;
   panel_url?: string | null;
+  thumbnail_url?: string | null;
   gen?: number | null;
 }
 

@@ -65,6 +65,7 @@ export class ProjectApi {
         github_url: formData.github_url?.trim() || null,
         demo_url: formData.demo_url?.trim() || null,
         panel_url: formData.panel_url?.trim() || null,
+        thumbnail_url: formData.thumbnail_url?.trim() || null,
         gen: formData.gen || 1 // Default to gen 1 if not provided
       };
       

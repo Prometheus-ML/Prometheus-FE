@@ -10,6 +10,7 @@ export type Project = {
   github_url?: string | null;
   demo_url?: string | null;
   panel_url?: string | null;
+  thumbnail_url?: string | null;
   gen: number;
   meta?: Record<string, any> | null;
 };

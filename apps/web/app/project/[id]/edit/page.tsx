@@ -37,11 +37,12 @@ export default function EditProjectPage() {
       setIsLoading(true);
       setError('');
       
-      // TODO: Replace with actual API call
-      // const projectData = await projectApi.getProject(projectId);
+      // TODO: Replace with actual API call using projectApi
+      // const { projectApi } = useApi();
+      // const projectData = await projectApi.get(projectId);
       // setProject(projectData);
       
-      // Mock data for UI
+      // Mock data for UI (API 연동 후 제거 예정)
       setProject({
         id: projectId,
         title: '샘플 프로젝트',
