@@ -1,0 +1,179 @@
+import { useApi } from '@prometheus-fe/context';
+import { PostResponse, PostCreateRequest, CommentResponse, CommentCreateRequest } from '@prometheus-fe/types';
+import { useState, useCallback } from 'react';
+
+export function useCommunity() {
+  const { community } = useApi();
+  const [posts, setPosts] = useState<PostResponse[]>([]);
+  const [selectedPost, setSelectedPost] = useState<PostResponse | null>(null);
+  const [comments, setComments] = useState<CommentResponse[]>([]);
+  const [totalPosts, setTotalPosts] = useState(0);
+  const [isLoadingPosts, setIsLoadingPosts] = useState(false);
+  const [isLoadingPost, setIsLoadingPost] = useState(false);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [isCreatingPost, setIsCreatingPost] = useState(false);
+  const [isCreatingComment, setIsCreatingComment] = useState(false);
+
+  // 게시글 목록 조회
+  const fetchPosts = useCallback(async (params?: { page?: number; size?: number; category?: string }) => {
+    if (!community) {
+      console.warn('community is not available. Ensure useCommunity is used within ApiProvider.');
+      setIsLoadingPosts(false);
+      return;
+    }
+    try {
+      setIsLoadingPosts(true);
+      const data = await community.listPosts(params);
+      setPosts(data.items || []);
+      setTotalPosts(data.total || 0);
+    } catch (error) {
+      console.error('게시글 목록 조회 실패:', error);
+      setPosts([]);
+      setTotalPosts(0);
+    } finally {
+      setIsLoadingPosts(false);
+    }
+  }, [community]);
+
+  // 특정 게시글 조회
+  const fetchPost = useCallback(async (postId: number | string) => {
+    if (!community) {
+      console.warn('community is not available. Ensure useCommunity is used within ApiProvider.');
+      return;
+    }
+    try {
+      setIsLoadingPost(true);
+      const data = await community.getPost(postId);
+      setSelectedPost(data);
+    } catch (error) {
+      console.error(`게시글 ${postId} 조회 실패:`, error);
+      setSelectedPost(null);
+    } finally {
+      setIsLoadingPost(false);
+    }
+  }, [community]);
+
+  // 게시글 생성
+  const createPost = useCallback(async (postData: PostCreateRequest) => {
+    if (!community) {
+      console.warn('community is not available. Ensure useCommunity is used within ApiProvider.');
+      return null;
+    }
+    try {
+      setIsCreatingPost(true);
+      const newPost = await community.createPost(postData);
+      // 새 게시글을 목록 맨 앞에 추가
+      setPosts(prev => [newPost, ...prev]);
+      setTotalPosts(prev => prev + 1);
+      return newPost;
+    } catch (error) {
+      console.error('게시글 생성 실패:', error);
+      throw error;
+    } finally {
+      setIsCreatingPost(false);
+    }
+  }, [community]);
+
+  // 게시글 삭제
+  const deletePost = useCallback(async (postId: number | string) => {
+    if (!community) {
+      console.warn('community is not available. Ensure useCommunity is used within ApiProvider.');
+      return;
+    }
+    try {
+      await community.deletePost(postId);
+      // 목록에서 삭제된 게시글 제거
+      setPosts(prev => prev.filter(post => post.id !== Number(postId)));
+      setTotalPosts(prev => Math.max(0, prev - 1));
+      // 현재 선택된 게시글이 삭제된 게시글이면 초기화
+      if (selectedPost?.id === Number(postId)) {
+        setSelectedPost(null);
+      }
+    } catch (error) {
+      console.error(`게시글 ${postId} 삭제 실패:`, error);
+      throw error;
+    }
+  }, [community, selectedPost]);
+
+  // 댓글 생성
+  const createComment = useCallback(async (postId: number | string, commentData: CommentCreateRequest) => {
+    if (!community) {
+      console.warn('community is not available. Ensure useCommunity is used within ApiProvider.');
+      return null;
+    }
+    try {
+      setIsCreatingComment(true);
+      const newComment = await community.createComment(postId, commentData);
+      // 새 댓글을 목록에 추가
+      setComments(prev => [...prev, newComment]);
+      return newComment;
+    } catch (error) {
+      console.error('댓글 생성 실패:', error);
+      throw error;
+    } finally {
+      setIsCreatingComment(false);
+    }
+  }, [community]);
+
+  // 댓글 삭제
+  const deleteComment = useCallback(async (postId: number | string, commentId: number | string) => {
+    if (!community) {
+      console.warn('community is not available. Ensure useCommunity is used within ApiProvider.');
+      return;
+    }
+    try {
+      await community.deleteComment(postId, commentId);
+      // 목록에서 삭제된 댓글 제거
+      setComments(prev => prev.filter(comment => comment.id !== Number(commentId)));
+    } catch (error) {
+      console.error(`댓글 ${commentId} 삭제 실패:`, error);
+      throw error;
+    }
+  }, [community]);
+
+  // 카테고리별 게시글 필터링
+  const filterPostsByCategory = useCallback((category?: string) => {
+    fetchPosts({ category, page: 1, size: 20 });
+  }, [fetchPosts]);
+
+  // 상태 초기화
+  const clearPosts = useCallback(() => {
+    setPosts([]);
+    setTotalPosts(0);
+  }, []);
+
+  const clearSelectedPost = useCallback(() => {
+    setSelectedPost(null);
+  }, []);
+
+  const clearComments = useCallback(() => {
+    setComments([]);
+  }, []);
+
+  return {
+    // 상태
+    posts,
+    selectedPost,
+    comments,
+    totalPosts,
+    isLoadingPosts,
+    isLoadingPost,
+    isLoadingComments,
+    isCreatingPost,
+    isCreatingComment,
+    
+    // 액션
+    fetchPosts,
+    fetchPost,
+    createPost,
+    deletePost,
+    createComment,
+    deleteComment,
+    filterPostsByCategory,
+    
+    // 유틸리티
+    clearPosts,
+    clearSelectedPost,
+    clearComments,
+  };
+}

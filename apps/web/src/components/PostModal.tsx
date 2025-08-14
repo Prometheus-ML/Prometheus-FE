@@ -1,0 +1,270 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { PostResponse, CommentResponse, CommentCreateRequest } from '@prometheus-fe/types';
+import { useCommunity } from '@prometheus-fe/hooks';
+import { useAuthStore } from '@prometheus-fe/stores';
+
+interface PostModalProps {
+  postId: number | null;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const CATEGORIES = [
+  { value: 'free', label: '자유게시판' },
+  { value: 'activity', label: '활동' },
+  { value: 'career', label: '진로' },
+  { value: 'promotion', label: '홍보' },
+  { value: 'study_group', label: '스터디 그룹' },
+  { value: 'casual_group', label: '취미 그룹' },
+  { value: 'announcement', label: '공지사항' },
+] as const;
+
+export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
+  const {
+    selectedPost,
+    comments,
+    isLoadingPost,
+    isCreatingComment,
+    fetchPost,
+    createComment,
+    deleteComment,
+    deletePost,
+    clearSelectedPost,
+    clearComments,
+  } = useCommunity();
+
+  const { user } = useAuthStore();
+  const [newComment, setNewComment] = useState<CommentCreateRequest>({ content: '' });
+  const [error, setError] = useState('');
+
+  // 모달이 열릴 때 게시글 데이터 로드
+  useEffect(() => {
+    if (isOpen && postId) {
+      fetchPost(postId);
+    }
+  }, [isOpen, postId, fetchPost]);
+
+  // 모달이 닫힐 때 상태 초기화
+  useEffect(() => {
+    if (!isOpen) {
+      clearSelectedPost();
+      clearComments();
+      setNewComment({ content: '' });
+      setError('');
+    }
+  }, [isOpen, clearSelectedPost, clearComments]);
+
+  const handleCreateComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!postId || !newComment.content.trim()) {
+      setError('댓글 내용을 입력해주세요.');
+      return;
+    }
+
+    try {
+      setError('');
+      await createComment(postId, newComment);
+      setNewComment({ content: '' });
+    } catch (err) {
+      console.error('댓글 생성 실패:', err);
+      setError('댓글 작성에 실패했습니다.');
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    if (!postId || !confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      await deleteComment(postId, commentId);
+    } catch (err) {
+      console.error('댓글 삭제 실패:', err);
+      setError('댓글 삭제에 실패했습니다.');
+    }
+  };
+
+  const handleDeletePost = async () => {
+    if (!postId || !confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      await deletePost(postId);
+      onClose(); // 게시글 삭제 후 모달 닫기
+    } catch (err) {
+      console.error('게시글 삭제 실패:', err);
+      setError('게시글 삭제에 실패했습니다.');
+    }
+  };
+
+  const getCategoryLabel = (category: string) => {
+    return CATEGORIES.find(c => c.value === category)?.label || category;
+  };
+
+  const getCategoryColor = (category: string) => {
+    const colors: Record<string, string> = {
+      free: 'bg-gray-100 text-gray-800 border-gray-200',
+      activity: 'bg-blue-100 text-blue-800 border-blue-200',
+      career: 'bg-green-100 text-green-800 border-green-200',
+      promotion: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      study_group: 'bg-purple-100 text-purple-800 border-purple-200',
+      casual_group: 'bg-pink-100 text-pink-800 border-pink-200',
+      announcement: 'bg-red-100 text-red-800 border-red-200',
+    };
+    return colors[category] || 'bg-gray-100 text-gray-800 border-gray-200';
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        {/* 헤더 */}
+        <div className="flex items-center justify-between p-6 border-b">
+          <h2 className="text-xl font-bold text-gray-900">게시글 상세</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-2xl"
+          >
+            ×
+          </button>
+        </div>
+
+        {/* 내용 */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {isLoadingPost ? (
+            <div className="py-20 text-center text-gray-500">불러오는 중...</div>
+          ) : selectedPost ? (
+            <>
+              {/* 게시글 정보 */}
+              <div className="mb-6">
+                <div className="flex items-center space-x-2 mb-4">
+                  <span className={`px-3 py-1 text-sm rounded-full border ${getCategoryColor(selectedPost.category)}`}>
+                    {getCategoryLabel(selectedPost.category)}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    작성자: {selectedPost.author_id}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    {new Date(selectedPost.created_at).toLocaleString('ko-KR')}
+                  </span>
+                  {user && user.id === selectedPost.author_id && (
+                    <button
+                      onClick={handleDeletePost}
+                      className="text-red-600 hover:text-red-800 text-sm ml-auto"
+                    >
+                      게시글 삭제
+                    </button>
+                  )}
+                </div>
+
+                <h1 className="text-2xl font-bold text-gray-900 mb-4">
+                  {selectedPost.title}
+                </h1>
+
+                <div className="prose max-w-none">
+                  <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+                    {selectedPost.content}
+                  </p>
+                </div>
+              </div>
+
+              {/* 댓글 섹션 */}
+              <div className="border-t pt-6">
+                <h3 className="text-lg font-semibold mb-4">
+                  댓글 ({comments.length})
+                </h3>
+
+                {/* 댓글 작성 폼 */}
+                {user && (
+                  <div className="mb-6">
+                    <form onSubmit={handleCreateComment}>
+                      <div className="mb-3">
+                        <textarea
+                          value={newComment.content}
+                          onChange={(e) => setNewComment({ content: e.target.value })}
+                          placeholder="댓글을 입력하세요..."
+                          rows={3}
+                          className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-gray-500">
+                          {user.id}로 댓글 작성
+                        </div>
+                        <button
+                          type="submit"
+                          disabled={isCreatingComment || !newComment.content.trim()}
+                          className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {isCreatingComment ? '작성 중...' : '댓글 작성'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
+                {/* 에러 메시지 */}
+                {error && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+                    {error}
+                  </div>
+                )}
+
+                {/* 댓글 목록 */}
+                <div className="space-y-4">
+                  {comments.length === 0 ? (
+                    <div className="text-center text-gray-500 py-8">
+                      아직 댓글이 없습니다.
+                      {!user && (
+                        <p className="mt-2 text-sm">
+                          댓글을 작성하려면 로그인이 필요합니다.
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    comments.map((comment) => (
+                      <div key={comment.id} className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <span className="text-sm font-medium text-gray-900">
+                                {comment.author_id}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {new Date(comment.created_at).toLocaleString('ko-KR')}
+                              </span>
+                            </div>
+                            <p className="text-gray-700 whitespace-pre-wrap">
+                              {comment.content}
+                            </p>
+                          </div>
+                          {user && user.id === comment.author_id && (
+                            <button
+                              onClick={() => handleDeleteComment(comment.id)}
+                              className="text-red-600 hover:text-red-800 text-sm ml-4"
+                            >
+                              삭제
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="py-20 text-center text-gray-500">
+              게시글을 찾을 수 없습니다.
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
