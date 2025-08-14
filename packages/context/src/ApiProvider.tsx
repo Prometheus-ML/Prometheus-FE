@@ -51,15 +51,20 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
       onUnauthorized: () => {
         useAuthStore.getState().clearTokens();
       },
-      getAccessToken: () => useAuthStore.getState().accessToken ?? undefined,
+      getAccessToken: () => useAuthStore.getState().getAccessToken() ?? undefined,
       onRefreshFailed: () => {
         useAuthStore.getState().clearTokens();
       },
     });
 
+    const authApi = createAuthApi(client);
+
+    // AuthStore에 AuthApi 인스턴스 초기화
+    useAuthStore.getState().initApi(authApi);
+
     return {
       client,
-      auth: createAuthApi(client),
+      auth: authApi,
       user: createUserApi(client),
       admin: createAdminApi(client),
       coffeeChat: createCoffeeChatApi(client),

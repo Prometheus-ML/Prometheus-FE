@@ -1,54 +1,53 @@
 "use client";
 import { useEffect, useState } from 'react';
-import { authApi } from '@prometheus-fe/api';
 import { useAuthStore } from '@prometheus-fe/stores';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
 export default function GoogleCallbackPage() {
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const setTokens = useAuthStore((s) => s.setTokens);
-  const setUser = useAuthStore((s) => s.setUser);
+  const router = useRouter();
+  const [localError, setLocalError] = useState<string | null>(null);
+  const { googleCallback, isLoading, error, clearError } = useAuthStore();
 
   useEffect(() => {
-    const run = async () => {
+    const handleGoogleCallback = async () => {
+      // 기존 에러 클리어
+      clearError();
+      
       const params = new URLSearchParams(window.location.search);
       const code = params.get('code');
       const errorParam = params.get('error');
       
       if (errorParam) {
-        setError('Google 로그인이 취소되었거나 실패했습니다.');
-        setIsLoading(false);
+        setLocalError('Google 로그인이 취소되었거나 실패했습니다.');
         return;
       }
       
       if (!code) {
-        setError('인증 정보가 없습니다.');
-        setIsLoading(false);
+        setLocalError('인증 정보가 없습니다.');
         return;
       }
       
       try {
-        const tokens = await authApi.googleCallback({ code });
-        setTokens(tokens.access_token, tokens.refresh_token);
-        const user = await authApi.verify();
-        setUser(user);
-        window.location.replace('/');
-      } catch (e: any) {
-        console.error(e);
-        setIsLoading(false);
+        console.log('Google OAuth callback processing:', { code: code.substring(0, 10) + '...' });
         
-        // 403 Forbidden 에러 처리
-        if (e?.response?.status === 403) {
-          setError('프로메테우스 멤버로 등록되어 있지 않습니다. 활동 당시의 전화번호를 통해 인증해주세요.');
-        } else {
-          setError('로그인 처리 중 오류가 발생했습니다.');
+        // Store의 googleCallback 메서드 사용
+        const success = await googleCallback(code);
+        
+        if (success) {
+          // 성공 시 메인 페이지로 리디렉션
+          window.location.replace('/');
         }
+        // 실패 시 에러는 store의 error 상태에서 처리됨
+      } catch (err: any) {
+        console.error('Google OAuth error:', err);
+        setLocalError(err.message || 'Google 로그인 처리 중 오류가 발생했습니다.');
       }
     };
-    run();
-  }, [setTokens, setUser]);
+
+    handleGoogleCallback();
+  }, [googleCallback, clearError]);
 
   return (
     <div className="min-h-screen">
@@ -77,14 +76,14 @@ export default function GoogleCallbackPage() {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
                 <p className="text-white font-pretendard">로그인 처리 중...</p>
               </div>
-            ) : error ? (
+            ) : (error || localError) ? (
               <div>
                 <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <p className="text-white font-pretendard mb-6 leading-relaxed">{error}</p>
+                <p className="text-white font-pretendard mb-6 leading-relaxed">{error || localError}</p>
                 <Link 
                   href="/auth/login" 
                   className="inline-block bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"

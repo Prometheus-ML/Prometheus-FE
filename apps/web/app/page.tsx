@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@prometheus-fe/stores';
-import { userApi } from '@prometheus-fe/api';
+import { useApi } from '@prometheus-fe/context';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { MyProfileResponse } from '@prometheus-fe/types';
@@ -10,6 +10,7 @@ export default function Page() {
   const isAuthenticated = useAuthStore((s: any) => s.isAuthenticated);
   const [me, setMe] = useState<MyProfileResponse | null>(null);
   const [daysCount, setDaysCount] = useState(0);
+  const { user: userApi } = useApi();
 
   useEffect(() => {
     if (!isAuthenticated()) return;
@@ -26,8 +27,11 @@ export default function Page() {
           setDaysCount(diffDays);
         }
       })
-      .catch(() => setMe(null));
-  }, [isAuthenticated]);
+      .catch((error) => {
+        console.error('Failed to fetch user profile:', error);
+        setMe(null);
+      });
+  }, [isAuthenticated, userApi]);
 
   return (
     <div className="min-h-screen">
