@@ -12,6 +12,7 @@ import {
   createSponsorshipApi,
   createStorageApi,
   createCommunityApi,
+  createGroupApi,
   ApiClient,
   AuthApi,
   UserApi,
@@ -21,6 +22,7 @@ import {
   SponsorshipApi,
   StorageApi,
   CommunityApi,
+  GroupApi,
 } from '@prometheus-fe/api';
 import { useAuthStore } from '@prometheus-fe/stores';
 
@@ -35,6 +37,7 @@ type ApiInstances = {
   sponsorship: SponsorshipApi;
   storage: StorageApi;
   community: CommunityApi;
+  group: GroupApi;
 };
 
 const ApiContext = createContext<ApiInstances | null>(null);
@@ -73,6 +76,7 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
       sponsorship: createSponsorshipApi(client),
       storage: createStorageApi(client),
       community: createCommunityApi(client),
+      group: createGroupApi(client),
     } as const as ApiInstances;
   }, []);
 

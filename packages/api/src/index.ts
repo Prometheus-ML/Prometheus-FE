@@ -9,6 +9,7 @@ export * from './schedulesApi';
 export * from './sponsorshipApi';
 export * from './storageApi';
 export * from './communityApi';
+export * from './groupApi';
 
 // Factory helpers to align with app usage
 import { ApiClient } from './apiClient';
@@ -21,6 +22,7 @@ import { SchedulesApi } from './schedulesApi';
 import { SponsorshipApi } from './sponsorshipApi';
 import { StorageApi } from './storageApi';
 import { CommunityApi } from './communityApi';
+import { GroupApi } from './groupApi';
 
 export const createAuthApi = (client: ApiClient) => new AuthApi(client);
 export const createUserApi = (client: ApiClient) => new UserApi(client);
@@ -31,6 +33,7 @@ export const createSchedulesApi = (client: ApiClient) => new SchedulesApi(client
 export const createSponsorshipApi = (client: ApiClient) => new SponsorshipApi(client);
 export const createStorageApi = (client: ApiClient) => new StorageApi(client);
 export const createCommunityApi = (client: ApiClient) => new CommunityApi(client);
+export const createGroupApi = (client: ApiClient) => new GroupApi(client);
 
 // Default API instances for common usage
 import { createApiClient } from './apiInstances';
@@ -45,5 +48,6 @@ export const schedulesApi = createSchedulesApi(defaultClient);
 export const sponsorshipApi = createSponsorshipApi(defaultClient);
 export const storageApi = createStorageApi(defaultClient);
 export const communityApi = createCommunityApi(defaultClient);
+export const groupApi = createGroupApi(defaultClient);
 
 
