@@ -2,14 +2,14 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import Image from 'next/image';
 import { useAuthStore } from '@prometheus-fe/stores';
-import { adminApi } from '@prometheus-fe/api';
+import { useApi } from '@prometheus-fe/context';
 import { useImage } from '@prometheus-fe/hooks';
 import MemberModal from '../../../src/components/MemberModal';
 
 export default function AdminMemberPage() {
   const canAccessManager = useAuthStore((s) => s.canAccessManager);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  
+  const { admin } = useApi();
   const [list, setList] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -65,7 +65,7 @@ export default function AdminMemberPage() {
         if (v !== '' && v !== null && v !== undefined) params[k] = v;
       });
       
-      const res = await adminApi.getMembers(params);
+      const res = await admin.getMembers(params);
       const members = res.members ?? [];
       setList(members);
       setTotal(res.total ?? members.length ?? 0);
@@ -298,7 +298,7 @@ export default function AdminMemberPage() {
 
   const handleMemberDelete = async (member: any) => {
     try {
-      await adminApi.deleteMember(member.id);
+      await admin.deleteMember(member.id);
       await loadMembers();
       handleModalClose();
     } catch (error) {

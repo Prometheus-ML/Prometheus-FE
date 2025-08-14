@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { storageApi } from '@prometheus-fe/api';
+import { useApi } from '@prometheus-fe/context';
 import type { ImageUploadResponse, ImageCategory } from '@prometheus-fe/types';
 
 interface UseImageOptions {
@@ -10,6 +10,7 @@ interface UseImageOptions {
 }
 
 export function useImage(options: UseImageOptions = {}) {
+  const { storage } = useApi();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -40,7 +41,7 @@ export function useImage(options: UseImageOptions = {}) {
       setUploadError(null);
       options.onUploadStart?.();
 
-      const response = await storageApi.upload(file, category);
+      const response = await storage.upload(file, category);
       const optimizedUrl = getOptimizedImageUrl(response);
       
       options.onUploadSuccess?.(response);

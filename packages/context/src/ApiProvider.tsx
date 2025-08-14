@@ -2,10 +2,11 @@
 
 import React, { createContext, useContext, useMemo } from 'react';
 import {
+  ApiClient,
   createApiClient,
-  createAdminApi,
   createAuthApi,
   createUserApi,
+  createAdminApi,
   createCoffeeChatApi,
   createProjectApi,
   createSchedulesApi,
@@ -13,9 +14,9 @@ import {
   createStorageApi,
   createCommunityApi,
   createGroupApi,
-  ApiClient,
   AuthApi,
   UserApi,
+  AdminApi,
   CoffeeChatApi,
   ProjectApi,
   SchedulesApi,
@@ -30,7 +31,7 @@ type ApiInstances = {
   client: ApiClient;
   auth: AuthApi;
   user: UserApi;
-  admin: ReturnType<typeof createAdminApi>;
+  admin: AdminApi;
   coffeeChat: CoffeeChatApi;
   project: ProjectApi;
   schedules: SchedulesApi;
