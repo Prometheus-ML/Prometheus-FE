@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useGroup } from '@prometheus-fe/hooks';
-import { GroupCreateRequest } from '@prometheus-fe/types';
 import { useAuthStore } from '@prometheus-fe/stores';
 
 const CATEGORIES = [
@@ -38,7 +37,7 @@ export default function GroupPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
   const [showGroupDetail, setShowGroupDetail] = useState(false);
-  const [newGroup, setNewGroup] = useState<GroupCreateRequest>({
+  const [newGroup, setNewGroup] = useState<any>({
     name: '',
     description: '',
     category: 'STUDY',
@@ -228,7 +227,7 @@ export default function GroupPage() {
                 <input
                   type="text"
                   value={newGroup.name}
-                  onChange={(e) => setNewGroup(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) => setNewGroup((prev: any) => ({ ...prev, name: e.target.value }))}
                   className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="그룹 이름을 입력하세요"
                   maxLength={200}
@@ -241,7 +240,7 @@ export default function GroupPage() {
                 </label>
                 <select
                   value={newGroup.category}
-                  onChange={(e) => setNewGroup(prev => ({ ...prev, category: e.target.value as 'STUDY' | 'CASUAL' }))}
+                  onChange={(e) => setNewGroup((prev: any) => ({ ...prev, category: e.target.value as 'STUDY' | 'CASUAL' }))}
                   className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 >
@@ -259,7 +258,7 @@ export default function GroupPage() {
               </label>
               <textarea
                 value={newGroup.description}
-                onChange={(e) => setNewGroup(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) => setNewGroup((prev: any) => ({ ...prev, description: e.target.value }))}
                 rows={3}
                 className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="그룹에 대한 설명을 입력하세요"
@@ -272,7 +271,7 @@ export default function GroupPage() {
               <input
                 type="number"
                 value={newGroup.max_members || ''}
-                onChange={(e) => setNewGroup(prev => ({ 
+                onChange={(e) => setNewGroup((prev: any) => ({ 
                   ...prev, 
                   max_members: e.target.value ? parseInt(e.target.value) : undefined 
                 }))}

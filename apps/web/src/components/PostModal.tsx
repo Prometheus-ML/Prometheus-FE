@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { PostResponse, CommentResponse, CommentCreateRequest } from '@prometheus-fe/types';
 import { useCommunity } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
 
@@ -36,7 +35,7 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
   } = useCommunity();
 
   const { user } = useAuthStore();
-  const [newComment, setNewComment] = useState<CommentCreateRequest>({ content: '' });
+  const [newComment, setNewComment] = useState<any>({ content: '' });
   const [error, setError] = useState('');
 
   // 모달이 열릴 때 게시글 데이터 로드

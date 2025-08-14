@@ -1,12 +1,12 @@
 import { useApi } from '@prometheus-fe/context';
-import { PostResponse, PostCreateRequest, CommentResponse, CommentCreateRequest } from '@prometheus-fe/types';
+import { Post, Comment } from '@prometheus-fe/types';
 import { useState, useCallback } from 'react';
 
 export function useCommunity() {
   const { community } = useApi();
-  const [posts, setPosts] = useState<PostResponse[]>([]);
-  const [selectedPost, setSelectedPost] = useState<PostResponse | null>(null);
-  const [comments, setComments] = useState<CommentResponse[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [totalPosts, setTotalPosts] = useState(0);
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
   const [isLoadingPost, setIsLoadingPost] = useState(false);
@@ -15,7 +15,7 @@ export function useCommunity() {
   const [isCreatingComment, setIsCreatingComment] = useState(false);
 
   // 게시글 목록 조회
-  const fetchPosts = useCallback(async (params?: { page?: number; size?: number; category?: string }) => {
+  const fetchPosts = useCallback(async (params?: any) => {
     if (!community) {
       console.warn('community is not available. Ensure useCommunity is used within ApiProvider.');
       setIsLoadingPosts(false);
@@ -54,7 +54,7 @@ export function useCommunity() {
   }, [community]);
 
   // 게시글 생성
-  const createPost = useCallback(async (postData: PostCreateRequest) => {
+  const createPost = useCallback(async (postData: any) => {
     if (!community) {
       console.warn('community is not available. Ensure useCommunity is used within ApiProvider.');
       return null;
@@ -63,7 +63,7 @@ export function useCommunity() {
       setIsCreatingPost(true);
       const newPost = await community.createPost(postData);
       // 새 게시글을 목록 맨 앞에 추가
-      setPosts(prev => [newPost, ...prev]);
+      setPosts(prev => [newPost.post, ...prev]);
       setTotalPosts(prev => prev + 1);
       return newPost;
     } catch (error) {
@@ -96,7 +96,7 @@ export function useCommunity() {
   }, [community, selectedPost]);
 
   // 댓글 생성
-  const createComment = useCallback(async (postId: number | string, commentData: CommentCreateRequest) => {
+  const createComment = useCallback(async (postId: number | string, commentData: any) => {
     if (!community) {
       console.warn('community is not available. Ensure useCommunity is used within ApiProvider.');
       return null;
@@ -105,7 +105,7 @@ export function useCommunity() {
       setIsCreatingComment(true);
       const newComment = await community.createComment(postId, commentData);
       // 새 댓글을 목록에 추가
-      setComments(prev => [...prev, newComment]);
+      setComments(prev => [...prev, newComment.comment]);
       return newComment;
     } catch (error) {
       console.error('댓글 생성 실패:', error);
@@ -150,6 +150,17 @@ export function useCommunity() {
     setComments([]);
   }, []);
 
+  // 게시글 선택 핸들러
+  const handlePostSelect = (post: Post) => {
+    setSelectedPost(post);
+  };
+
+  // 게시글 선택 해제 핸들러
+  const handlePostDeselect = () => {
+    setSelectedPost(null);
+    setComments([]);
+  };
+
   return {
     // 상태
     posts,
@@ -162,7 +173,7 @@ export function useCommunity() {
     isCreatingPost,
     isCreatingComment,
     
-    // 액션
+    // API 함수들
     fetchPosts,
     fetchPost,
     createPost,
@@ -170,6 +181,10 @@ export function useCommunity() {
     createComment,
     deleteComment,
     filterPostsByCategory,
+    
+    // 핸들러들
+    handlePostSelect,
+    handlePostDeselect,
     
     // 유틸리티
     clearPosts,

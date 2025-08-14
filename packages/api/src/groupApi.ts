@@ -35,14 +35,14 @@ export class GroupApi {
     }
   }
 
-  async listGroups(params?: GetGroupsRequest): Promise<GetGroupsResponse> {
+  async listGroups(params?: GetGroupsRequest): Promise<Group[] | GetGroupsResponse> {
     try {
       const sp = new URLSearchParams();
       if (params?.page) sp.set('page', String(params.page));
       if (params?.size) sp.set('size', String(params.size));
       
       const query = sp.toString() ? `?${sp.toString()}` : '';
-      const response = await this.api.get<GetGroupsResponse>(`${this.base}/${query}`);
+      const response = await this.api.get<Group[] | GetGroupsResponse>(`${this.base}/${query}`);
       return response;
     } catch (error: any) {
       console.error('Error fetching groups:', error);

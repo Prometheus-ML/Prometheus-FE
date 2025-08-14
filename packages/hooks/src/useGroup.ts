@@ -1,20 +1,18 @@
 import { useApi } from '@prometheus-fe/context';
 import { 
-  GroupResponse, 
-  GroupCreateRequest, 
-  GroupMemberResponse, 
-  GroupJoinRequestResponse,
-  GroupNoteCreateRequest,
-  GroupNoteCreateResponse 
+  Group,
+  GroupMember,
+  GroupJoinRequest,
+  GroupNote,
 } from '@prometheus-fe/types';
 import { useState, useCallback } from 'react';
 
 export function useGroup() {
   const { group } = useApi();
-  const [groups, setGroups] = useState<GroupResponse[]>([]);
-  const [selectedGroup, setSelectedGroup] = useState<GroupResponse | null>(null);
-  const [members, setMembers] = useState<GroupMemberResponse[]>([]);
-  const [joinRequests, setJoinRequests] = useState<GroupJoinRequestResponse[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  const [members, setMembers] = useState<GroupMember[]>([]);
+  const [joinRequests, setJoinRequests] = useState<GroupJoinRequest[]>([]);
   const [isLoadingGroups, setIsLoadingGroups] = useState(false);
   const [isLoadingGroup, setIsLoadingGroup] = useState(false);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
@@ -23,7 +21,7 @@ export function useGroup() {
   const [isCreatingNote, setIsCreatingNote] = useState(false);
 
   // 그룹 목록 조회
-  const fetchGroups = useCallback(async (params?: { page?: number; size?: number }) => {
+  const fetchGroups = useCallback(async (params?: any) => {
     if (!group) {
       console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
       setIsLoadingGroups(false);
@@ -32,7 +30,13 @@ export function useGroup() {
     try {
       setIsLoadingGroups(true);
       const data = await group.listGroups(params);
-      setGroups(data || []);
+      // 백엔드에서 배열을 직접 반환하는 경우 처리
+      if (Array.isArray(data)) {
+        setGroups(data);
+      } else {
+        setGroups(data.items || []);
+      }
+      console.log('groups data:', data);
     } catch (error) {
       console.error('그룹 목록 조회 실패:', error);
       setGroups([]);
@@ -60,7 +64,7 @@ export function useGroup() {
   }, [group]);
 
   // 그룹 생성
-  const createGroup = useCallback(async (groupData: GroupCreateRequest) => {
+  const createGroup = useCallback(async (groupData: any) => {
     if (!group) {
       console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
       return null;
@@ -70,7 +74,6 @@ export function useGroup() {
       const newGroup = await group.createGroup(groupData);
       // 새 그룹을 목록에 추가하기 위해 목록을 다시 불러옴
       await fetchGroups();
-      return newGroup;
     } catch (error) {
       console.error('그룹 생성 실패:', error);
       throw error;
@@ -87,7 +90,6 @@ export function useGroup() {
     }
     try {
       const result = await group.requestJoinGroup(groupId);
-      return result;
     } catch (error) {
       console.error(`그룹 ${groupId} 가입 요청 실패:`, error);
       throw error;
@@ -166,7 +168,7 @@ export function useGroup() {
   }, [group, fetchJoinRequests]);
 
   // 그룹 노트 생성
-  const createGroupNote = useCallback(async (groupId: number | string, noteData: GroupNoteCreateRequest) => {
+  const createGroupNote = useCallback(async (groupId: number | string, noteData: any) => {
     if (!group) {
       console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
       return null;
@@ -174,7 +176,6 @@ export function useGroup() {
     try {
       setIsCreatingNote(true);
       const newNote = await group.createGroupNote(groupId, noteData);
-      return newNote;
     } catch (error) {
       console.error('그룹 노트 생성 실패:', error);
       throw error;
@@ -210,6 +211,18 @@ export function useGroup() {
     setJoinRequests([]);
   }, []);
 
+  // 그룹 선택 핸들러
+  const handleGroupSelect = (selectedGroup: Group) => {
+    setSelectedGroup(selectedGroup);
+  };
+
+  // 그룹 선택 해제 핸들러
+  const handleGroupDeselect = () => {
+    setSelectedGroup(null);
+    setMembers([]);
+    setJoinRequests([]);
+  };
+
   return {
     // 상태
     groups,
@@ -223,7 +236,7 @@ export function useGroup() {
     isCreatingGroup,
     isCreatingNote,
     
-    // 액션
+    // API 함수들
     fetchGroups,
     fetchGroup,
     createGroup,
@@ -234,6 +247,10 @@ export function useGroup() {
     rejectMember,
     createGroupNote,
     filterGroupsByCategory,
+    
+    // 핸들러들
+    handleGroupSelect,
+    handleGroupDeselect,
     
     // 유틸리티
     clearGroups,

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useProject } from '@prometheus-fe/hooks';
-import { Project } from '@prometheus-fe/types';
 import { useAuthStore } from '@prometheus-fe/stores';
 
 export default function ProjectPage() {

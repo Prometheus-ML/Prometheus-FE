@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useCommunity } from '@prometheus-fe/hooks';
-import { PostCreateRequest } from '@prometheus-fe/types';
 import { useAuthStore } from '@prometheus-fe/stores';
 import PostModal from '../../src/components/PostModal';
 
@@ -34,7 +33,7 @@ export default function CommunityPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newPost, setNewPost] = useState<PostCreateRequest>({
+  const [newPost, setNewPost] = useState<any>({
     category: 'free',
     title: '',
     content: '',
@@ -177,7 +176,7 @@ export default function CommunityPage() {
               </label>
               <select
                 value={newPost.category}
-                onChange={(e) => setNewPost(prev => ({ ...prev, category: e.target.value as any }))}
+                onChange={(e) => setNewPost((prev: any) => ({ ...prev, category: e.target.value as any }))}
                 className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {CATEGORIES.map(category => (
@@ -194,7 +193,7 @@ export default function CommunityPage() {
               <input
                 type="text"
                 value={newPost.title}
-                onChange={(e) => setNewPost(prev => ({ ...prev, title: e.target.value }))}
+                onChange={(e) => setNewPost((prev: any) => ({ ...prev, title: e.target.value }))}
                 className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="게시글 제목을 입력하세요"
                 maxLength={200}
@@ -206,7 +205,7 @@ export default function CommunityPage() {
               </label>
               <textarea
                 value={newPost.content}
-                onChange={(e) => setNewPost(prev => ({ ...prev, content: e.target.value }))}
+                onChange={(e) => setNewPost((prev: any) => ({ ...prev, content: e.target.value }))}
                 rows={6}
                 className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="게시글 내용을 입력하세요"
