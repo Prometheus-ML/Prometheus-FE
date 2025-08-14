@@ -5,8 +5,8 @@
   "type": "module",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc --emitDeclarationOnly --project tsconfig.json",
-    "dev": "tsc --emitDeclarationOnly --project tsconfig.json --watch",
+    "build": "tsup src/index.ts --format esm --dts --dts-only --minify",
+    "dev": "tsup src/index.ts --format esm --dts --dts-only --minify --watch",
     "clean": "rm -rf dist .tsbuildinfo"
   },
   "devDependencies": {

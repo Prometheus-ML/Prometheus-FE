@@ -21,6 +21,6 @@ export interface ImageInfoResponse {
   thumbnailLink?: string | null;
 }
 
-export type ImageCategory = 'member' | 'project' | 'post';
+export type ImageCategory = 'member' | 'project' | 'post' | 'sponsor' | 'group';
 
 

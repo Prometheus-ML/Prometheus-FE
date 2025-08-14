@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import Link from 'next/link';
 
 interface Project {
@@ -410,10 +411,12 @@ export default function ProjectDetailPage() {
               )}
               {project.panel_url && (
                 <div className="mt-4">
-                  <img
+                  <Image
                     src={project.panel_url}
                     alt="panel"
                     className="rounded border max-w-full h-auto"
+                    width={1000}
+                    height={1000}
                   />
                 </div>
               )}

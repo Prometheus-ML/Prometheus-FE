@@ -49,6 +49,7 @@ export class AdminApi {
     this.api = apiClient;
   }
 
+  // 기존 메서드 유지
   getPendingApprovals(params?: { page?: number; size?: number }) {
     const searchParams = new URLSearchParams();
     if (params?.page) searchParams.set('page', String(params.page));

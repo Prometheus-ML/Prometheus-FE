@@ -84,6 +84,9 @@ importers:
       '@prometheus-fe/context':
         specifier: workspace:*
         version: link:../../packages/context
+      '@prometheus-fe/hooks':
+        specifier: workspace:*
+        version: link:../../packages/hooks
       '@prometheus-fe/stores':
         specifier: workspace:*
         version: link:../../packages/stores

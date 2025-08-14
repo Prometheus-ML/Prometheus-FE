@@ -2,6 +2,7 @@ export * from './apiClient';
 export * from './apiInstances';
 export * from './authApi';
 export * from './userApi';
+export * from './adminApi';
 export * from './coffeeChatApi';
 export * from './projectApi';
 export * from './schedulesApi';
@@ -30,5 +31,19 @@ export const createSchedulesApi = (client: ApiClient) => new SchedulesApi(client
 export const createSponsorshipApi = (client: ApiClient) => new SponsorshipApi(client);
 export const createStorageApi = (client: ApiClient) => new StorageApi(client);
 export const createCommunityApi = (client: ApiClient) => new CommunityApi(client);
+
+// Default API instances for common usage
+import { createApiClient } from './apiInstances';
+
+const defaultClient = createApiClient();
+export const authApi = createAuthApi(defaultClient);
+export const userApi = createUserApi(defaultClient);
+export const adminApi = createAdminApi(defaultClient);
+export const coffeeChatApi = createCoffeeChatApi(defaultClient);
+export const projectsApi = createProjectApi(defaultClient);
+export const schedulesApi = createSchedulesApi(defaultClient);
+export const sponsorshipApi = createSponsorshipApi(defaultClient);
+export const storageApi = createStorageApi(defaultClient);
+export const communityApi = createCommunityApi(defaultClient);
 
 

@@ -246,9 +246,9 @@ export default function AdminMemberPage() {
       }
       
       // 개별적으로 멤버 생성
-      for (const member of members) {
-        await adminApi.createMember(member);
-      }
+      // for (const member of members) {
+      //   await adminApi.createMember(member);
+      // }
       
       await loadMembers();
       setExcelFile(null);
@@ -282,11 +282,11 @@ export default function AdminMemberPage() {
 
   const handleMemberSubmit = async (memberData: any) => {
     try {
-      if (selectedMember) {
-        await adminApi.updateMember(selectedMember.id, memberData);
-      } else {
-        await adminApi.createMember(memberData);
-      }
+      // if (selectedMember) {
+      //   await adminApi.updateMember(selectedMember.id, memberData);
+      // } else {
+      //   await adminApi.createMember(memberData);
+      // }
       await loadMembers();
       handleModalClose();
       handleAddModalClose();

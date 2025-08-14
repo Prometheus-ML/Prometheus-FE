@@ -2,6 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom Fonts */
+@font-face {
+  font-family: 'Pretendard';
+  src: url('/fonts/pretendard.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'KIMM-Bold';
+  src: url('/fonts/kimm_bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'KIMM-Light';
+  src: url('/fonts/kimm_light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #111827;
@@ -32,6 +57,16 @@ body {
   line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+@layer components {
+  .prometheus-bg {
+    @apply fixed inset-0 -z-10;
+    background: #7A150E;
+    background: linear-gradient(115deg, rgba(122, 21, 14, 1) 0%, rgba(0, 0, 0, 1) 50%, rgba(122, 21, 14, 1) 100%);
+    width: 100%;
+    height: 100%;
+  }
 }
 
 

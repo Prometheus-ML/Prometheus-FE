@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, ChangeEvent } from 'react';
+import Image from 'next/image';
 
 interface ProjectFormData {
   title: string;
@@ -245,17 +246,19 @@ export default function ProjectForm({
           <input
             type="file"
             accept="image/*"
-            onChange={handlePanelFileChange}
+            onChange={handlePanelFileChange}  
             className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
           {uploading && <span className="text-sm text-gray-400">업로드 중...</span>}
         </div>
         {formData.panel_url && (
           <div className="mt-2">
-            <img
+            <Image
               src={formData.panel_url}
               alt="panel"
-              className="max-h-48 rounded border object-cover"
+              className="rounded border object-cover"
+              width={1000}
+              height={1000}
             />
           </div>
         )}

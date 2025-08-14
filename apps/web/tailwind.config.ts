@@ -12,6 +12,11 @@ export default {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
       },
+      fontFamily: {
+        'pretendard': ['Pretendard', 'sans-serif'],
+        'kimm-bold': ['KIMM-Bold', 'sans-serif'],
+        'kimm-light': ['KIMM-Light', 'sans-serif'],
+      },
     },
   },
   plugins: [],

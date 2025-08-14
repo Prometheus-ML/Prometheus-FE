@@ -1,13 +1,15 @@
+// 커피챗 요청 생성
 export interface CoffeeChatRequestCreate {
   recipient_id: string;
   message?: string | null;
 }
 
+// 커피챗 요청 응답
 export interface CoffeeChatRequestResponse {
   id: number;
   requester_id: string;
   recipient_id: string;
-  status: string; // pending, accepted, rejected, cancelled
+  status: 'pending' | 'accepted' | 'rejected' | 'cancelled';
   message?: string | null;
   response_message?: string | null;
   requested_at: string; // ISO
@@ -22,6 +24,7 @@ export interface CoffeeChatRequestResponse {
   recipient_major?: string | null;
 }
 
+// 커피챗 요청 목록 응답
 export interface CoffeeChatRequestListResponse {
   requests: CoffeeChatRequestResponse[];
   total: number;
@@ -29,11 +32,13 @@ export interface CoffeeChatRequestListResponse {
   size: number;
 }
 
+// 커피챗 요청 응답
 export interface CoffeeChatResponseRequest {
   status: 'accepted' | 'rejected';
   response_message?: string | null;
 }
 
+// 커피챗 연락처 정보 응답
 export interface CoffeeChatContactInfoResponse {
   request_id: number;
   requester_id: string;
@@ -45,6 +50,7 @@ export interface CoffeeChatContactInfoResponse {
   recipient_instagram_id?: string | null;
 }
 
+// 커피챗 가능 사용자 응답
 export interface CoffeeChatAvailableUserResponse {
   id: string;
   name: string;
@@ -56,6 +62,7 @@ export interface CoffeeChatAvailableUserResponse {
   profile_image_url?: string | null;
 }
 
+// 커피챗 가능 사용자 목록 응답
 export interface CoffeeChatAvailableUserListResponse {
   users: CoffeeChatAvailableUserResponse[];
   total: number;
