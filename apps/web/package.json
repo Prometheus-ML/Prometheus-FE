@@ -16,6 +16,7 @@
     "react-dom": "^19.0.0",
     "@prometheus-fe/api": "workspace:*",
     "@prometheus-fe/context": "workspace:*",
+    "@prometheus-fe/hooks": "workspace:*",
     "@prometheus-fe/stores": "workspace:*",
     "zustand": "^5.0.0"
   },

@@ -123,25 +123,43 @@ export default function ProjectForm({
   };
 
   const handleSubmit = () => {
-    if (!formData.title || !formData.start_date) {
-      alert('제목과 시작일은 필수입니다.');
+    if (!formData.title || !formData.title.trim()) {
+      alert('프로젝트 제목을 입력해주세요.');
       return;
     }
     
+    if (!formData.start_date) {
+      alert('프로젝트 시작일을 선택해주세요.');
+      return;
+    }
+    
+    // Convert date strings to ISO 8601 format
+    const convertToISO = (dateString: string) => {
+      if (!dateString) return '';
+      // HTML date input returns YYYY-MM-DD, convert to ISO format
+      return new Date(dateString + 'T00:00:00.000Z').toISOString();
+    };
+    
+    // Clean up empty strings and prepare payload
     const payload: ProjectFormData = {
-      title: formData.title,
-      description: formData.description || '',
+      title: formData.title.trim(),
+      description: formData.description.trim() || '',
       keywords: formData.keywords.length ? formData.keywords : [],
-      start_date: formData.start_date,
-      end_date: formData.end_date || '',
-      github_url: formData.github_url || '',
-      demo_url: formData.demo_url || '',
-      panel_url: formData.panel_url || '',
+      start_date: convertToISO(formData.start_date),
+      end_date: formData.end_date ? convertToISO(formData.end_date) : '',
+      github_url: formData.github_url.trim() || '',
+      demo_url: formData.demo_url.trim() || '',
+      panel_url: formData.panel_url.trim() || '',
       gen: typeof formData.gen === 'number' ? formData.gen : undefined,
       status: formData.status,
       ...(showStatus ? { status: formData.status } : {})
     };
     
+    console.log('Submitting project form data:', payload);
+    console.log('Converted dates:', {
+      start_date: payload.start_date,
+      end_date: payload.end_date
+    });
     onSubmit(payload);
   };
 

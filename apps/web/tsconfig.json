@@ -8,7 +8,8 @@
       "@prometheus-fe/types": ["../../packages/types/dist"],
       "@prometheus-fe/stores": ["../../packages/stores/dist"],
       "@prometheus-fe/api": ["../../packages/api/dist"],
-      "@prometheus-fe/context": ["../../packages/context/dist"]
+      "@prometheus-fe/context": ["../../packages/context/dist"],
+      "@prometheus-fe/hooks": ["../../packages/hooks/dist"]
     },
     "plugins": [
       {
@@ -30,6 +31,7 @@
     { "path": "../../packages/types" },
     { "path": "../../packages/api" },
     { "path": "../../packages/stores" },
-    { "path": "../../packages/context" }
+    { "path": "../../packages/context" },
+    { "path": "../../packages/hooks" }
   ]
 }

@@ -2,65 +2,72 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  gen: number;
-  status: 'active' | 'completed' | 'paused';
-  start_date: string;
-  end_date?: string;
-}
+import { useProject } from '@prometheus-fe/hooks';
+import { Project } from '@prometheus-fe/types';
+import { useAuthStore } from '@prometheus-fe/stores';
 
 export default function ProjectPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const { projects, isLoadingProjects, fetchProjects } = useProject();
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
+  const [isLocalLoading, setIsLocalLoading] = useState(false);  // 로컬 로딩 상태 추가
+  const { canAccessManager } = useAuthStore();
   
-  // TODO: Replace with actual auth logic
-  const canCreate = true; // Manager 이상만 생성 가능
+  // Manager 이상만 생성 가능
+  const canCreate = canAccessManager();
 
   const loadProjects = async () => {
+    // 이미 로딩 중이면 중복 요청 방지
+    if (isLocalLoading || isLoadingProjects) {
+      console.log('ProjectPage: 이미 로딩 중이므로 요청 건너뜀');
+      return;
+    }
+
     try {
-      setIsLoading(true);
+      setIsLocalLoading(true);
       setError('');
-      // TODO: Replace with actual API call
-      // const res = await projectApi.getProjects({ status });
-      // setProjects(res?.projects || res?.items || []);
+      console.log('ProjectPage: 프로젝트 목록 로드 시작');
       
-      // Mock data for UI
-      setProjects([
-        {
-          id: '1',
-          title: '샘플 프로젝트 1',
-          description: '이것은 샘플 프로젝트입니다. 프로젝트에 대한 상세한 설명이 여기에 들어갑니다.',
-          gen: 1,
-          status: 'active',
-          start_date: '2024-01-01'
-        },
-        {
-          id: '2',
-          title: '샘플 프로젝트 2',
-          description: '두 번째 샘플 프로젝트입니다. 완료된 프로젝트의 예시입니다.',
-          gen: 1,
-          status: 'completed',
-          start_date: '2024-01-15',
-          end_date: '2024-03-15'
+      // 상태 필터 적용 (백엔드 제한: size <= 100)
+      const params: any = { size: 99 };  // 100 이하로 조정
+      if (status) {
+        params.status = status;
+      }
+      
+      await fetchProjects(params);
+      console.log('ProjectPage: 프로젝트 목록 로드 완료');
+    } catch (err) {
+      console.error('ProjectPage: 프로젝트 목록 로드 실패:', err);
+      if (err instanceof Error) {
+        if (err.message.includes('500')) {
+          setError('서버 내부 오류가 발생했습니다.');
+        } else if (err.message.includes('403')) {
+          setError('권한이 없습니다.');
+        } else if (err.message.includes('401')) {
+          setError('인증이 필요합니다.');
+        } else {
+          setError(`프로젝트 목록을 불러오지 못했습니다: ${err.message}`);
         }
-      ]);
-    } catch (e) {
-      console.error(e);
-      setError('프로젝트 목록을 불러오지 못했습니다.');
+      } else {
+        setError('프로젝트 목록을 불러오지 못했습니다.');
+      }
     } finally {
-      setIsLoading(false);
+      setIsLocalLoading(false);
     }
   };
 
   useEffect(() => {
+    console.log('ProjectPage: 초기 로드 useEffect 실행');
     loadProjects();
-  }, []);
+  }, []); // 빈 의존성 배열로 한 번만 실행
+
+  // 상태 변경 시 프로젝트 목록 다시 로드 (중복 방지)
+  useEffect(() => {
+    if (status !== '' && !isLocalLoading && !isLoadingProjects) {
+      console.log('ProjectPage: 상태 변경으로 인한 재로드');
+      loadProjects();
+    }
+  }, [status]); // status만 의존성으로 설정
 
   const getStatusText = (status: string) => {
     switch (status) {
@@ -115,28 +122,38 @@ export default function ProjectPage() {
         </button>
       </div>
 
-      {isLoading && (
+      {isLocalLoading || isLoadingProjects ? (
         <div className="py-20 text-center text-gray-500">불러오는 중...</div>
-      )}
+      ) : null}
       
-      {error && !isLoading && (
+      {error && !isLocalLoading && !isLoadingProjects && (
         <div className="py-8 text-center text-red-600">{error}</div>
       )}
       
-      {!isLoading && !error && (
+      {!isLocalLoading && !isLoadingProjects && !error && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {projects.map((project) => (
             <div key={project.id} className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-900">{project.title}</h3>
-                  <p className="mt-1 text-sm text-gray-600 line-clamp-2">{project.description}</p>
+                  <p className="mt-1 text-sm text-gray-600 line-clamp-2">{project.description || '설명이 없습니다.'}</p>
                   <div className="mt-2 text-xs text-gray-500 space-x-2 flex items-center">
                     <span>{project.gen}기</span>
                     <span className={`px-2 py-0.5 rounded-full border text-xs ${getStatusColor(project.status)}`}>
                       {getStatusText(project.status)}
                     </span>
+                    {project.keywords && project.keywords.length > 0 && (
+                      <span className="text-xs text-gray-400">
+                        {project.keywords.length}개 키워드
+                      </span>
+                    )}
                   </div>
+                  {project.start_date && (
+                    <div className="mt-1 text-xs text-gray-400">
+                      시작일: {new Date(project.start_date).toLocaleDateString('ko-KR')}
+                    </div>
+                  )}
                 </div>
                 <Link 
                   href={`/project/${project.id}`} 
@@ -150,7 +167,7 @@ export default function ProjectPage() {
         </div>
       )}
 
-      {!isLoading && !error && projects.length === 0 && (
+      {!isLocalLoading && !isLoadingProjects && !error && projects.length === 0 && (
         <div className="py-20 text-center text-gray-500">
           프로젝트가 없습니다.
         </div>

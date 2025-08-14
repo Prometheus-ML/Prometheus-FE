@@ -103,8 +103,8 @@ export interface BulkDeleteMembersDto extends BaseResponse {
 export interface SystemStatsResponse {
   total_members: number;
   active_members: number;
-  total_projects: number;
-  active_projects: number;
+  total_project: number;
+  active_project: number;
   total_schedules: number;
   upcoming_schedules: number;
   total_coffee_chat_requests: number;
@@ -118,7 +118,7 @@ export interface SystemStatsResponse {
   };
   recent_activity: {
     new_members_last_30_days: number;
-    new_projects_last_30_days: number;
+    new_project_last_30_days: number;
     coffee_chats_last_30_days: number;
   };
 }
@@ -223,7 +223,7 @@ export interface RestoreBackupRequest {
   password?: string;
   restore_options: {
     restore_members: boolean;
-    restore_projects: boolean;
+    restore_project: boolean;
     restore_schedules: boolean;
     restore_images: boolean;
     restore_settings: boolean;

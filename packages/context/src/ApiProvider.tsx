@@ -7,7 +7,7 @@ import {
   createAuthApi,
   createUserApi,
   createCoffeeChatApi,
-  createProjectsApi,
+  createProjectApi,
   createSchedulesApi,
   createSponsorshipApi,
   createStorageApi,
@@ -16,7 +16,7 @@ import {
   AuthApi,
   UserApi,
   CoffeeChatApi,
-  ProjectsApi,
+  ProjectApi,
   SchedulesApi,
   SponsorshipApi,
   StorageApi,
@@ -30,7 +30,7 @@ type ApiInstances = {
   user: UserApi;
   admin: ReturnType<typeof createAdminApi>;
   coffeeChat: CoffeeChatApi;
-  projects: ProjectsApi;
+  project: ProjectApi;
   schedules: SchedulesApi;
   sponsorship: SponsorshipApi;
   storage: StorageApi;
@@ -63,7 +63,7 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
       user: createUserApi(client),
       admin: createAdminApi(client),
       coffeeChat: createCoffeeChatApi(client),
-      projects: createProjectsApi(client),
+      project: createProjectApi(client),
       schedules: createSchedulesApi(client),
       sponsorship: createSponsorshipApi(client),
       storage: createStorageApi(client),

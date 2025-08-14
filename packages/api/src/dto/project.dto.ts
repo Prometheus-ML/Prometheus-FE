@@ -29,7 +29,7 @@ export interface CreateProjectDto extends BaseResponse {
 }
 
 // 프로젝트 목록 조회
-export interface GetProjectsRequest {
+export interface GetprojectRequest {
   page?: number;
   size?: number;
   gen?: number;
@@ -40,7 +40,7 @@ export interface GetProjectsRequest {
   sort_order?: 'asc' | 'desc';
 }
 
-export interface GetProjectsDto {
+export interface GetprojectDto {
   projects: Project[];
   total: number;
   page: number;
@@ -109,8 +109,8 @@ export interface UpdateProjectMemberDto extends BaseResponse {
 // 프로젝트 멤버 제거
 export interface RemoveProjectMemberDto extends BaseResponse {}
 
-// 프로젝트와 멤버 함께 조회
-export interface GetProjectWithMembersDto extends ProjectWithMembers {}
+// GetProjectWithMembersDto는 백엔드에서 지원하지 않아 제거됨
+// 필요시 GetProjectDto와 GetProjectMembersDto를 따로 호출하여 조합 사용
 
 // 멤버의 프로젝트 히스토리
 export interface GetMemberProjectHistoryRequest {
@@ -122,38 +122,7 @@ export interface GetMemberProjectHistoryRequest {
 
 export interface GetMemberProjectHistoryDto extends MemberProjectHistory {}
 
-// 프로젝트 통계
-export interface ProjectStatsResponse {
-  total_projects: number;
-  active_projects: number;
-  completed_projects: number;
-  projects_by_gen: Record<number, number>;
-  projects_by_status: Record<string, number>;
-  popular_keywords: Array<{ keyword: string; count: number }>;
-  completion_rate: number;
-}
+// 프로젝트 통계 관련 인터페이스들은 백엔드에서 지원하지 않아 제거됨
 
-export interface GetProjectStatsDto extends ProjectStatsResponse {}
-
-// 프로젝트 검색
-export interface SearchProjectsRequest {
-  query: string;
-  page?: number;
-  size?: number;
-  filters?: {
-    gen?: number[];
-    status?: string[];
-    keywords?: string[];
-    date_range?: {
-      start?: string;
-      end?: string;
-    };
-  };
-}
-
-export interface SearchProjectsDto {
-  projects: Project[];
-  total: number;
-  page: number;
-  size: number;
-}
+// 프로젝트 검색 관련 인터페이스들은 백엔드에서 지원하지 않아 제거됨
+// 필요시 GetprojectRequest의 search 파라미터 사용 (단, 백엔드에서 실제 검색 기능 구현 필요)

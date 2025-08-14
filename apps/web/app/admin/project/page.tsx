@@ -2,63 +2,22 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  status: string;
-  team_size: number;
-}
+import { useProject } from '@prometheus-fe/hooks';
+import { Project } from '@prometheus-fe/types';
 
 export default function AdminProjectPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const { projects, isLoadingProjects, fetchAllProjectsForAdmin, deleteProject: deleteProjectHook } = useProject();
   const [error, setError] = useState('');
 
   const router = useRouter();
+
   const loadProjects = async () => {
     try {
-      setIsLoading(true);
       setError('');
-      
-      // TODO: Replace with actual API call
-      // const response = await adminApi.getProjects();
-      // setProjects(response.projects || []);
-      
-      // Mock data for UI
-      setProjects([
-        {
-          id: '1',
-          title: '웹 개발 프로젝트',
-          description: 'React와 Node.js를 활용한 웹 애플리케이션 개발',
-          category: '웹 개발',
-          status: '진행중',
-          team_size: 4
-        },
-        {
-          id: '2',
-          title: '모바일 앱 개발',
-          description: 'Flutter를 사용한 크로스 플랫폼 모바일 앱',
-          category: '모바일',
-          status: '완료',
-          team_size: 3
-        },
-        {
-          id: '3',
-          title: 'AI 챗봇 프로젝트',
-          description: '자연어 처리를 활용한 고객 서비스 챗봇',
-          category: 'AI/ML',
-          status: '계획중',
-          team_size: 5
-        }
-      ]);
+      await fetchAllProjectsForAdmin();
     } catch (err) {
       console.error('Failed to load projects:', err);
       setError('프로젝트 목록을 불러오는 중 오류가 발생했습니다.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -78,11 +37,8 @@ export default function AdminProjectPage() {
     }
     
     try {
-      // TODO: Replace with actual API call
-      // await adminApi.deleteProject(project.id);
-      console.log('Deleting project:', project.id);
-      await loadProjects();
-      alert('프로젝트가 삭제되었습니다! (실제 API 연동 필요)');
+      await deleteProjectHook(project.id);
+      alert('프로젝트가 삭제되었습니다!');
     } catch (err) {
       console.error('Failed to delete project:', err);
       setError('프로젝트 삭제 중 오류가 발생했습니다.');
@@ -122,13 +78,13 @@ export default function AdminProjectPage() {
           <div className="px-4 py-5 sm:p-6">
             <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">프로젝트 목록</h3>
             
-            {isLoading && (
+            {isLoadingProjects && (
               <div className="flex justify-center items-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               </div>
             )}
 
-            {error && !isLoading && (
+            {error && !isLoadingProjects && (
               <div className="text-center">
                 <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -138,7 +94,7 @@ export default function AdminProjectPage() {
               </div>
             )}
 
-            {!isLoading && !error && (
+            {!isLoadingProjects && !error && (
               <div className="space-y-4">
                 {projects.map((project) => (
                   <div key={project.id} className="border border-gray-200 rounded-lg p-4">
@@ -155,9 +111,9 @@ export default function AdminProjectPage() {
                           <h4 className="text-lg font-medium text-gray-900">{project.title}</h4>
                           <p className="text-sm text-gray-500">{project.description}</p>
                           <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">
-                            <span>{project.category}</span>
-                            <span>{project.status}</span>
-                            <span>{project.team_size}명</span>
+                            <span>{project.gen ? `${project.gen}기` : 'N/A'}</span>
+                            <span>{project.status || 'N/A'}</span>
+                            <span>{project.keywords?.length || 0}개 키워드</span>
                           </div>
                         </div>
                       </div>
@@ -187,7 +143,7 @@ export default function AdminProjectPage() {
               </div>
             )}
 
-            {!isLoading && !error && projects.length === 0 && (
+            {!isLoadingProjects && !error && projects.length === 0 && (
               <div className="text-center py-12">
                 <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
@@ -210,8 +166,6 @@ export default function AdminProjectPage() {
           </div>
         </div>
       </div>
-
-
     </div>
   );
 }

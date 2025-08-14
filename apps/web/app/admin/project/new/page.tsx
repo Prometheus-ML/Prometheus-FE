@@ -3,25 +3,27 @@
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ProjectForm from '@/src/components/ProjectForm';
+import { useProject } from '@prometheus-fe/hooks';
 
 export default function NewProjectPage() {
   const router = useRouter();
+  const { createProject } = useProject();
 
   // TODO: Replace with actual auth logic
   const canCreate = true; // Manager 이상만 생성 가능
   const weights = { Root: 0, Super: 1, Administrator: 2, Manager: 3, Member: 4 };
 
-  const handleSubmit = async (payload: any) => {
+  const handleSubmit = async (formData: any) => {
     try {
-      // TODO: Replace with actual API call
-      // const created = await projectApi.createProject(payload);
-      // router.push(`/project/${created.id}`);
+      console.log('Creating project:', formData);
       
-      console.log('Creating project:', payload);
-      alert('프로젝트가 생성되었습니다! (실제 API 연동 필요)');
+      await createProject(formData);
+      
+      alert('프로젝트가 생성되었습니다!');
       router.push('/admin/project');
     } catch (e: any) {
-      alert('생성 실패: ' + (e?.data?.message || e.message));
+      console.error('Project creation failed:', e);
+      alert('생성 실패: ' + (e?.message || '알 수 없는 오류가 발생했습니다.'));
     }
   };
 
