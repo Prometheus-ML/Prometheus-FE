@@ -172,296 +172,298 @@ export default function GroupPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">그룹</h1>
-        {user && (
-          <button
-            onClick={() => setShowCreateForm(!showCreateForm)}
-            className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-          >
-            그룹 만들기
-          </button>
-        )}
-      </div>
-
-      {/* 카테고리 필터 */}
-      <div className="mb-6">
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => handleCategoryFilter('')}
-            className={`px-3 py-1 text-sm rounded-full transition-colors ${
-              selectedCategory === '' 
-                ? 'bg-blue-100 text-blue-800 border border-blue-200' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            전체
-          </button>
-          {CATEGORIES.map(category => (
+    <div className="min-h-screen prometheus-bg">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-white">그룹</h1>
+          {user && (
             <button
-              key={category.value}
-              onClick={() => handleCategoryFilter(category.value)}
+              onClick={() => setShowCreateForm(!showCreateForm)}
+              className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+            >
+              그룹 만들기
+            </button>
+          )}
+        </div>
+
+        {/* 카테고리 필터 */}
+        <div className="mb-6">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => handleCategoryFilter('')}
               className={`px-3 py-1 text-sm rounded-full transition-colors ${
-                selectedCategory === category.value 
+                selectedCategory === '' 
                   ? 'bg-blue-100 text-blue-800 border border-blue-200' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              {category.label}
+              전체
             </button>
-          ))}
+            {CATEGORIES.map(category => (
+              <button
+                key={category.value}
+                onClick={() => handleCategoryFilter(category.value)}
+                className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                  selectedCategory === category.value 
+                    ? 'bg-blue-100 text-blue-800 border border-blue-200' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {category.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* 그룹 생성 폼 */}
-      {showCreateForm && (
-        <div className="mb-6 p-4 border rounded-lg bg-gray-50">
-          <h3 className="text-lg font-semibold mb-4">새 그룹 만들기</h3>
-          <form onSubmit={handleCreateGroup}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+        {/* 그룹 생성 폼 */}
+        {showCreateForm && (
+          <div className="mb-6 p-4 border rounded-lg bg-gray-50">
+            <h3 className="text-lg font-semibold mb-4">새 그룹 만들기</h3>
+            <form onSubmit={handleCreateGroup}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    그룹 이름 *
+                  </label>
+                  <input
+                    type="text"
+                    value={newGroup.name}
+                    onChange={(e) => setNewGroup((prev: any) => ({ ...prev, name: e.target.value }))}
+                    className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="그룹 이름을 입력하세요"
+                    maxLength={200}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    카테고리 *
+                  </label>
+                  <select
+                    value={newGroup.category}
+                    onChange={(e) => setNewGroup((prev: any) => ({ ...prev, category: e.target.value as 'STUDY' | 'CASUAL' }))}
+                    className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    {CATEGORIES.map(category => (
+                      <option key={category.value} value={category.value}>
+                        {category.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  그룹 이름 *
+                  그룹 설명
                 </label>
-                <input
-                  type="text"
-                  value={newGroup.name}
-                  onChange={(e) => setNewGroup((prev: any) => ({ ...prev, name: e.target.value }))}
+                <textarea
+                  value={newGroup.description}
+                  onChange={(e) => setNewGroup((prev: any) => ({ ...prev, description: e.target.value }))}
+                  rows={3}
                   className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="그룹 이름을 입력하세요"
-                  maxLength={200}
-                  required
+                  placeholder="그룹에 대한 설명을 입력하세요"
                 />
               </div>
-              <div>
+              <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  카테고리 *
+                  최대 인원
                 </label>
-                <select
-                  value={newGroup.category}
-                  onChange={(e) => setNewGroup((prev: any) => ({ ...prev, category: e.target.value as 'STUDY' | 'CASUAL' }))}
+                <input
+                  type="number"
+                  value={newGroup.max_members || ''}
+                  onChange={(e) => setNewGroup((prev: any) => ({ 
+                    ...prev, 
+                    max_members: e.target.value ? parseInt(e.target.value) : undefined 
+                  }))}
                   className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
+                  placeholder="최대 인원 (선택사항)"
+                  min="1"
+                />
+              </div>
+              <div className="flex items-center space-x-2 mt-4">
+                <button
+                  type="submit"
+                  disabled={isCreatingGroup}
+                  className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
                 >
-                  {CATEGORIES.map(category => (
-                    <option key={category.value} value={category.value}>
-                      {category.label}
-                    </option>
-                  ))}
-                </select>
+                  {isCreatingGroup ? '생성 중...' : '그룹 만들기'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCreateForm(false);
+                    setNewGroup({
+                      name: '',
+                      description: '',
+                      category: 'STUDY',
+                      max_members: undefined,
+                      thumbnail_url: '',
+                    });
+                  }}
+                  className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  취소
+                </button>
               </div>
-            </div>
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                그룹 설명
-              </label>
-              <textarea
-                value={newGroup.description}
-                onChange={(e) => setNewGroup((prev: any) => ({ ...prev, description: e.target.value }))}
-                rows={3}
-                className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="그룹에 대한 설명을 입력하세요"
-              />
-            </div>
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                최대 인원
-              </label>
-              <input
-                type="number"
-                value={newGroup.max_members || ''}
-                onChange={(e) => setNewGroup((prev: any) => ({ 
-                  ...prev, 
-                  max_members: e.target.value ? parseInt(e.target.value) : undefined 
-                }))}
-                className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="최대 인원 (선택사항)"
-                min="1"
-              />
-            </div>
-            <div className="flex items-center space-x-2 mt-4">
-              <button
-                type="submit"
-                disabled={isCreatingGroup}
-                className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
-              >
-                {isCreatingGroup ? '생성 중...' : '그룹 만들기'}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowCreateForm(false);
-                  setNewGroup({
-                    name: '',
-                    description: '',
-                    category: 'STUDY',
-                    max_members: undefined,
-                    thumbnail_url: '',
-                  });
-                }}
-                className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                취소
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+            </form>
+          </div>
+        )}
 
-      {/* 에러 메시지 */}
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700">
-          {error}
-        </div>
-      )}
+        {/* 에러 메시지 */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700">
+            {error}
+          </div>
+        )}
 
-      {/* 그룹 목록 */}
-      {isLoadingGroups ? (
-        <div className="py-20 text-center text-gray-500">불러오는 중...</div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {groups.map((group: any) => (
-            <div 
-              key={group.id} 
-              className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => handleGroupClick(group.id)}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <span className={`px-2 py-1 text-xs rounded-full border ${getCategoryColor(group.category)}`}>
-                  {getCategoryLabel(group.category)}
-                </span>
-                {isGroupOwner(group) && (
-                  <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200">
-                    소유자
+        {/* 그룹 목록 */}
+        {isLoadingGroups ? (
+          <div className="py-20 text-center text-gray-500">불러오는 중...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {groups.map((group: any) => (
+              <div 
+                key={group.id} 
+                className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => handleGroupClick(group.id)}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <span className={`px-2 py-1 text-xs rounded-full border ${getCategoryColor(group.category)}`}>
+                    {getCategoryLabel(group.category)}
                   </span>
+                  {isGroupOwner(group) && (
+                    <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200">
+                      소유자
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {group.name}
+                </h3>
+                {group.description && (
+                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                    {group.description}
+                  </p>
                 )}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-500">
+                    소유자: {group.owner_id}
+                  </span>
+                  {user && !isGroupOwner(group) && !isGroupMember(group.id) && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleJoinGroup(group.id);
+                      }}
+                      className="px-3 py-1 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                    >
+                      가입 요청
+                    </button>
+                  )}
+                </div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {group.name}
-              </h3>
-              {group.description && (
-                <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                  {group.description}
-                </p>
-              )}
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">
-                  소유자: {group.owner_id}
-                </span>
-                {user && !isGroupOwner(group) && !isGroupMember(group.id) && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleJoinGroup(group.id);
-                    }}
-                    className="px-3 py-1 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                  >
-                    가입 요청
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
 
-      {!isLoadingGroups && groups.length === 0 && (
-        <div className="py-20 text-center text-gray-500">
-          그룹이 없습니다.
-          {!user && (
-            <p className="mt-2 text-sm">
-              그룹을 만들려면 로그인이 필요합니다.
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* 그룹 상세 모달 */}
-      {showGroupDetail && selectedGroup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">{selectedGroup.name}</h2>
-              <button
-                onClick={handleCloseDetail}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <div className="mb-4">
-              <span className={`px-2 py-1 text-xs rounded-full border ${getCategoryColor(selectedGroup.category)}`}>
-                {getCategoryLabel(selectedGroup.category)}
-              </span>
-            </div>
-            
-            {selectedGroup.description && (
-              <div className="mb-4">
-                <h3 className="font-semibold mb-2">설명</h3>
-                <p className="text-gray-600">{selectedGroup.description}</p>
-              </div>
+        {!isLoadingGroups && groups.length === 0 && (
+          <div className="py-20 text-center text-gray-500">
+            그룹이 없습니다.
+            {!user && (
+              <p className="mt-2 text-sm">
+                그룹을 만들려면 로그인이 필요합니다.
+              </p>
             )}
-            
-            <div className="mb-4">
-              <h3 className="font-semibold mb-2">멤버 ({members.length}명)</h3>
-              {isLoadingMembers ? (
-                <div className="text-gray-500">불러오는 중...</div>
-              ) : (
-                <div className="space-y-2">
-                  {members.map((member) => (
-                    <div key={member.member_id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                      <span>{member.member_id}</span>
-                      <span className={`px-2 py-1 text-xs rounded ${
-                        member.role === 'owner' 
-                          ? 'bg-yellow-100 text-yellow-800' 
-                          : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {member.role === 'owner' ? '소유자' : '멤버'}
-                      </span>
-                    </div>
-                  ))}
+          </div>
+        )}
+
+        {/* 그룹 상세 모달 */}
+        {showGroupDetail && selectedGroup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900">{selectedGroup.name}</h2>
+                <button
+                  onClick={handleCloseDetail}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="mb-4">
+                <span className={`px-2 py-1 text-xs rounded-full border ${getCategoryColor(selectedGroup.category)}`}>
+                  {getCategoryLabel(selectedGroup.category)}
+                </span>
+              </div>
+              
+              {selectedGroup.description && (
+                <div className="mb-4">
+                  <h3 className="font-semibold mb-2">설명</h3>
+                  <p className="text-gray-600">{selectedGroup.description}</p>
                 </div>
               )}
-            </div>
-            
-            {/* 가입 요청 관리 (소유자만) */}
-            {isGroupOwner(selectedGroup) && (
+              
               <div className="mb-4">
-                <h3 className="font-semibold mb-2">가입 요청 ({joinRequests.length}개)</h3>
-                {isLoadingJoinRequests ? (
+                <h3 className="font-semibold mb-2">멤버 ({members.length}명)</h3>
+                {isLoadingMembers ? (
                   <div className="text-gray-500">불러오는 중...</div>
-                ) : joinRequests.length === 0 ? (
-                  <div className="text-gray-500">가입 요청이 없습니다.</div>
                 ) : (
                   <div className="space-y-2">
-                    {joinRequests.map((request) => (
-                      <div key={request.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                        <span>{request.member_id}</span>
-                        <div className="space-x-2">
-                          <button
-                            onClick={() => handleApproveMember(request.member_id)}
-                            className="px-3 py-1 text-xs rounded bg-green-600 text-white hover:bg-green-700"
-                          >
-                            승인
-                          </button>
-                          <button
-                            onClick={() => handleRejectMember(request.member_id)}
-                            className="px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700"
-                          >
-                            거절
-                          </button>
-                        </div>
+                    {members.map((member) => (
+                      <div key={member.member_id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                        <span>{member.member_id}</span>
+                        <span className={`px-2 py-1 text-xs rounded ${
+                          member.role === 'owner' 
+                            ? 'bg-yellow-100 text-yellow-800' 
+                            : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {member.role === 'owner' ? '소유자' : '멤버'}
+                        </span>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
-            )}
+              
+              {/* 가입 요청 관리 (소유자만) */}
+              {isGroupOwner(selectedGroup) && (
+                <div className="mb-4">
+                  <h3 className="font-semibold mb-2">가입 요청 ({joinRequests.length}개)</h3>
+                  {isLoadingJoinRequests ? (
+                    <div className="text-gray-500">불러오는 중...</div>
+                  ) : joinRequests.length === 0 ? (
+                    <div className="text-gray-500">가입 요청이 없습니다.</div>
+                  ) : (
+                    <div className="space-y-2">
+                      {joinRequests.map((request) => (
+                        <div key={request.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                          <span>{request.member_id}</span>
+                          <div className="space-x-2">
+                            <button
+                              onClick={() => handleApproveMember(request.member_id)}
+                              className="px-3 py-1 text-xs rounded bg-green-600 text-white hover:bg-green-700"
+                            >
+                              승인
+                            </button>
+                            <button
+                              onClick={() => handleRejectMember(request.member_id)}
+                              className="px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700"
+                            >
+                              거절
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

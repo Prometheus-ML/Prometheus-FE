@@ -87,90 +87,92 @@ export default function ProjectPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">프로젝트</h1>
-        {canCreate && (
-          <div className="flex items-center space-x-2">
-            <Link 
-              href="/project/new" 
-              className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-            >
-              프로젝트 생성
-            </Link>
+    <div className="min-h-screen prometheus-bg">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-white">프로젝트</h1>
+          {canCreate && (
+            <div className="flex items-center space-x-2">
+              <Link 
+                href="/project/new" 
+                className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+              >
+                프로젝트 생성
+              </Link>
+            </div>
+          )}
+        </div>
+
+        <div className="mb-4 flex items-center space-x-2">
+          <select 
+            value={status} 
+            onChange={(e) => setStatus(e.target.value)}
+            className="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">전체</option>
+            <option value="active">진행중</option>
+            <option value="completed">완료</option>
+            <option value="paused">중지</option>
+          </select>
+          <button 
+            onClick={loadProjects}
+            className="px-3 py-2 text-sm rounded-md border hover:bg-gray-50 transition-colors text-white"
+          >
+            필터 적용
+          </button>
+        </div>
+
+        {isLocalLoading || isLoadingProjects ? (
+          <div className="py-20 text-center text-gray-500">불러오는 중...</div>
+        ) : null}
+        
+        {error && !isLocalLoading && !isLoadingProjects && (
+          <div className="py-8 text-center text-red-600">{error}</div>
+        )}
+        
+        {!isLocalLoading && !isLoadingProjects && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {projects.map((project) => (
+              <div key={project.id} className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900">{project.title}</h3>
+                    <p className="mt-1 text-sm text-gray-600 line-clamp-2">{project.description || '설명이 없습니다.'}</p>
+                    <div className="mt-2 text-xs text-gray-500 space-x-2 flex items-center">
+                      <span>{project.gen}기</span>
+                      <span className={`px-2 py-0.5 rounded-full border text-xs ${getStatusColor(project.status)}`}>
+                        {getStatusText(project.status)}
+                      </span>
+                      {project.keywords && project.keywords.length > 0 && (
+                        <span className="text-xs text-gray-400">
+                          {project.keywords.length}개 키워드
+                        </span>
+                      )}
+                    </div>
+                    {project.start_date && (
+                      <div className="mt-1 text-xs text-gray-400">
+                        시작일: {new Date(project.start_date).toLocaleDateString('ko-KR')}
+                      </div>
+                    )}
+                  </div>
+                  <Link 
+                    href={`/project/${project.id}`} 
+                    className="text-blue-600 hover:underline text-sm ml-4"
+                  >
+                    상세
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!isLocalLoading && !isLoadingProjects && !error && projects.length === 0 && (
+          <div className="py-20 text-center text-gray-500">
+            프로젝트가 없습니다.
           </div>
         )}
       </div>
-
-      <div className="mb-4 flex items-center space-x-2">
-        <select 
-          value={status} 
-          onChange={(e) => setStatus(e.target.value)}
-          className="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
-          <option value="">전체</option>
-          <option value="active">진행중</option>
-          <option value="completed">완료</option>
-          <option value="paused">중지</option>
-        </select>
-        <button 
-          onClick={loadProjects}
-          className="px-3 py-2 text-sm rounded-md border hover:bg-gray-50 transition-colors"
-        >
-          필터 적용
-        </button>
-      </div>
-
-      {isLocalLoading || isLoadingProjects ? (
-        <div className="py-20 text-center text-gray-500">불러오는 중...</div>
-      ) : null}
-      
-      {error && !isLocalLoading && !isLoadingProjects && (
-        <div className="py-8 text-center text-red-600">{error}</div>
-      )}
-      
-      {!isLocalLoading && !isLoadingProjects && !error && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {projects.map((project) => (
-            <div key={project.id} className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900">{project.title}</h3>
-                  <p className="mt-1 text-sm text-gray-600 line-clamp-2">{project.description || '설명이 없습니다.'}</p>
-                  <div className="mt-2 text-xs text-gray-500 space-x-2 flex items-center">
-                    <span>{project.gen}기</span>
-                    <span className={`px-2 py-0.5 rounded-full border text-xs ${getStatusColor(project.status)}`}>
-                      {getStatusText(project.status)}
-                    </span>
-                    {project.keywords && project.keywords.length > 0 && (
-                      <span className="text-xs text-gray-400">
-                        {project.keywords.length}개 키워드
-                      </span>
-                    )}
-                  </div>
-                  {project.start_date && (
-                    <div className="mt-1 text-xs text-gray-400">
-                      시작일: {new Date(project.start_date).toLocaleDateString('ko-KR')}
-                    </div>
-                  )}
-                </div>
-                <Link 
-                  href={`/project/${project.id}`} 
-                  className="text-blue-600 hover:underline text-sm ml-4"
-                >
-                  상세
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {!isLocalLoading && !isLoadingProjects && !error && projects.length === 0 && (
-        <div className="py-20 text-center text-gray-500">
-          프로젝트가 없습니다.
-        </div>
-      )}
     </div>
   );
 }

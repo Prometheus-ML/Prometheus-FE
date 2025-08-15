@@ -123,196 +123,198 @@ export default function CommunityPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">커뮤니티</h1>
-        {user && (
-          <button
-            onClick={() => setShowCreateForm(!showCreateForm)}
-            className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-          >
-            게시글 작성
-          </button>
-        )}
-      </div>
-
-      {/* 카테고리 필터 */}
-      <div className="mb-6">
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => handleCategoryFilter('')}
-            className={`px-3 py-1 text-sm rounded-full transition-colors ${
-              selectedCategory === '' 
-                ? 'bg-blue-100 text-blue-800 border border-blue-200' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            전체
-          </button>
-          {CATEGORIES.map(category => (
+    <div className="min-h-screen prometheus-bg">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-white">커뮤니티</h1>
+          {user && (
             <button
-              key={category.value}
-              onClick={() => handleCategoryFilter(category.value)}
+              onClick={() => setShowCreateForm(!showCreateForm)}
+              className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+            >
+              게시글 작성
+            </button>
+          )}
+        </div>
+
+        {/* 카테고리 필터 */}
+        <div className="mb-6">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => handleCategoryFilter('')}
               className={`px-3 py-1 text-sm rounded-full transition-colors ${
-                selectedCategory === category.value 
+                selectedCategory === '' 
                   ? 'bg-blue-100 text-blue-800 border border-blue-200' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              {category.label}
+              전체
             </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 게시글 작성 폼 */}
-      {showCreateForm && (
-        <div className="mb-6 p-4 border rounded-lg bg-gray-50">
-          <h3 className="text-lg font-semibold mb-4">새 게시글 작성</h3>
-          <form onSubmit={handleCreatePost}>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                카테고리
-              </label>
-              <select
-                value={newPost.category}
-                onChange={(e) => setNewPost((prev: any) => ({ ...prev, category: e.target.value as any }))}
-                className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {CATEGORIES.map(category => (
-                  <option key={category.value} value={category.value}>
-                    {category.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                제목
-              </label>
-              <input
-                type="text"
-                value={newPost.title}
-                onChange={(e) => setNewPost((prev: any) => ({ ...prev, title: e.target.value }))}
-                className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="게시글 제목을 입력하세요"
-                maxLength={200}
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                내용
-              </label>
-              <textarea
-                value={newPost.content}
-                onChange={(e) => setNewPost((prev: any) => ({ ...prev, content: e.target.value }))}
-                rows={6}
-                className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="게시글 내용을 입력하세요"
-              />
-            </div>
-            <div className="flex items-center space-x-2">
+            {CATEGORIES.map(category => (
               <button
-                type="submit"
-                disabled={isCreatingPost}
-                className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                key={category.value}
+                onClick={() => handleCategoryFilter(category.value)}
+                className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                  selectedCategory === category.value 
+                    ? 'bg-blue-100 text-blue-800 border border-blue-200' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
               >
-                {isCreatingPost ? '작성 중...' : '게시글 작성'}
+                {category.label}
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowCreateForm(false);
-                  setNewPost({ category: 'free', title: '', content: '' });
-                }}
-                className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                취소
-              </button>
-            </div>
-          </form>
+            ))}
+          </div>
         </div>
-      )}
 
-      {/* 에러 메시지 */}
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700">
-          {error}
-        </div>
-      )}
-
-      {/* 게시글 목록 */}
-      {isLoadingPosts ? (
-        <div className="py-20 text-center text-gray-500">불러오는 중...</div>
-      ) : (
-        <div className="space-y-4">
-          {posts.map((post: any) => (
-            <div 
-              key={post.id} 
-              className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => handlePostClick(post.id)}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <span className={`px-2 py-1 text-xs rounded-full border ${getCategoryColor(post.category)}`}>
-                      {getCategoryLabel(post.category)}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      작성자: {post.author_id}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {new Date(post.created_at).toLocaleDateString('ko-KR')}
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {post.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm line-clamp-3">
-                    {post.content}
-                  </p>
-                </div>
-                {user && user.id === post.author_id && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation(); // 모달 열림 방지
-                      handleDeletePost(post.id);
-                    }}
-                    className="text-red-600 hover:text-red-800 text-sm ml-4"
-                  >
-                    삭제
-                  </button>
-                )}
+        {/* 게시글 작성 폼 */}
+        {showCreateForm && (
+          <div className="mb-6 p-4 border rounded-lg bg-gray-50">
+            <h3 className="text-lg font-semibold mb-4">새 게시글 작성</h3>
+            <form onSubmit={handleCreatePost}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  카테고리
+                </label>
+                <select
+                  value={newPost.category}
+                  onChange={(e) => setNewPost((prev: any) => ({ ...prev, category: e.target.value as any }))}
+                  className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {CATEGORIES.map(category => (
+                    <option key={category.value} value={category.value}>
+                      {category.label}
+                    </option>
+                  ))}
+                </select>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  제목
+                </label>
+                <input
+                  type="text"
+                  value={newPost.title}
+                  onChange={(e) => setNewPost((prev: any) => ({ ...prev, title: e.target.value }))}
+                  className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="게시글 제목을 입력하세요"
+                  maxLength={200}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  내용
+                </label>
+                <textarea
+                  value={newPost.content}
+                  onChange={(e) => setNewPost((prev: any) => ({ ...prev, content: e.target.value }))}
+                  rows={6}
+                  className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="게시글 내용을 입력하세요"
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="submit"
+                  disabled={isCreatingPost}
+                  className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                >
+                  {isCreatingPost ? '작성 중...' : '게시글 작성'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCreateForm(false);
+                    setNewPost({ category: 'free', title: '', content: '' });
+                  }}
+                  className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  취소
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
 
-      {!isLoadingPosts && posts.length === 0 && (
-        <div className="py-20 text-center text-gray-500">
-          게시글이 없습니다.
-          {!user && (
-            <p className="mt-2 text-sm">
-              게시글을 작성하려면 로그인이 필요합니다.
-            </p>
-          )}
-        </div>
-      )}
+        {/* 에러 메시지 */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700">
+            {error}
+          </div>
+        )}
 
-      {/* 총 게시글 수 표시 */}
-      {totalPosts > 0 && (
-        <div className="mt-6 text-center text-sm text-gray-500">
-          총 {totalPosts}개의 게시글
-        </div>
-      )}
+        {/* 게시글 목록 */}
+        {isLoadingPosts ? (
+          <div className="py-20 text-center text-gray-500">불러오는 중...</div>
+        ) : (
+          <div className="space-y-4">
+            {posts.map((post: any) => (
+              <div 
+                key={post.id} 
+                className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => handlePostClick(post.id)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <span className={`px-2 py-1 text-xs rounded-full border ${getCategoryColor(post.category)}`}>
+                        {getCategoryLabel(post.category)}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        작성자: {post.author_id}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(post.created_at).toLocaleDateString('ko-KR')}
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      {post.title}
+                    </h3>
+                    <p className="text-gray-600 text-sm line-clamp-3">
+                      {post.content}
+                    </p>
+                  </div>
+                  {user && user.id === post.author_id && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); // 모달 열림 방지
+                        handleDeletePost(post.id);
+                      }}
+                      className="text-red-600 hover:text-red-800 text-sm ml-4"
+                    >
+                      삭제
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
-      {/* PostModal */}
-      <PostModal
-        postId={selectedPostId}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-      />
+        {!isLoadingPosts && posts.length === 0 && (
+          <div className="py-20 text-center text-gray-500">
+            게시글이 없습니다.
+            {!user && (
+              <p className="mt-2 text-sm">
+                게시글을 작성하려면 로그인이 필요합니다.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* 총 게시글 수 표시 */}
+        {totalPosts > 0 && (
+          <div className="mt-6 text-center text-sm text-gray-500">
+            총 {totalPosts}개의 게시글
+          </div>
+        )}
+
+        {/* PostModal */}
+        <PostModal
+          postId={selectedPostId}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+        />
+      </div>
     </div>
   );
 }
