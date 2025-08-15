@@ -4,14 +4,13 @@ import { useState, useEffect } from 'react';
 import { useCommunity } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
 import PostModal from '../../src/components/PostModal';
+import PostForm from '../../src/components/PostForm';
 
 const CATEGORIES = [
   { value: 'free', label: '자유게시판' },
   { value: 'activity', label: '활동' },
   { value: 'career', label: '진로' },
   { value: 'promotion', label: '홍보' },
-  { value: 'study_group', label: '스터디 그룹' },
-  { value: 'casual_group', label: '취미 그룹' },
   { value: 'announcement', label: '공지사항' },
 ] as const;
 
@@ -33,11 +32,7 @@ export default function CommunityPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newPost, setNewPost] = useState<any>({
-    category: 'free',
-    title: '',
-    content: '',
-  });
+
 
   // 초기 게시글 목록 로드
   useEffect(() => {
@@ -63,18 +58,15 @@ export default function CommunityPage() {
     }
   };
 
-  const handleCreatePost = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!newPost.title.trim() || !newPost.content.trim()) {
+  const handleCreatePost = async (post: { category: string; title: string; content: string }) => {
+    if (!post.title.trim() || !post.content.trim()) {
       setError('제목과 내용을 모두 입력해주세요.');
       return;
     }
 
     try {
       setError('');
-      await createPost(newPost);
-      setNewPost({ category: 'free', title: '', content: '' });
+      await createPost(post);
       setShowCreateForm(false);
     } catch (err) {
       console.error('게시글 생성 실패:', err);
@@ -105,8 +97,6 @@ export default function CommunityPage() {
       activity: 'bg-blue-100 text-blue-800 border-blue-200',
       career: 'bg-green-100 text-green-800 border-green-200',
       promotion: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      study_group: 'bg-purple-100 text-purple-800 border-purple-200',
-      casual_group: 'bg-pink-100 text-pink-800 border-pink-200',
       announcement: 'bg-red-100 text-red-800 border-red-200',
     };
     return colors[category] || 'bg-gray-100 text-gray-800 border-gray-200';
@@ -123,10 +113,10 @@ export default function CommunityPage() {
   };
 
   return (
-    <div className="min-h-screen prometheus-bg">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+    <div className="min-h-screen">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-white">커뮤니티</h1>
+          <h1 className="text-2xl font-bold text-gray-900">커뮤니티</h1>
           {user && (
             <button
               onClick={() => setShowCreateForm(!showCreateForm)}
@@ -168,71 +158,11 @@ export default function CommunityPage() {
 
         {/* 게시글 작성 폼 */}
         {showCreateForm && (
-          <div className="mb-6 p-4 border rounded-lg bg-gray-50">
-            <h3 className="text-lg font-semibold mb-4">새 게시글 작성</h3>
-            <form onSubmit={handleCreatePost}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  카테고리
-                </label>
-                <select
-                  value={newPost.category}
-                  onChange={(e) => setNewPost((prev: any) => ({ ...prev, category: e.target.value as any }))}
-                  className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {CATEGORIES.map(category => (
-                    <option key={category.value} value={category.value}>
-                      {category.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  제목
-                </label>
-                <input
-                  type="text"
-                  value={newPost.title}
-                  onChange={(e) => setNewPost((prev: any) => ({ ...prev, title: e.target.value }))}
-                  className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="게시글 제목을 입력하세요"
-                  maxLength={200}
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  내용
-                </label>
-                <textarea
-                  value={newPost.content}
-                  onChange={(e) => setNewPost((prev: any) => ({ ...prev, content: e.target.value }))}
-                  rows={6}
-                  className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="게시글 내용을 입력하세요"
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  type="submit"
-                  disabled={isCreatingPost}
-                  className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                >
-                  {isCreatingPost ? '작성 중...' : '게시글 작성'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowCreateForm(false);
-                    setNewPost({ category: 'free', title: '', content: '' });
-                  }}
-                  className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  취소
-                </button>
-              </div>
-            </form>
-          </div>
+          <PostForm
+            onSubmit={handleCreatePost}
+            onCancel={() => setShowCreateForm(false)}
+            isSubmitting={isCreatingPost}
+          />
         )}
 
         {/* 에러 메시지 */}
@@ -308,7 +238,7 @@ export default function CommunityPage() {
           </div>
         )}
 
-        {/* PostModal */}
+
         <PostModal
           postId={selectedPostId}
           isOpen={isModalOpen}
