@@ -21,7 +21,21 @@ export function useEvent() {
     }
     try {
       setIsLoadingEvents(true);
-      const data = await event.getEventList(params);
+      // 백엔드 필드명에 맞춰 파라미터 변환
+      const transformedParams = {
+        ...params,
+        current_gen: params?.current_gen || params?.gen,  // gen → current_gen 변환
+        is_attendance_required: params?.is_attendance_required,  // 출석 필수 여부 필터 추가
+      };
+      
+      // 빈 문자열 필터링
+      Object.keys(transformedParams).forEach(key => {
+        if (transformedParams[key] === '') {
+          delete transformedParams[key];
+        }
+      });
+      
+      const data = await event.getEventList(transformedParams);
       setAllEvents(data.events || []);
       setTotal(data.total || 0);
       return data;
@@ -58,7 +72,15 @@ export function useEvent() {
       throw new Error('event is not available');
     }
     try {
-      const response = await event.createEvent(formData);
+      // 백엔드 필드명에 맞춰 데이터 변환
+      const transformedData = {
+        ...formData,
+        current_gen: formData.current_gen || formData.gen,  // gen → current_gen 변환
+        start_time: formData.start_time || formData.start_date,  // start_date → start_time 변환
+        end_time: formData.end_time || formData.end_date,  // end_date → end_time 변환
+      };
+      
+      const response = await event.createEvent(transformedData);
       await getEventList();
       return response;
     } catch (error) {
@@ -73,7 +95,15 @@ export function useEvent() {
       throw new Error('event is not available');
     }
     try {
-      const response = await event.updateEvent(eventId, data);
+      // 백엔드 필드명에 맞춰 데이터 변환
+      const transformedData = {
+        ...data,
+        current_gen: data.current_gen || data.gen,  // gen → current_gen 변환
+        start_time: data.start_time || data.start_date,  // start_date → start_time 변환
+        end_time: data.end_time || data.end_date,  // end_date → end_time 변환
+      };
+      
+      const response = await event.updateEvent(eventId, transformedData);
       if (selectedEvent?.id === eventId) {
         setSelectedEvent(response);
       }
@@ -129,7 +159,14 @@ export function useEvent() {
       throw new Error('event is not available');
     }
     try {
-      const response = await event.createAttendance(eventId, data);
+      // 백엔드 필드명에 맞춰 데이터 변환
+      const transformedData = {
+        ...data,
+        member_id: String(data.member_id),  // number → string 변환
+        reason: data.reason || data.notes,  // notes → reason 변환
+      };
+      
+      const response = await event.createAttendance(eventId, transformedData);
       await fetchAttendances(eventId);
       return response;
     } catch (error) {
@@ -144,7 +181,16 @@ export function useEvent() {
       throw new Error('event is not available');
     }
     try {
-      const response = await event.createBulkAttendance(eventId, data);
+      // 백엔드 필드명에 맞춰 데이터 변환
+      const transformedData = {
+        attendances: data.attendances.map((att: any) => ({
+          ...att,
+          member_id: String(att.member_id),  // number → string 변환
+          reason: att.reason || att.notes,   // notes → reason 변환
+        }))
+      };
+      
+      const response = await event.createBulkAttendance(eventId, transformedData);
       await fetchAttendances(eventId);
       return response;
     } catch (error) {
@@ -159,7 +205,13 @@ export function useEvent() {
       throw new Error('event is not available');
     }
     try {
-      const response = await event.updateAttendance(eventId, attendanceId, data);
+      // 백엔드 필드명에 맞춰 데이터 변환
+      const transformedData = {
+        ...data,
+        reason: data.reason || data.notes,  // notes → reason 변환
+      };
+      
+      const response = await event.updateAttendance(eventId, attendanceId, transformedData);
       await fetchAttendances(eventId);
       return response;
     } catch (error) {
@@ -191,7 +243,21 @@ export function useEvent() {
     }
     try {
       setIsLoadingEvents(true);
-      const data = await event.getPublicEventList(params);
+      // 백엔드 필드명에 맞춰 파라미터 변환
+      const transformedParams = {
+        ...params,
+        current_gen: params?.current_gen || params?.gen,  // gen → current_gen 변환
+        is_attendance_required: params?.is_attendance_required,  // 출석 필수 여부 필터 추가
+      };
+      
+      // 빈 문자열 필터링
+      Object.keys(transformedParams).forEach(key => {
+        if (transformedParams[key] === '') {
+          delete transformedParams[key];
+        }
+      });
+      
+      const data = await event.getPublicEventList(transformedParams);
       setAllEvents(data.events || []);
       setTotal(data.total || 0);
       return data;
