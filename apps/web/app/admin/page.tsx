@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useRouter } from 'next/navigation';
+import GlassCard from '../../src/components/GlassCard';
+import RedButton from '../../src/components/RedButton';
 
 // 임시 통계 데이터
 const statsData = {
@@ -82,16 +84,24 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="p-6">
+    <div className="space-y-6">
       {/* 헤더 */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">관리자 대시보드</h1>
-        <p className="text-gray-600">프로메테우스 전체 현황을 한눈에 확인하세요</p>
-      </div>
+      <GlassCard className="p-6">
+        <div className="md:flex md:items-center md:justify-between">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-2xl font-bold leading-7 text-white sm:text-3xl sm:truncate">
+              관리자 대시보드
+            </h2>
+            <p className="mt-1 text-sm text-gray-300">
+              프로메테우스 전체 현황을 한눈에 확인하세요
+            </p>
+          </div>
+        </div>
+      </GlassCard>
 
       {/* 통계 카드 */}
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-4 rounded-lg">
+      <div className="grid grid-cols-2 gap-4">
+        <GlassCard className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm opacity-90">총 멤버</p>
@@ -104,9 +114,9 @@ export default function AdminDashboard() {
               </svg>
             </div>
           </div>
-        </div>
+        </GlassCard>
 
-        <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-4 rounded-lg">
+        <GlassCard className="bg-gradient-to-br from-green-500 to-green-600 text-white p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm opacity-90">프로젝트</p>
@@ -119,9 +129,9 @@ export default function AdminDashboard() {
               </svg>
             </div>
           </div>
-        </div>
+        </GlassCard>
 
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-4 rounded-lg">
+        <GlassCard className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm opacity-90">게시글</p>
@@ -134,9 +144,9 @@ export default function AdminDashboard() {
               </svg>
             </div>
           </div>
-        </div>
+        </GlassCard>
 
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-4 rounded-lg">
+        <GlassCard className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm opacity-90">이벤트</p>
@@ -149,62 +159,62 @@ export default function AdminDashboard() {
               </svg>
             </div>
           </div>
-        </div>
+        </GlassCard>
       </div>
 
       {/* 추가 통계 */}
-      <div className="grid grid-cols-1 gap-4 mb-8">
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
+      <div className="grid grid-cols-1 gap-4">
+        <GlassCard className="p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">스폰서십 현황</h3>
-            <span className="text-sm text-gray-500">총 {statsData.totalSponsors}개</span>
+            <h3 className="text-lg font-semibold text-white">스폰서십 현황</h3>
+            <span className="text-sm text-gray-300">총 {statsData.totalSponsors}개</span>
           </div>
           <div className="flex items-center space-x-4">
-            <div className="flex-1 bg-gray-200 rounded-full h-2">
+            <div className="flex-1 bg-gray-200/20 rounded-full h-2">
               <div 
                 className="bg-green-500 h-2 rounded-full" 
                 style={{ width: `${(statsData.activeSponsors / statsData.totalSponsors) * 100}%` }}
               ></div>
             </div>
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-gray-300">
               {statsData.activeSponsors}개 활성
             </span>
           </div>
-        </div>
+        </GlassCard>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <GlassCard className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">블랙리스트</h3>
-              <p className="text-sm text-gray-600">차단된 사용자 수</p>
+              <h3 className="text-lg font-semibold text-white">블랙리스트</h3>
+              <p className="text-sm text-gray-300">차단된 사용자 수</p>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold text-red-600">{statsData.blacklistedUsers}</p>
-              <p className="text-xs text-gray-500">명</p>
+              <p className="text-2xl font-bold text-red-400">{statsData.blacklistedUsers}</p>
+              <p className="text-xs text-gray-300">명</p>
             </div>
           </div>
-        </div>
+        </GlassCard>
       </div>
 
       {/* 최근 활동 */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">최근 활동</h3>
+      <GlassCard className="p-4">
+        <h3 className="text-lg font-semibold text-white mb-4">최근 활동</h3>
         <div className="space-y-3">
           {recentActivities.map((activity) => (
-            <div key={activity.id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <div className="text-blue-600">
+            <div key={activity.id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-white/10 cursor-pointer transition-colors">
+              <div className="w-8 h-8 bg-blue-100/20 rounded-lg flex items-center justify-center">
+                <div className="text-blue-400">
                   {getIcon(activity.type)}
                 </div>
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">{activity.action}</p>
-                <p className="text-xs text-gray-500">{activity.user} • {activity.time}</p>
+                <p className="text-sm font-medium text-white">{activity.action}</p>
+                <p className="text-xs text-gray-300">{activity.user} • {activity.time}</p>
               </div>
             </div>
           ))}
         </div>
-      </div>
+      </GlassCard>
     </div>
   );
 }

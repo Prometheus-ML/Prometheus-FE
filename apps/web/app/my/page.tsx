@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useImage, useMember } from '@prometheus-fe/hooks';
 import { MyProfileUpdateRequest } from '@prometheus-fe/types';
+import GlassCard from '../../src/components/GlassCard';
+import RedButton from '../../src/components/RedButton';
 
 export default function MyPage() {
   const { isAuthenticated } = useAuthStore();
@@ -138,10 +140,9 @@ export default function MyPage() {
   }
 
   return (
-    <div className="px-6 py-6">
+    <div className="space-y-6">
       {/* 내 프로필 */}
-      <div className="space-y-6">
-        <div className="bg-white rounded-lg border p-6">
+      <GlassCard className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">내 프로필</h2>
             </div>
@@ -177,13 +178,13 @@ export default function MyPage() {
                 <div className="text-sm text-gray-600">{myProfile.email}</div>
               </div>
               {profileInnerTab === 'optional' && profileEditMode && (
-                <button 
+                <RedButton 
                   onClick={triggerMyProfileImageSelect} 
                   disabled={profileSubmitting} 
-                  className="px-3 py-1.5 rounded border hover:bg-gray-50 cursor-pointer"
+                  className="text-sm px-3 py-1.5"
                 >
                   이미지 변경
-                </button>
+                </RedButton>
               )}
             </div>
 
@@ -250,21 +251,21 @@ export default function MyPage() {
               <div>
                 <div className="flex items-center justify-end mb-3 space-x-2">
                   {!profileEditMode ? (
-                                    <button 
-                  onClick={() => setProfileEditMode(true)} 
-                  className="px-3 py-1.5 rounded border hover:bg-gray-50 cursor-pointer"
-                >
+                    <RedButton 
+                      onClick={() => setProfileEditMode(true)} 
+                      className="text-sm px-3 py-1.5"
+                    >
                       수정
-                    </button>
+                    </RedButton>
                   ) : (
                     <>
-                      <button 
+                      <RedButton 
                         onClick={submitMyProfile} 
                         disabled={profileSubmitting} 
-                        className="px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+                        className="text-sm px-3 py-1.5"
                       >
                         {profileSubmitting ? '저장 중...' : '저장'}
-                      </button>
+                      </RedButton>
                       <button 
                         onClick={cancelMyProfileEdit} 
                         disabled={profileSubmitting} 
@@ -380,8 +381,7 @@ export default function MyPage() {
                 </div>
               </div>
             )}
-          </div>
+          </GlassCard>
         </div>
-      </div>
   );
 }

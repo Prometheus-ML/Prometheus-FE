@@ -5,6 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useProject, useImage } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
+import GlassCard from '../../../src/components/GlassCard';
+import RedButton from '../../../src/components/RedButton';
 
 export default function AdminProjectPage() {
   const { 
@@ -162,82 +164,85 @@ export default function AdminProjectPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">프로젝트 관리</h1>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <GlassCard className="p-6 mb-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-white">프로젝트 관리</h1>
           <div className="flex items-center space-x-2">
-            <Link 
-              href="/admin/project/new" 
-              className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+            <RedButton
+              href="/admin/project/new"
+              className="text-sm font-medium"
             >
               프로젝트 생성
-            </Link>
+            </RedButton>
           </div>
         </div>
+      </GlassCard>
 
         {/* 검색 및 필터 섹션 */}
-        <div className="mb-6 space-y-4">
-          {/* 검색창 */}
-          <div className="flex items-center space-x-3">
-            <div className="flex-1 relative">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                placeholder="프로젝트 제목, 설명, 키워드 검색..."
-                className="w-full border rounded-md px-4 py-2 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <svg
-                className="absolute left-3 top-2.5 h-4 w-4 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </div>
-          </div>
-          
-          {/* 필터 및 액션 버튼 */}
-          <div className="flex items-center justify-between">
+        <GlassCard className="p-6 mb-6">
+          <div className="space-y-4">
+            {/* 검색창 */}
             <div className="flex items-center space-x-3">
-              <select 
-                value={statusFilter} 
-                onChange={handleStatusChange}
-                className="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">전체 상태</option>
-                <option value="active">진행중</option>
-                <option value="completed">완료</option>
-                <option value="paused">중지</option>
-              </select>
-              
-              {(searchQuery || statusFilter) && (
-                <button 
-                  onClick={handleClearFilters}
-                  className="px-3 py-2 text-sm rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors"
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  placeholder="프로젝트 제목, 설명, 키워드 검색..."
+                  className="w-full border rounded-md px-4 py-2 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder-gray-300"
+                />
+                <svg
+                  className="absolute left-3 top-2.5 h-4 w-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  필터 초기화
-                </button>
-              )}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
             </div>
             
-            {/* 검색 결과 개수 */}
-            <div className="text-sm text-gray-500">
-              {searchQuery || statusFilter ? (
-                <span>검색 결과: {projects.length}개</span>
-              ) : (
-                <span>전체: {projects.length}개</span>
-              )}
+            {/* 필터 및 액션 버튼 */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <select 
+                  value={statusFilter} 
+                  onChange={handleStatusChange}
+                  className="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/10 backdrop-blur-sm border-white/20 text-white"
+                >
+                  <option value="">전체 상태</option>
+                  <option value="active">진행중</option>
+                  <option value="completed">완료</option>
+                  <option value="paused">중지</option>
+                </select>
+                
+                {(searchQuery || statusFilter) && (
+                  <button 
+                    onClick={handleClearFilters}
+                    className="px-3 py-2 text-sm rounded-md border border-white/20 text-gray-300 hover:bg-white/10 transition-colors"
+                  >
+                    필터 초기화
+                  </button>
+                )}
+              </div>
+              
+              {/* 검색 결과 개수 */}
+              <div className="text-sm text-gray-300">
+                {searchQuery || statusFilter ? (
+                  <span>검색 결과: {projects.length}개</span>
+                ) : (
+                  <span>전체: {projects.length}개</span>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </GlassCard>
 
         {isLocalLoading || isLoadingProjects ? (
           <div className="py-20 text-center text-gray-500">불러오는 중...</div>
@@ -250,7 +255,7 @@ export default function AdminProjectPage() {
         {!isLocalLoading && !isLoadingProjects && !error && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {projects.map((project) => (
-              <div key={project.id} className="border rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+              <GlassCard key={project.id} className="bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden">
                 {/* 썸네일 이미지 섹션 */}
                 <div className="aspect-video w-full bg-gray-100 relative">
                   <Image
@@ -342,7 +347,7 @@ export default function AdminProjectPage() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </GlassCard>
             ))}
           </div>
         )}
@@ -365,6 +370,5 @@ export default function AdminProjectPage() {
           </div>
         )}
       </div>
-    </div>
   );
 }

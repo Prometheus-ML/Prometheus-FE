@@ -128,15 +128,15 @@ export default function AdminLayout({
   const availableItems = navbarItems.filter(item => hasAccess(item.requiredGrant));
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative font-pretendard text-white">
       {/* Admin Background */}
       <div className="admin-bg fixed inset-0 -z-10"></div>
       
              {/* Navbar */}
        <nav className="backdrop-blur-sm shadow-lg border-b border-red-200 relative z-10">
         <div className="px-4 py-3">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-lg font-semibold text-gray-900">관리자 패널</h1>
+          <div className="flex text-center justify-center mb-4">
+            <h1 className="text-lg font-semibold">프로메테우스 관리자 페이지</h1>
           </div>
           
           {/* Navigation Tabs */}

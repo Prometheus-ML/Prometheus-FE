@@ -4,6 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useImage, useCoffeeChat } from '@prometheus-fe/hooks';
+import GlassCard from '../../../src/components/GlassCard';
+import RedButton from '../../../src/components/RedButton';
+import TabBar from '../../../src/components/TabBar';
 import { 
   CoffeeChatMember,
   CoffeeChatRequest,
@@ -279,39 +282,18 @@ export default function CoffeeChatPage() {
   return (
     <div className="px-6 py-6">
       {/* 커피챗 탭 네비게이션 */}
-      <div className="border-b mb-4">
-        <nav className="-mb-px flex space-x-6">
-          <button 
-            onClick={() => setTab('available')} 
-            className={`py-2 px-1 border-b-2 text-sm cursor-pointer ${
-              tab === 'available' 
-                ? 'border-blue-600 text-blue-600' 
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            가능 사용자
-          </button>
-          <button 
-            onClick={() => setTab('sent')} 
-            className={`py-2 px-1 border-b-2 text-sm cursor-pointer ${
-              tab === 'sent' 
-                ? 'border-blue-600 text-blue-600' 
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            보낸 요청
-          </button>
-          <button 
-            onClick={() => setTab('received')} 
-            className={`py-2 px-1 border-b-2 text-sm cursor-pointer ${
-              tab === 'received' 
-                ? 'border-blue-600 text-blue-600' 
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            받은 요청
-          </button>
-        </nav>
+      <div className="mb-6">
+        <TabBar
+          tabs={[
+            { id: 'available', label: '가능 사용자' },
+            { id: 'sent', label: '보낸 요청' },
+            { id: 'received', label: '받은 요청' }
+          ]}
+          activeTab={tab}
+          onTabChange={(tabId) => {
+            setTab(tabId as 'available' | 'sent' | 'received');
+          }}
+        />
       </div>
 
       {/* 가능 사용자 */}

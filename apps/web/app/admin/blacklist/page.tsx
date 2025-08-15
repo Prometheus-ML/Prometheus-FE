@@ -3,6 +3,9 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useImage, useMember } from '@prometheus-fe/hooks';
+import { SearchMemberBar } from '../../../src/components/SearchMemberBar';
+import GlassCard from '../../../src/components/GlassCard';
+import RedButton from '../../../src/components/RedButton';
 import { 
   MemberResponse, 
   MemberSummaryResponse, 
@@ -25,11 +28,9 @@ interface AddBlacklistModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (memberId: string, reason: string) => void;
-  searchResults: MemberSummaryResponse[];
-  searchQuery: string;
-  onSearch: (query: string) => void;
   selectedMember: MemberSummaryResponse | null;
   onSelectMember: (member: MemberSummaryResponse) => void;
+  onDeselectMember: () => void;
   blacklistReason: string;
   onReasonChange: (reason: string) => void;
   isLoading: boolean;
@@ -39,11 +40,9 @@ function AddBlacklistModal({
   isOpen,
   onClose,
   onAdd,
-  searchResults,
-  searchQuery,
-  onSearch,
   selectedMember,
   onSelectMember,
+  onDeselectMember,
   blacklistReason,
   onReasonChange,
   isLoading
@@ -61,60 +60,14 @@ function AddBlacklistModal({
           {/* 멤버 검색 */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">멤버 검색</label>
-            <div className="relative">
-              <input
-                value={searchQuery}
-                onChange={(e) => onSearch(e.target.value)}
-                type="text"
-                placeholder="이름, 이메일로 검색"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              {/* 검색 결과 드롭다운 */}
-              {searchResults.length > 0 && searchQuery && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                  {searchResults.map((member) => (
-                    <div
-                      key={member.id}
-                      onClick={() => onSelectMember(member)}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200 last:border-b-0"
-                    >
-                      <div className="font-medium">{member.name}</div>
-                      <div className="text-sm text-gray-500">{member.email}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <SearchMemberBar
+              onMemberSelect={onSelectMember}
+              onMemberDeselect={onDeselectMember}
+              placeholder="멤버 이름으로 검색하세요..."
+              showSelectedMember={true}
+              className="w-full"
+            />
           </div>
-
-          {/* 선택된 멤버 정보 */}
-          {selectedMember && (
-            <div className="mb-4 p-3 bg-gray-50 rounded-md">
-              <div className="flex items-center">
-                {selectedMember.profile_image_url ? (
-                  <div className="relative h-8 w-8 mr-3">
-                    <Image
-                      src={getThumbnailUrl(selectedMember.profile_image_url, 80)}
-                      alt={selectedMember.name}
-                      fill
-                      className="rounded-full object-cover"
-                      unoptimized
-                    />
-                  </div>
-                ) : (
-                  <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center mr-3">
-                    <span className="text-sm font-medium text-gray-700">
-                      {selectedMember.name.charAt(0)}
-                    </span>
-                  </div>
-                )}
-                <div>
-                  <div className="font-medium">{selectedMember.name}</div>
-                  <div className="text-sm text-gray-500">{selectedMember.email}</div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* 블랙리스트 사유 */}
           <div className="mb-4">
@@ -260,8 +213,6 @@ export default function AdminBlacklistPage() {
 
   // 블랙리스트 추가 모달 상태
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [searchResults, setSearchResults] = useState<MemberSummaryResponse[]>([]);
   const [selectedMemberForBlacklist, setSelectedMemberForBlacklist] = useState<MemberSummaryResponse | null>(null);
   const [blacklistReason, setBlacklistReason] = useState<string>('');
 
@@ -349,31 +300,14 @@ export default function AdminBlacklistPage() {
     }
   }, [currentPage, pageSize, getMemberList]);
 
-  // 멤버 검색
-  const searchMembers = useCallback(async (query: string) => {
-    if (!query || query.length < 2) {
-      setSearchResults([]);
-      return;
-    }
-
-    try {
-      const response = await getMemberList({
-        search: query,
-        size: 10,
-        status_filter: 'active,alumni' // 블랙리스트가 아닌 멤버만 검색
-      });
-      setSearchResults(response.members || []);
-    } catch (err) {
-      console.error('Failed to search members:', err);
-      setSearchResults([]);
-    }
-  }, [getMemberList]);
-
   // 멤버 선택
   const selectMember = useCallback((member: MemberSummaryResponse) => {
     setSelectedMemberForBlacklist(member);
-    setSearchQuery(member.name);
-    setSearchResults([]);
+  }, []);
+
+  // 멤버 선택 해제
+  const deselectMember = useCallback(() => {
+    setSelectedMemberForBlacklist(null);
   }, []);
 
   // 블랙리스트 추가
@@ -466,8 +400,6 @@ export default function AdminBlacklistPage() {
   // 모달 닫기
   const closeAddModal = useCallback(() => {
     setShowAddModal(false);
-    setSearchQuery('');
-    setSearchResults([]);
     setSelectedMemberForBlacklist(null);
     setBlacklistReason('');
   }, []);
@@ -527,32 +459,34 @@ export default function AdminBlacklistPage() {
   return (
       <div className="space-y-6">
         {/* 페이지 헤더 */}
-        <div className="md:flex md:items-center md:justify-between">
-          <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-              블랙리스트 관리
-            </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              블랙리스트 멤버를 관리하고 사유를 확인하세요
-            </p>
-          </div>
-          <div className="mt-4 flex md:mt-0 md:ml-4">
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                <svg className="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-                블랙리스트 추가
-              </button>
+        <GlassCard className="p-6">
+          <div className="md:flex md:items-center md:justify-between">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-2xl font-bold leading-7 text-white sm:text-3xl sm:truncate">
+                블랙리스트 관리
+              </h2>
+              <p className="mt-1 text-sm text-gray-300">
+                블랙리스트 멤버를 관리하고 사유를 확인하세요
+              </p>
+            </div>
+            <div className="mt-4 flex md:mt-0 md:ml-4">
+              <div className="flex space-x-3">
+                <RedButton
+                  onClick={() => setShowAddModal(true)}
+                  className="inline-flex items-center text-sm font-medium"
+                >
+                  <svg className="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  </svg>
+                  블랙리스트 추가
+                </RedButton>
+              </div>
             </div>
           </div>
-        </div>
+        </GlassCard>
 
         {/* 블랙리스트 멤버 목록 */}
-        <div className="bg-white shadow overflow-hidden sm:rounded-md">
+        <GlassCard className="overflow-hidden">
           {isLoading ? (
             <div className="flex justify-center items-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -563,12 +497,12 @@ export default function AdminBlacklistPage() {
                 <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">오류 발생</h3>
-                <p className="mt-1 text-sm text-gray-500">{error}</p>
+                <h3 className="mt-2 text-sm font-medium text-white">오류 발생</h3>
+                <p className="mt-1 text-sm text-gray-300">{error}</p>
               </div>
             </div>
           ) : (
-            <ul className="divide-y divide-gray-200">
+            <ul className="divide-y divide-gray-200/20">
               {members.map((member) => (
                 <li key={member.id} className="px-4 py-4 sm:px-6">
                   <div className="flex items-center justify-between">
@@ -595,13 +529,13 @@ export default function AdminBlacklistPage() {
                       </div>
                       <div className="ml-4">
                         <div className="flex items-center">
-                          <p className="text-sm font-medium text-gray-900">{member.name}</p>
+                          <p className="text-sm font-medium text-white">{member.name}</p>
                           <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                             블랙리스트
                           </span>
                         </div>
-                        <p className="text-sm text-gray-500">{member.email}</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-300">{member.email}</p>
+                        <p className="text-sm text-gray-300">
                           {member.gen}기 · {member.school} {member.major}
                         </p>
                         {/* 블랙리스트 사유는 상세 정보에서 가져와야 하므로 여기서는 표시하지 않음 */}
@@ -611,7 +545,7 @@ export default function AdminBlacklistPage() {
                       {canManageBlacklist && (
                         <button
                           onClick={() => handleEditBlacklistReason(member)}
-                          className="text-blue-600 hover:text-blue-900 text-sm font-medium"
+                          className="text-blue-400 hover:text-blue-300 text-sm font-medium"
                         >
                           사유 수정
                         </button>
@@ -619,7 +553,7 @@ export default function AdminBlacklistPage() {
                       {canDeleteMember && (
                         <button
                           onClick={() => deleteMemberHandler(member)}
-                          className="text-red-600 hover:text-red-900 text-sm font-medium"
+                          className="text-red-400 hover:text-red-300 text-sm font-medium"
                         >
                           삭제
                         </button>
@@ -633,7 +567,7 @@ export default function AdminBlacklistPage() {
 
           {/* 페이지네이션 */}
           {totalPages > 1 && (
-            <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div className="px-4 py-3 flex items-center justify-between border-t border-gray-200/20 sm:px-6">
               <div className="flex-1 flex justify-between sm:hidden">
                 <button
                   onClick={prevPage}
@@ -652,7 +586,7 @@ export default function AdminBlacklistPage() {
               </div>
               <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm text-gray-700">
+                  <p className="text-sm text-gray-300">
                     <span className="font-medium">{(currentPage - 1) * pageSize + 1}</span>
                     에서
                     <span className="font-medium">{Math.min(currentPage * pageSize, total)}</span>
@@ -695,41 +629,33 @@ export default function AdminBlacklistPage() {
               </div>
             </div>
           )}
-        </div>
+        </GlassCard>
 
         {/* 통계 카드 */}
-        <div className="mt-8">
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-1 lg:grid-cols-1">
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg className="h-6 w-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                    </svg>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">블랙리스트 멤버</dt>
-                      <dd className="text-lg font-medium text-gray-900">{total}</dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
+        <GlassCard className="p-5">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-6 w-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+              </svg>
             </div>
-        </div>
-      </div>
+            <div className="ml-5 w-0 flex-1">
+              <dl>
+                <dt className="text-sm font-medium text-gray-300 truncate">블랙리스트 멤버</dt>
+                <dd className="text-lg font-medium text-white">{total}</dd>
+              </dl>
+            </div>
+          </div>
+        </GlassCard>
 
         {/* 블랙리스트 추가 모달 */}
         <AddBlacklistModal
           isOpen={showAddModal}
           onClose={closeAddModal}
           onAdd={addToBlacklist}
-          searchResults={searchResults}
-          searchQuery={searchQuery}
-          onSearch={searchMembers}
           selectedMember={selectedMemberForBlacklist}
           onSelectMember={selectMember}
+          onDeselectMember={deselectMember}
           blacklistReason={blacklistReason}
           onReasonChange={setBlacklistReason}
           isLoading={isLoading}

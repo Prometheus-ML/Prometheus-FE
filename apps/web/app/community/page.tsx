@@ -5,6 +5,9 @@ import { useCommunity } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
 import PostModal from '../../src/components/PostModal';
 import PostForm from '../../src/components/PostForm';
+import RedButton from '../../src/components/RedButton';
+import GlassCard from '../../src/components/GlassCard';
+import TabBar from '../../src/components/TabBar';
 
 const CATEGORIES = [
   { value: 'free', label: '자유게시판' },
@@ -118,43 +121,26 @@ export default function CommunityPage() {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-900">커뮤니티</h1>
           {user && (
-            <button
+            <RedButton
               onClick={() => setShowCreateForm(!showCreateForm)}
-              className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+              className="text-sm font-medium"
             >
               게시글 작성
-            </button>
+            </RedButton>
           )}
         </div>
 
-        {/* 카테고리 필터 */}
-        <div className="mb-6">
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => handleCategoryFilter('')}
-              className={`px-3 py-1 text-sm rounded-full transition-colors ${
-                selectedCategory === '' 
-                  ? 'bg-blue-100 text-blue-800 border border-blue-200' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              전체
-            </button>
-            {CATEGORIES.map(category => (
-              <button
-                key={category.value}
-                onClick={() => handleCategoryFilter(category.value)}
-                className={`px-3 py-1 text-sm rounded-full transition-colors ${
-                  selectedCategory === category.value 
-                    ? 'bg-blue-100 text-blue-800 border border-blue-200' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {category.label}
-              </button>
-            ))}
-          </div>
-        </div>
+                 {/* 카테고리 필터 */}
+         <GlassCard className="mb-6">
+           <TabBar
+             tabs={[
+               { id: '', label: '전체' },
+               ...CATEGORIES.map(category => ({ id: category.value, label: category.label }))
+             ]}
+             activeTab={selectedCategory}
+             onTabChange={handleCategoryFilter}
+           />
+         </GlassCard>
 
         {/* 게시글 작성 폼 */}
         {showCreateForm && (

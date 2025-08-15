@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useImage, useMember, useCoffeeChat } from '@prometheus-fe/hooks';
 import GlassCard from '../../src/components/GlassCard';
+import TabBar from '../../src/components/TabBar';
+import RedButton from '../../src/components/RedButton';
 import { 
   MemberDetailResponse,
   MemberPublicListItem,
@@ -216,8 +218,8 @@ export default function MemberPage() {
     gen: null as number | null
   });
 
-  // 기수별 탭 상태 (외부인용)
-  const [selectedGenTab, setSelectedGenTab] = useState<number | 'executive' | 'all'>('all');
+  // 기수별 탭 상태
+  const [selectedGenTab, setSelectedGenTab] = useState<number>(0); // 초기값은 0으로 설정하고 나중에 업데이트
 
   // 모달 상태
   const [showDetail, setShowDetail] = useState<boolean>(false);
@@ -226,6 +228,36 @@ export default function MemberPage() {
   // 계산된 값들
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / size)), [total, size]);
   const isPrivate = useMemo(() => isAuthenticated(), [isAuthenticated]);
+  
+  // 현재 기수 계산 (2022년 3월부터 6개월 단위)
+  const getCurrentGen = useCallback(() => {
+    const startDate = new Date('2022-03-01');
+    const now = new Date();
+    const monthsDiff = (now.getFullYear() - startDate.getFullYear()) * 12 + (now.getMonth() - startDate.getMonth());
+    return Math.floor(monthsDiff / 6) + 1;
+  }, []);
+  
+  // 기수별 탭 생성
+  const genTabs = useMemo(() => {
+    const currentGen = getCurrentGen();
+    const tabs = [];
+    
+    // 최신 기수부터 1기까지 (내림차순)
+    for (let i = currentGen; i >= 1; i--) {
+      tabs.push({
+        id: i.toString(),
+        label: `${i}기`
+      });
+    }
+    
+    // 0기(창립멤버) 추가
+    tabs.push({
+      id: '0',
+      label: '창립멤버'
+    });
+    
+    return tabs;
+  }, [getCurrentGen]);
 
   // 유틸리티 함수들
   const getFirstLetter = useCallback((name: string) => {
@@ -246,23 +278,22 @@ export default function MemberPage() {
         size
       };
 
-      if (isPrivate) {
-        // 로그인 사용자: 기존 필터 사용
-        params = {
-          ...params,
-          ...(filters.search && { search: filters.search }),
-          ...(filters.school && { school: filters.school }),
-          ...(filters.executive && { executive: filters.executive }),
-          ...(filters.gen !== null && { gen: filters.gen })
-        };
-      } else {
-        // 외부인: 기수별 탭 사용
-        if (selectedGenTab === 'executive') {
-          params.executive = true;
-        } else if (selectedGenTab !== 'all') {
-          params.gen = selectedGenTab;
-        }
-      }
+             if (isPrivate) {
+         // 로그인 사용자: 검색 필터 + 탭 필터 조합
+         params = {
+           ...params,
+           ...(filters.search && { search: filters.search }),
+           ...(filters.school && { school: filters.school }),
+           ...(filters.executive && { executive: filters.executive }),
+           ...(filters.gen !== null && { gen: filters.gen })
+         };
+         
+         // 탭 필터도 적용
+         params.gen = selectedGenTab;
+       } else {
+         // 외부인: 기수별 탭만 사용
+         params.gen = selectedGenTab;
+       }
 
       let response;
       if (isPrivate) {
@@ -362,13 +393,19 @@ export default function MemberPage() {
     fetchMembers();
   }, [fetchMembers]);
 
-  // 기수별 탭 변경 시 데이터 다시 로드 (외부인용)
+  // 초기 기수 설정
   useEffect(() => {
-    if (!isPrivate) {
+    const currentGen = getCurrentGen();
+    setSelectedGenTab(currentGen);
+  }, [getCurrentGen]);
+
+  // 기수별 탭 변경 시 데이터 다시 로드 (공통)
+  useEffect(() => {
+    if (selectedGenTab > 0) { // 0이 아닐 때만 실행 (초기 로딩 방지)
       setPage(1); // 페이지 초기화
       fetchMembers();
     }
-  }, [selectedGenTab, isPrivate, fetchMembers]);
+  }, [selectedGenTab, fetchMembers]);
 
   return (
     <div className="min-h-screen">
@@ -394,43 +431,16 @@ export default function MemberPage() {
         </div>
 
         <div className="px-6 py-6">
-          {/* 기수별 탭 (외부인용) */}
-          {!isPrivate && (
-            <div className="mb-6">
-              <div className="flex flex-wrap gap-2">
-                <GlassCard 
-                  as="button" 
-                  onClick={() => setSelectedGenTab('all')}
-                  className={`px-3 py-2 text-sm text-white ${
-                    selectedGenTab === 'all' ? 'bg-gradient-to-r from-red-800 to-red-600' : ''
-                  }`}
-                >
-                  전체
-                </GlassCard>
-                <GlassCard 
-                  as="button" 
-                  onClick={() => setSelectedGenTab('executive')}
-                  className={`px-3 py-2 text-sm text-white ${
-                    selectedGenTab === 'executive' ? 'bg-gradient-to-r from-red-800 to-red-600' : ''
-                  }`}
-                >
-                  운영진
-                </GlassCard>
-                {Array.from({ length: 20 }, (_, i) => i).map((gen) => (
-                  <GlassCard
-                    key={gen}
-                    as="button"
-                    onClick={() => setSelectedGenTab(gen)}
-                    className={`px-3 py-2 text-sm text-white ${
-                      selectedGenTab === gen ? 'bg-gradient-to-r from-red-800 to-red-600' : ''
-                    }`}
-                  >
-                    {gen}기
-                  </GlassCard>
-                ))}
-              </div>
-            </div>
-          )}
+                     {/* 기수별 탭 */}
+           <GlassCard className="mb-6">
+             <TabBar
+               tabs={genTabs}
+               activeTab={selectedGenTab.toString()}
+               onTabChange={(tabId) => {
+                 setSelectedGenTab(parseInt(tabId));
+               }}
+             />
+           </GlassCard>
 
           {/* 필터 (로그인 사용자용) */}
           {isPrivate && (
@@ -469,12 +479,12 @@ export default function MemberPage() {
                   ))}
                 </select>
                 <div className="flex items-center space-x-2">
-                  <GlassCard as="button" onClick={applyFilters} className="flex-1 px-3 py-2 text-sm font-medium text-white">
+                  <RedButton onClick={applyFilters} className="flex-1 px-3 py-2 text-sm">
                     검색
-                  </GlassCard>
-                  <GlassCard as="button" onClick={resetFilters} className="flex-1 px-3 py-2 text-sm font-medium text-white">
+                  </RedButton>
+                  <RedButton onClick={resetFilters} className="flex-1 px-3 py-2 text-sm">
                     초기화
-                  </GlassCard>
+                  </RedButton>
                 </div>
               </div>
             </GlassCard>
@@ -487,17 +497,17 @@ export default function MemberPage() {
           </div>
         ) : (
           /* 멤버 카드 그리드 */
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {members.map((member, index) => (
               <GlassCard
                 key={'id' in member ? member.id : index}
-                className={`relative p-4 ${
+                className={`relative p-4 text-center ${
                   isPrivate ? 'cursor-pointer' : 'cursor-default'
                 }`}
                 onClick={() => onCardClick(member)}
               >
-                <div className="flex items-center gap-4">
-                  <div className="relative">
+                <div className="flex flex-col items-center">
+                  <div className="relative mb-3">
                     {member.profile_image_url && !imageErrors['id' in member ? member.id : index] ? (
                       <div className="relative w-16 h-16">
                         <Image
@@ -520,58 +530,43 @@ export default function MemberPage() {
                       </div>
                     )}
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900">{member.name}</h3>
                   
-                  {!isPrivate ? (
-                    <div className="mt-1 flex flex-wrap gap-1 text-xs">
-                      {member.school && (
-                        <span className="px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-700">
-                          {member.school}
-                        </span>
-                      )}
-                      {member.major && (
-                        <span className="px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-700">
-                          {member.major}
-                        </span>
-                      )}
-                      
-                    </div>
-                  ) : (
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {member.gen && (
-                        <span className="px-1.5 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                          {member.gen}기
-                        </span>
-                      )}
-                      {member.school && (
-                        <span className="px-1.5 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full">
-                          {member.school}
-                        </span>
-                      )}
-                      {member.major && (
-                        <span className="px-1.5 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full">
-                          {member.major}
-                        </span>
-                      )}
-                      
-                    </div>
-                  )}
-                </div>
-
-                {member.history && member.history.length > 0 && (
-                  <div className="mt-2 text-xs text-gray-700 bg-gray-50 p-2 rounded">
-                    <div className="font-medium mb-1">이력:</div>
-                    <div className="space-y-0.5">
-                      {member.history.slice(0, 3).map((h: string, idx: number) => (
-                        <div key={idx}>• {h}</div>
-                      ))}
-                      {member.history.length > 3 && (
-                        <div className="text-gray-500">+{member.history.length - 3}개 더...</div>
-                      )}
-                    </div>
+                  <h3 className="text-lg font-semibold text-white mb-2">{member.name}</h3>
+                  
+                  <div className="flex flex-wrap gap-1 justify-center">
+                    {!isPrivate ? (
+                      <>
+                        {member.school && (
+                           <span className="px-1.5 py-0.5 rounded-full text-gray-300 text-xs">
+                             {member.school}
+                           </span>
+                         )}
+                        {member.major && (
+                          <span className="px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-700 text-xs">
+                            {member.major}
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {member.gen && (
+                          <span className="px-1.5 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                            {member.gen}기
+                          </span>
+                        )}
+                        {member.school && (
+                           <span className="px-1.5 py-0.5 text-gray-300 text-xs rounded-full">
+                             {member.school}
+                           </span>
+                         )}
+                        {member.major && (
+                          <span className="px-1.5 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full">
+                            {member.major}
+                          </span>
+                        )}
+                      </>
+                    )}
                   </div>
-                )}
                 </div>
               </GlassCard>
             ))}
@@ -581,15 +576,15 @@ export default function MemberPage() {
         {/* 페이지네이션 */}
         {totalPages > 1 && (
           <div className="mt-6 flex items-center justify-center space-x-2">
-            <GlassCard as="button" onClick={prevPage} disabled={page === 1} className="px-3 py-1 text-sm font-medium text-white disabled:opacity-50">
+            <RedButton onClick={prevPage} disabled={page === 1} className="px-3 py-1 text-sm disabled:opacity-50">
               이전
-            </GlassCard>
+            </RedButton>
             <span className="text-sm text-white">
               {page} / {totalPages}
             </span>
-            <GlassCard as="button" onClick={nextPage} disabled={page === totalPages} className="px-3 py-1 text-sm font-medium text-white disabled:opacity-50">
+            <RedButton onClick={nextPage} disabled={page === totalPages} className="px-3 py-1 text-sm disabled:opacity-50">
               다음
-            </GlassCard>
+            </RedButton>
           </div>
         )}
       </div>

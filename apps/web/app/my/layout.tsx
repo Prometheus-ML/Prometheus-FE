@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import GlassCard from '../../src/components/GlassCard';
+import TabBar from '../../src/components/TabBar';
 
 const navbarItems = [
   {
@@ -64,48 +66,54 @@ export default function MyLayout({
   // 권한 체크가 완료되지 않았으면 로딩 표시
   if (!isAuthenticated()) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">권한 확인 중...</div>
+      <div className="min-h-screen flex items-center justify-center relative">
+        <div className="prometheus-bg fixed inset-0 -z-10"></div>
+        <div className="text-lg text-white relative z-10">권한 확인 중...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative font-pretendard text-white">
+      {/* Prometheus Background */}
+      <div className="prometheus-bg fixed inset-0 -z-10"></div>
+      
       {/* Navbar */}
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="md:max-w-4xl max-w-lg mx-auto px-4 py-3">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-lg font-semibold text-gray-900">내 정보</h1>
-            <Link 
-              href="/"
-              className="text-sm text-gray-600 hover:text-gray-900 cursor-pointer"
-            >
-              홈으로
-            </Link>
+      <nav className="backdrop-blur-sm shadow-lg border-b border-red-200 relative z-10">
+        <div className="px-4 py-3">
+          <div className="flex text-center justify-center mb-4">
+            <h1 className="text-lg font-semibold">내 정보</h1>
           </div>
           
           {/* Navigation Tabs */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2">
+            {/* 홈으로 버튼 */}
+            <GlassCard href="/" className="w-12 h-12 flex items-center justify-center text-white">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </GlassCard>
+            
+            {/* 메뉴 아이템들 */}
             {navbarItems.map((item) => {
               const isActive = pathname === item.href;
               return (
-                <Link
+                <GlassCard
                   key={item.name}
                   href={item.href}
                   className={`${
                     isActive
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
-                  } w-12 h-12 flex flex-col items-center justify-center border-2 rounded-lg cursor-pointer transition-colors`}
+                      ? 'bg-gradient-to-r from-red-800 to-red-600 text-white border-red-700 shadow-lg'
+                      : 'text-white'
+                  } flex-1 h-12 flex flex-col items-center justify-center`}
                 >
                   <div className={`${
-                    isActive ? 'text-white' : 'text-gray-500'
+                    isActive ? 'text-white' : 'text-white'
                   } mb-1`}>
                     {item.icon}
                   </div>
                   <span className="text-xs font-medium">{item.name}</span>
-                </Link>
+                </GlassCard>
               );
             })}
           </div>
@@ -113,7 +121,7 @@ export default function MyLayout({
       </nav>
 
       {/* Main Content */}
-      <main className="md:max-w-4xl max-w-lg mx-auto bg-white min-h-screen shadow-lg">
+      <main className="backdrop-blur-sm min-h-screen shadow-lg p-4 relative z-10">
         {children}
       </main>
     </div>
