@@ -43,6 +43,11 @@ export class ApiClient {
       ...(options.headers as Record<string, string>),
     };
 
+    // FormData를 사용할 때는 Content-Type 헤더를 제거 (브라우저가 자동 설정)
+    if (options.body instanceof FormData) {
+      delete headers['Content-Type'];
+    }
+
     // Authorization 헤더 자동 추가 (콜백에서 토큰 가져오기)
     if (!headers.Authorization) {
       const accessToken = this.authCallbacks.getAccessToken?.();

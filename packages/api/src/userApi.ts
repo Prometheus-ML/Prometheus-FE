@@ -9,6 +9,12 @@ import type {
   StatusUpdateRequest,
   UserUpdateByManagerRequest,
   UserPublic,
+  CoffeeChatAvailableUserListResponse,
+  CoffeeChatRequestCreate,
+  CoffeeChatRequestResponse,
+  CoffeeChatRequestListResponse,
+  CoffeeChatResponseRequest,
+  CoffeeChatContactInfoResponse,
 } from '@prometheus-fe/types';
 
 export class UserApi {
@@ -33,7 +39,7 @@ export class UserApi {
     page?: number;
     size?: number;
     search?: string;
-    grant?: string;
+    executive?: boolean;
     gen?: number;
     mbti?: string;
     school?: string;
@@ -43,7 +49,7 @@ export class UserApi {
       if (value !== undefined && value !== null) searchParams.set(key, String(value));
     });
     const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
-    return this.api.get<UserPublicListResponse>(`/users/public-list${query}`);
+    return this.api.get<UserPublicListResponse>(`/users/list/public${query}`);
   }
 
   // 인증된 사용자용 목록
@@ -51,7 +57,7 @@ export class UserApi {
     page?: number;
     size?: number;
     search?: string;
-    grant?: string;
+    executive?: boolean;
     gen?: number;
     mbti?: string;
     school?: string;
@@ -61,7 +67,7 @@ export class UserApi {
       if (value !== undefined && value !== null) searchParams.set(key, String(value));
     });
     const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
-    return this.api.get<UserPrivateListResponse>(`/users/private-list${query}`);
+    return this.api.get<UserPrivateListResponse>(`/users/list/private${query}`);
   }
 
   // 사용자 상세 정보 조회
@@ -107,6 +113,63 @@ export class UserApi {
   // 사용자 게시글 목록
   getUserPosts(userId: string) {
     return this.api.get<any[]>(`/users/${userId}/posts`);
+  }
+
+  // Coffee Chat APIs
+  async getAvailableUsers(params?: {
+    page?: number;
+    size?: number;
+    search?: string;
+    gen_filter?: number;
+  }): Promise<CoffeeChatAvailableUserListResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set('page', params.page.toString());
+    if (params?.size) searchParams.set('size', params.size.toString());
+    if (params?.search) searchParams.set('search', params.search);
+    if (params?.gen_filter) searchParams.set('gen_filter', params.gen_filter.toString());
+    
+    const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return this.api.get<CoffeeChatAvailableUserListResponse>(`/users/coffee-chats/available-users${query}`);
+  }
+
+  async createCoffeeChatRequest(payload: CoffeeChatRequestCreate): Promise<CoffeeChatRequestResponse> {
+    return this.api.post<CoffeeChatRequestResponse>('/users/coffee-chats/requests', payload);
+  }
+
+  async getSentRequests(params?: {
+    page?: number;
+    size?: number;
+    status_filter?: string;
+  }): Promise<CoffeeChatRequestListResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set('page', params.page.toString());
+    if (params?.size) searchParams.set('size', params.size.toString());
+    if (params?.status_filter) searchParams.set('status_filter', params.status_filter);
+    
+    const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return this.api.get<CoffeeChatRequestListResponse>(`/users/coffee-chats/requests/sent${query}`);
+  }
+
+  async getReceivedRequests(params?: {
+    page?: number;
+    size?: number;
+    status_filter?: string;
+  }): Promise<CoffeeChatRequestListResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set('page', params.page.toString());
+    if (params?.size) searchParams.set('size', params.size.toString());
+    if (params?.status_filter) searchParams.set('status_filter', params.status_filter);
+    
+    const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return this.api.get<CoffeeChatRequestListResponse>(`/users/coffee-chats/requests/received${query}`);
+  }
+
+  async respondToRequest(requestId: number, payload: CoffeeChatResponseRequest): Promise<CoffeeChatRequestResponse> {
+    return this.api.put<CoffeeChatRequestResponse>(`/users/coffee-chats/requests/${requestId}/respond`, payload);
+  }
+
+  async getContactInfo(requestId: number): Promise<CoffeeChatContactInfoResponse> {
+    return this.api.get<CoffeeChatContactInfoResponse>(`/users/coffee-chats/requests/${requestId}/contact-info`);
   }
 }
 

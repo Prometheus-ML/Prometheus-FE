@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import {
   createApiClient,
-  createAdminApi,
+  createMemberApi,
   createAuthApi,
   createUserApi,
   createCoffeeChatApi,
@@ -12,6 +12,7 @@ import {
   createSponsorshipApi,
   createStorageApi,
   createCommunityApi,
+  MemberApi,
   ApiClient,
   AuthApi,
   UserApi,
@@ -28,7 +29,7 @@ type ApiInstances = {
   client: ApiClient;
   auth: AuthApi;
   user: UserApi;
-  admin: ReturnType<typeof createAdminApi>;
+  member: MemberApi;
   coffeeChat: CoffeeChatApi;
   project: ProjectApi;
   schedules: SchedulesApi;
@@ -66,7 +67,7 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
       client,
       auth: authApi,
       user: createUserApi(client),
-      admin: createAdminApi(client),
+      member: createMemberApi(client),
       coffeeChat: createCoffeeChatApi(client),
       project: createProjectApi(client),
       schedules: createSchedulesApi(client),

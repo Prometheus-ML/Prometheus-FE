@@ -9,6 +9,20 @@ export interface MemberListRequest {
   active_gens_filter?: string;
 }
 
+// UI에서 사용하는 필터 타입 (string 기반)
+export interface MemberFilters {
+  search: string;
+  grant_filter: string;
+  gen_filter: string;
+  status_filter: string;
+}
+
+// UI에서 사용하는 목록 파라미터 타입
+export interface MemberListParams extends MemberFilters {
+  page: number;
+  size: number;
+}
+
 export interface MemberSummaryResponse {
   id: string;
   name: string;
@@ -19,6 +33,7 @@ export interface MemberSummaryResponse {
   school?: string;
   major?: string;
   gender?: string;
+  profile_image_url?: string;
 }
 
 export interface MemberListResponse {
@@ -89,7 +104,7 @@ export interface MemberCreateRequest {
 
 export interface MemberUpdateRequest {
   name?: string;
-    email?: string;
+  email?: string;
   gen?: number;
   school?: string;
   major?: string;

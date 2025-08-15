@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '@prometheus-fe/stores';
 
 
-export default function AdminProjectPage() {
+export default function AdminPostPage() {
   const canAccessManager = useAuthStore((s) => s.canAccessManager);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   
@@ -46,8 +46,8 @@ export default function AdminProjectPage() {
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
       <div className="text-center text-white">
-        <h3 className="text-lg font-medium mb-2">프로젝트 관리</h3>
-        <p className="text-gray-300">프로젝트 관리 기능이 곧 제공됩니다.</p>
+        <h3 className="text-lg font-medium mb-2">게시글 관리</h3>
+        <p className="text-gray-300">게시글 관리 기능이 곧 제공됩니다.</p>
       </div>
     </div>
   );
