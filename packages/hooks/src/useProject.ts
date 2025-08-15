@@ -1,15 +1,56 @@
 import { useApi } from '@prometheus-fe/context';
 import { Project, ProjectMember } from '@prometheus-fe/types';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 export function useProject() {
   const { project } = useApi();
   const [allProjects, setAllProjects] = useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projectMembers, setProjectMembers] = useState<ProjectMember[]>([]);
   const [isLoadingProjects, setIsLoadingProjects] = useState(false);
   const [isLoadingProject, setIsLoadingProject] = useState(false);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+  
+  // 검색 및 필터 상태
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+
+  // 클라이언트 사이드 필터링 함수
+  const filterProjects = useCallback((projects: Project[], search: string, status: string) => {
+    let filtered = [...projects];
+
+    // 검색어 필터링 (제목, 설명, 키워드에서 검색)
+    if (search && search.trim()) {
+      const searchTerm = search.toLowerCase().trim();
+      filtered = filtered.filter(project => {
+        const titleMatch = project.title?.toLowerCase().includes(searchTerm);
+        const descriptionMatch = project.description?.toLowerCase().includes(searchTerm);
+        const keywordMatch = project.keywords?.some(keyword => 
+          keyword.toLowerCase().includes(searchTerm)
+        );
+        return titleMatch || descriptionMatch || keywordMatch;
+      });
+    }
+
+    // 상태 필터링
+    if (status && status.trim()) {
+      filtered = filtered.filter(project => project.status === status);
+    }
+
+    return filtered;
+  }, []);
+
+  // 필터링된 프로젝트 업데이트
+  const updateFilteredProjects = useCallback(() => {
+    const filtered = filterProjects(allProjects, searchQuery, statusFilter);
+    setFilteredProjects(filtered);
+  }, [allProjects, searchQuery, statusFilter, filterProjects]);
+
+  // 필터링 상태가 변경될 때마다 필터링된 프로젝트 업데이트
+  useEffect(() => {
+    updateFilteredProjects();
+  }, [updateFilteredProjects]);
 
   // 프로젝트 목록 조회
   const fetchProjects = useCallback(async (params?: any) => {
@@ -20,13 +61,15 @@ export function useProject() {
     }
     try {
       setIsLoadingProjects(true);
-      const data = await project.list(params);
+      // 백엔드에서 모든 프로젝트를 가져옴 (클라이언트 사이드 필터링을 위해)
+      const data = await project.list({ size: 100 }); // 충분히 큰 사이즈로 설정
       setAllProjects(data.projects || []);
       console.log('data.projects', data.projects);
 
     } catch (error) {
       console.error('프로젝트 목록 조회 실패:', error);
       setAllProjects([]);
+      setFilteredProjects([]);
     } finally {
       setIsLoadingProjects(false);
     }
@@ -191,19 +234,49 @@ export function useProject() {
     } catch (error) {
       console.error('Admin: 프로젝트 목록 조회 실패:', error);
       setAllProjects([]);
+      setFilteredProjects([]);
     } finally {
       setIsLoadingProjects(false);
     }
   }, [project]);
 
+  // 검색어 설정
+  const setSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+  }, []);
+
+  // 상태 필터 설정
+  const setStatus = useCallback((status: string) => {
+    setStatusFilter(status);
+  }, []);
+
+  // 검색 및 필터 초기화
+  const clearFilters = useCallback(() => {
+    setSearchQuery('');
+    setStatusFilter('');
+  }, []);
+
+  // 검색 결과 하이라이트용 함수
+  const highlightSearchTerm = useCallback((text: string, searchTerm: string) => {
+    if (!searchTerm.trim()) return text;
+    
+    const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return text.replace(regex, '<mark>$1</mark>');
+  }, []);
+
   return {
     // 상태
-    projects: allProjects,
+    projects: filteredProjects, // 필터링된 프로젝트 반환
+    allProjects, // 전체 프로젝트도 필요시 접근 가능
     selectedProject,
     projectMembers,
     isLoadingProjects,
     isLoadingProject,
     isLoadingMembers,
+    
+    // 검색 및 필터 상태
+    searchQuery,
+    statusFilter,
     
     // API 함수들
     fetchProjects,
@@ -219,6 +292,12 @@ export function useProject() {
     // 핸들러들
     handleProjectSelect,
     handleProjectDeselect,
+    
+    // 검색 및 필터 함수들
+    setSearch,
+    setStatus,
+    clearFilters,
+    highlightSearchTerm,
     
     // Admin용 함수
     fetchAllProjectsForAdmin,

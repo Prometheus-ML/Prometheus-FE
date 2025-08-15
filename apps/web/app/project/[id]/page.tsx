@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useProject } from '@prometheus-fe/hooks';
+import { useProject, useImage, useMember } from '@prometheus-fe/hooks';
+import AddMemberModal from '../../../src/components/AddMemberModal';
 
 interface Project {
   id: number;
@@ -25,6 +26,11 @@ interface Member {
   member_id: string;
   role?: string | null;
   contribution?: string | null;
+}
+
+interface MemberWithDetails extends Member {
+  name?: string;
+  email?: string;
 }
 
 interface ConfirmModalProps {
@@ -65,103 +71,6 @@ function ConfirmModal({ show, title, message, confirmText, onConfirm, onCancel }
   );
 }
 
-interface MemberModalProps {
-  show: boolean;
-  mode: 'add' | 'edit';
-  member?: Member | null;
-  onClose: () => void;
-  onSubmit: (member: any) => void;
-}
-
-function MemberModal({ show, mode, member, onClose, onSubmit }: MemberModalProps) {
-  const [formData, setFormData] = useState({
-    id: '',
-    member_id: '',
-    role: '',
-    contribution: ''
-  });
-
-  useEffect(() => {
-    if (member) {
-      setFormData({
-        id: member.id || '',
-        member_id: member.member_id || '',
-        role: member.role || '',
-        contribution: member.contribution || ''
-      });
-    } else {
-      setFormData({
-        id: '',
-        member_id: '',
-        role: '',
-        contribution: ''
-      });
-    }
-  }, [member, show]);
-
-  const handleSubmit = () => {
-    const payload = {
-      id: formData.id || undefined,
-      member_id: formData.member_id,
-      role: formData.role || undefined,
-      contribution: formData.contribution || undefined
-    };
-    onSubmit(payload);
-  };
-
-  if (!show) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md bg-white rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">
-            {mode === 'add' ? '멤버 추가' : '멤버 수정'}
-          </h2>
-          <button className="text-gray-500" onClick={onClose}>
-            닫기
-          </button>
-        </div>
-        <div className="space-y-3">
-          <input
-            value={formData.member_id}
-            onChange={(e) => setFormData(prev => ({ ...prev, member_id: e.target.value }))}
-            className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="멤버 ID (예: 0001)"
-            disabled={mode === 'edit'}
-          />
-          <input
-            value={formData.role}
-            onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
-            className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="역할 (예: 리더/팀원)"
-          />
-          <input
-            value={formData.contribution}
-            onChange={(e) => setFormData(prev => ({ ...prev, contribution: e.target.value }))}
-            className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="기여 (100자 이내)"
-          />
-        </div>
-        <div className="mt-6 flex justify-end space-x-2">
-          <button
-            className="px-4 py-2 rounded-md border hover:bg-gray-50"
-            onClick={onClose}
-          >
-            취소
-          </button>
-          <button
-            className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
-            onClick={handleSubmit}
-          >
-            저장
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function ProjectDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -180,18 +89,24 @@ export default function ProjectDetailPage() {
     removeProjectMember,
   } = useProject();
 
+  const { getMember } = useMember();
+
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [memberModalMode, setMemberModalMode] = useState<'add' | 'edit'>('add');
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [membersWithDetails, setMembersWithDetails] = useState<MemberWithDetails[]>([]);
 
   // TODO: Replace with actual auth logic
   const canManage = true; // Manager 이상
   const isLeader = false; // 현재 사용자가 리더인지
   const canEdit = canManage || isLeader;
   const canEditMembers = canEdit;
+  
+  // useImage 훅 사용
+  const { getThumbnailUrl, getDefaultImageUrl } = useImage();
 
   const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('ko-KR') : '');
 
@@ -229,6 +144,37 @@ export default function ProjectDetailPage() {
       await fetchProjectMembers(parseInt(projectId), { page: 1, size: 100 });
     } catch (e: any) {
       console.error(e);
+    }
+  };
+
+  // 멤버 상세 정보 로드
+  const loadMemberDetails = async () => {
+    if (!projectMembers.length) return;
+    
+    try {
+      const membersWithDetails = await Promise.all(
+        projectMembers.map(async (member) => {
+          try {
+            const memberDetail = await getMember(member.member_id);
+            return {
+              ...member,
+              name: memberDetail.name,
+              email: memberDetail.email
+            };
+          } catch (error) {
+            console.error(`멤버 ${member.member_id} 정보 로드 실패:`, error);
+            return {
+              ...member,
+              name: '알 수 없음',
+              email: '알 수 없음'
+            };
+          }
+        })
+      );
+      
+      setMembersWithDetails(membersWithDetails);
+    } catch (error) {
+      console.error('멤버 상세 정보 로드 실패:', error);
     }
   };
 
@@ -293,6 +239,13 @@ export default function ProjectDetailPage() {
     }
   }, [projectId]);
 
+  // 멤버 목록이 변경될 때마다 상세 정보 로드
+  useEffect(() => {
+    if (projectMembers.length > 0) {
+      loadMemberDetails();
+    }
+  }, [projectMembers]);
+
   if (isLoadingProject) {
     return (
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -319,6 +272,46 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* 프로젝트 이미지 섹션 - 제목보다 위에 배치 */}
+      {(isValidUrl(selectedProject.thumbnail_url) || isValidUrl(selectedProject.panel_url)) && (
+        <div className="mb-8">
+          {isValidUrl(selectedProject.thumbnail_url) && (
+            <div className="mb-4">
+              <Image
+                src={getThumbnailUrl(selectedProject.thumbnail_url!, 400)}
+                alt="프로젝트 썸네일"
+                className="w-full max-w-xl mx-auto rounded-lg shadow-lg object-cover"
+                width={200}
+                height={100}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  if (target.src !== selectedProject.thumbnail_url!) {
+                    target.src = selectedProject.thumbnail_url!;
+                  }
+                }}
+              />
+            </div>
+          )}
+          {isValidUrl(selectedProject.panel_url) && (
+            <div>
+              <Image
+                src={getThumbnailUrl(selectedProject.panel_url!, 500)}
+                alt="프로젝트 패널 이미지"
+                className="mx-auto rounded-lg shadow-lg object-cover"
+                width={400}
+                height={100}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  if (target.src !== selectedProject.panel_url!) {
+                    target.src = selectedProject.panel_url!;
+                  }
+                }}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="flex items-start justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{selectedProject.title}</h1>
@@ -351,112 +344,101 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
           <div className="prose max-w-none">
-            <p className="text-gray-700 whitespace-pre-line">{selectedProject.description}</p>
-            <div className="mt-4 space-y-2">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">프로젝트 소개</h2>
+            <p className="text-gray-700 whitespace-pre-line leading-relaxed">{selectedProject.description}</p>
+            
+            <div className="mt-6 space-y-3">
               {isValidUrl(selectedProject.github_url) && (
-                <div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-gray-600 font-medium">GitHub:</span>
                   <a
                     href={selectedProject.github_url!}
-                    className="text-blue-600 hover:underline"
+                    className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    GitHub
+                    {selectedProject.github_url}
                   </a>
                 </div>
               )}
               {isValidUrl(selectedProject.demo_url) && (
-                <div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-gray-600 font-medium">Demo:</span>
                   <a
                     href={selectedProject.demo_url!}
-                    className="text-blue-600 hover:underline"
+                    className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Demo
+                    {selectedProject.demo_url}
                   </a>
-                </div>
-              )}
-              {isValidUrl(selectedProject.thumbnail_url) && (
-                <div className="mt-4">
-                  <Image
-                    src={selectedProject.thumbnail_url!}
-                    alt="thumbnail"
-                    className="rounded border max-w-full h-auto"
-                    width={600}
-                    height={400}
-                  />
-                </div>
-              )}
-              {isValidUrl(selectedProject.panel_url) && (
-                <div className="mt-4">
-                  <Image
-                    src={selectedProject.panel_url!}
-                    alt="panel"
-                    className="rounded border max-w-full h-auto"
-                    width={1000}
-                    height={1000}
-                  />
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        <div>
-          <h2 className="text-lg font-semibold mb-3">팀원</h2>
-          {isLoadingMembers ? (
-            <div className="text-sm text-gray-500">멤버 불러오는 중...</div>
-          ) : (
-            <div className="space-y-2">
-              {projectMembers.map((m) => (
-                <div
-                  key={m.id}
-                  className="border rounded p-3 flex items-center justify-between"
-                >
-                  <div>
-                    <div className="font-medium">
-                      {m.member_id}{' '}
-                      <span className="text-xs text-gray-500">/ {m.role || '팀원'}</span>
+        <div className="lg:col-span-1">
+          <div className="bg-gray-50 rounded-lg p-6 sticky top-8">
+            <h2 className="text-lg font-semibold mb-4 text-gray-900">팀원</h2>
+            {isLoadingMembers ? (
+              <div className="text-sm text-gray-500">멤버 불러오는 중...</div>
+            ) : (
+              <div className="space-y-3">
+                {membersWithDetails.map((m) => (
+                  <div
+                    key={m.id}
+                    className="bg-white border rounded-lg p-3 shadow-sm"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium flex items-center">
+                        <span className="truncate text-gray-900">{m.name || '알 수 없음'}</span>
+                        <span className="text-xs text-gray-500 ml-2 flex-shrink-0">/ {m.role || '팀원'}</span>
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1 break-words">
+                        {m.email && (
+                          <div className="truncate">{m.email}</div>
+                        )}
+                        {m.contribution && (
+                          <div className="truncate">{m.contribution}</div>
+                        )}
+                      </div>
                     </div>
-                    {m.contribution && (
-                      <div className="text-xs text-gray-500">{m.contribution}</div>
+                    {canEditMembers && (
+                      <div className="flex items-center space-x-2 mt-2">
+                        <button
+                          className="px-2 py-1 text-xs border rounded hover:bg-gray-100 whitespace-nowrap transition-colors"
+                          onClick={() => openEditMember(m)}
+                        >
+                          수정
+                        </button>
+                        <button
+                          className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 whitespace-nowrap transition-colors"
+                          onClick={() => handleRemoveMember(m)}
+                        >
+                          삭제
+                        </button>
+                      </div>
                     )}
                   </div>
-                  {canEditMembers && (
-                    <div className="flex items-center space-x-2">
-                      <button
-                        className="px-2 py-1 text-xs border rounded hover:bg-gray-50"
-                        onClick={() => openEditMember(m)}
-                      >
-                        수정
-                      </button>
-                      <button
-                        className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
-                        onClick={() => handleRemoveMember(m)}
-                      >
-                        삭제
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
+                ))}
 
-              {canEditMembers && (
-                <div className="pt-2">
-                  <button
-                    className="px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                    onClick={openAddMember}
-                  >
-                    멤버 추가
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+                {canEditMembers && (
+                  <div className="pt-2">
+                    <button
+                      className="w-full px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                      onClick={openAddMember}
+                    >
+                      멤버 추가
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -469,7 +451,7 @@ export default function ProjectDetailPage() {
         onCancel={() => setConfirmDelete(false)}
       />
 
-      <MemberModal
+      <AddMemberModal
         show={showMemberModal}
         mode={memberModalMode}
         member={selectedMember}

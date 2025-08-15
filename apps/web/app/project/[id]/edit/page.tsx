@@ -4,89 +4,72 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ProjectForm from '../../../../src/components/ProjectForm';
-
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  keywords: string[];
-  gen: number;
-  status: 'active' | 'completed' | 'paused';
-  start_date: string;
-  end_date?: string;
-  github_url?: string;
-  demo_url?: string;
-  panel_url?: string;
-}
+import { useProject } from '@prometheus-fe/hooks';
+import { useAuthStore } from '@prometheus-fe/stores';
 
 export default function EditProjectPage() {
   const params = useParams();
   const router = useRouter();
   const projectId = params?.id as string;
 
-  const [project, setProject] = useState<Project | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // TODO: Replace with actual auth logic
-  const canManage = true; // Manager 이상만 수정 가능
-  const weights = { Root: 0, Super: 1, Administrator: 2, Manager: 3, Member: 4 };
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // useProject 훅 사용
+  const {
+    selectedProject,
+    isLoadingProject,
+    fetchProject,
+    updateProject
+  } = useProject();
+  
+  // 권한 확인
+  const { canAccessManager } = useAuthStore();
+  const canManage = canAccessManager(); // Manager 이상만 수정 가능
 
   const loadProject = async () => {
     try {
-      setIsLoading(true);
       setError('');
-      
-      // TODO: Replace with actual API call using projectApi
-      // const { projectApi } = useApi();
-      // const projectData = await projectApi.get(projectId);
-      // setProject(projectData);
-      
-      // Mock data for UI (API 연동 후 제거 예정)
-      setProject({
-        id: projectId,
-        title: '샘플 프로젝트',
-        description: '이것은 샘플 프로젝트입니다.\n\n여러 줄로 된 설명을 보여주는 예시입니다.\n프로젝트에 대한 상세한 정보가 여기에 표시됩니다.',
-        keywords: ['React', 'TypeScript', 'Next.js'],
-        gen: 1,
-        status: 'active',
-        start_date: '2024-01-01',
-        end_date: '2024-06-01',
-        github_url: 'https://github.com/example/project',
-        demo_url: 'https://demo.example.com',
-        panel_url: 'https://via.placeholder.com/600x400'
-      });
+      await fetchProject(parseInt(projectId));
     } catch (e) {
-      console.error(e);
+      console.error('프로젝트 로드 실패:', e);
       setError('프로젝트를 불러오지 못했습니다.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleSave = async (formData: any) => {
     try {
-      // TODO: Replace with actual API call
-      // await projectApi.updateProject(projectId, formData);
+      setIsSubmitting(true);
+      setError('');
+      
       console.log('Updating project:', formData);
-      alert('프로젝트가 수정되었습니다! (실제 API 연동 필요)');
+      await updateProject(parseInt(projectId), formData);
+      
+      alert('프로젝트가 수정되었습니다!');
       router.push(`/project/${projectId}`);
     } catch (e: any) {
-      alert('저장 실패: ' + (e?.data?.message || e.message));
+      console.error('프로젝트 수정 실패:', e);
+      const errorMessage = e?.message || '프로젝트 수정에 실패했습니다.';
+      setError(errorMessage);
+      alert('저장 실패: ' + errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   useEffect(() => {
-    if (!canManage) {
-      alert('수정 권한이 없습니다.');
-      router.replace(`/project/${projectId}`);
-      return;
-    }
-    
     if (projectId) {
       loadProject();
     }
-  }, [projectId, canManage, router]);
+  }, [projectId]);
+
+  // 권한이 없는 경우 처리
+  useEffect(() => {
+    if (!canManage) {
+      console.warn('수정 권한이 없습니다.');
+      // 즉시 리다이렉트하지 않고 UI에서 처리
+    }
+  }, [canManage]);
 
   // Check permissions
   if (!canManage) {
@@ -106,24 +89,46 @@ export default function EditProjectPage() {
     );
   }
 
-  if (isLoading) {
+  if (isLoadingProject) {
     return (
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="py-20 text-center text-gray-500">불러오는 중...</div>
+        <div className="py-20 text-center text-gray-500">프로젝트 정보를 불러오는 중...</div>
       </div>
     );
   }
 
-  if (error) {
+  if (error && !selectedProject) {
     return (
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="py-8 text-center text-red-600">{error}</div>
-        <div className="text-center">
+        <div className="text-center space-y-2">
+          <button
+            onClick={loadProject}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors mr-2"
+          >
+            다시 시도
+          </button>
           <Link 
             href={`/project/${projectId}`} 
-            className="text-blue-600 hover:underline"
+            className="text-blue-600 hover:underline block"
           >
             프로젝트 상세로 돌아가기
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!selectedProject) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="py-8 text-center text-gray-500">프로젝트를 찾을 수 없습니다.</div>
+        <div className="text-center">
+          <Link 
+            href="/project" 
+            className="text-blue-600 hover:underline"
+          >
+            프로젝트 목록으로 돌아가기
           </Link>
         </div>
       </div>
@@ -142,14 +147,35 @@ export default function EditProjectPage() {
         </Link>
       </div>
 
-      {project && (
-        <ProjectForm 
-          initial={project}
-          mode="edit"
-          showStatus={true}
-          onSubmit={handleSave}
-        />
+      {/* 에러 메시지 표시 */}
+      {error && selectedProject && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+          <div className="text-red-600 text-sm">{error}</div>
+        </div>
       )}
+
+      {/* 제출 중 상태 표시 */}
+      {isSubmitting && (
+        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+          <div className="text-blue-600 text-sm">프로젝트를 수정하는 중...</div>
+        </div>
+      )}
+
+      <ProjectForm 
+        initial={{
+          ...selectedProject,
+          description: selectedProject.description || '',
+          keywords: selectedProject.keywords || [],
+          github_url: selectedProject.github_url || '',
+          demo_url: selectedProject.demo_url || '',
+          panel_url: selectedProject.panel_url || '',
+          end_date: selectedProject.end_date || '',
+          status: selectedProject.status as 'active' | 'completed' | 'paused',
+        }}
+        mode="edit"
+        showStatus={true}
+        onSubmit={handleSave}
+      />
     </div>
   );
 }

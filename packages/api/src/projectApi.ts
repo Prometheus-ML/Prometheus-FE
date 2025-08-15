@@ -132,7 +132,7 @@ export class ProjectApi {
 
   async addMember(projectId: number | string, data: AddProjectMemberRequest): Promise<AddProjectMemberDto> {
     try {
-      const response = await this.apiClient.post<AddProjectMemberDto>(`/projects/${projectId}/members`, data);
+      const response = await this.apiClient.post<AddProjectMemberDto>(`/admin/projects/${projectId}/members`, data);
       return response;
     } catch (error: any) {
       console.error(`Error adding member to project ${projectId}:`, error);
@@ -170,7 +170,7 @@ export class ProjectApi {
 
   async removeMember(projectId: number | string, memberId: string): Promise<RemoveProjectMemberDto> {
     try {
-      const response = await this.apiClient.delete<RemoveProjectMemberDto>(`/projects/${projectId}/members/${memberId}`);
+      const response = await this.apiClient.delete<RemoveProjectMemberDto>(`/admin/projects/${projectId}/members/${memberId}`);
       return response;
     } catch (error: any) {
       console.error(`Error removing member ${memberId} from project ${projectId}:`, error);
