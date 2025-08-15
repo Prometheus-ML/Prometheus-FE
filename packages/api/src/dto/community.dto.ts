@@ -1,9 +1,6 @@
 import type {
   Post,
   Comment,
-  Event,
-  EventMember,
-  EventNote,
 } from '@prometheus-fe/types';
 
 // 공통 응답 인터페이스 (내부에서만 사용)
@@ -44,35 +41,4 @@ export interface CreateCommentResponse extends BaseResponse {
   comment: Comment;
 }
 
-// Legacy Event Types (keeping for backward compatibility)
-export interface CreateEventRequest {
-  name: string;
-  description?: string | null;
-  visibility?: 'public' | 'private';
-  recruitment_start_at?: string | null; // ISO
-  recruitment_end_at?: string | null; // ISO
-}
 
-export interface CreateEventResponse extends BaseResponse {
-  event: Event;
-}
-
-export interface GetEventsRequest {
-  page?: number;
-  size?: number;
-  [key: string]: string | number | undefined;
-}
-
-export interface GetEventsResponse {
-  total: number;
-  items: Event[];
-}
-
-export interface CreateEventNoteRequest {
-  title: string;
-  content: string;
-}
-
-export interface CreateEventNoteResponse extends BaseResponse {
-  note: EventNote;
-}

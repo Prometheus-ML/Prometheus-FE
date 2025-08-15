@@ -7,9 +7,11 @@ export type ApiClientOptions = {
 
 export type AuthCallbacks = {
   onUnauthorized?: (responseText: string) => Promise<void> | void; // 401·419 처리
+  onForbidden?: (responseText: string) => Promise<void> | void; // 403 처리
   onRefreshFailed?: () => Promise<void> | void; // refresh 도 실패
   getAccessToken?: () => string | null | undefined; // 액세스 토큰 가져오기
   getRefreshToken?: () => string | null | undefined; // 리프레시 토큰 가져오기
+  refreshAccessToken?: () => Promise<boolean>; // 액세스 토큰 갱신
 };
 
 export type RequestOptions = {
@@ -75,6 +77,28 @@ export class ApiClient {
         const responseText = await response.text();
         await this.authCallbacks.onUnauthorized?.(responseText);
         return this.request<T>(endpoint, options, retryCount + 1);
+      }
+
+      if (response.status === 403) {
+        const responseText = await response.text();
+        
+        // 403 에러 시 토큰 갱신 시도
+        if (this.authCallbacks.refreshAccessToken && retryCount === 0) {
+          try {
+            const refreshSuccess = await this.authCallbacks.refreshAccessToken();
+            if (refreshSuccess) {
+              // 토큰 갱신 성공 시 요청 재시도
+              return this.request<T>(endpoint, options, retryCount + 1);
+            }
+          } catch (refreshError) {
+            console.error('Token refresh failed:', refreshError);
+          }
+        }
+        
+        // 토큰 갱신 실패 또는 이미 재시도한 경우
+        await this.authCallbacks.onForbidden?.(responseText);
+        await this.authCallbacks.onRefreshFailed?.();
+        throw { status: 403, data: null, message: 'Forbidden: Access denied' } as any;
       }
 
       const contentType = response.headers.get('content-type') || '';

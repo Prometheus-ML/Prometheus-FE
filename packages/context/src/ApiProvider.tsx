@@ -5,40 +5,37 @@ import {
   ApiClient,
   createApiClient,
   createAuthApi,
-  createUserApi,
   createMemberApi,
   createCoffeeChatApi,
   createProjectApi,
-  createSchedulesApi,
   createSponsorshipApi,
   createStorageApi,
   createCommunityApi,
   createGroupApi,
+  createEventApi,
   AuthApi,
-  UserApi,
   MemberApi,
   CoffeeChatApi,
   ProjectApi,
-  SchedulesApi,
   SponsorshipApi,
   StorageApi,
   CommunityApi,
   GroupApi,
+  EventApi
 } from '@prometheus-fe/api';
 import { useAuthStore } from '@prometheus-fe/stores';
 
 type ApiInstances = {
   client: ApiClient;
   auth: AuthApi;
-  user: UserApi;
   member: MemberApi;
   coffeeChat: CoffeeChatApi;
   project: ProjectApi;
-  schedules: SchedulesApi;
   sponsorship: SponsorshipApi;
   storage: StorageApi;
   community: CommunityApi;
   group: GroupApi;
+  event: EventApi;
 };
 
 const ApiContext = createContext<ApiInstances | null>(null);
@@ -55,7 +52,14 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
       onUnauthorized: () => {
         useAuthStore.getState().clearTokens();
       },
+      onForbidden: () => {
+        console.log('403 Forbidden - Access denied');
+      },
       getAccessToken: () => useAuthStore.getState().getAccessToken() ?? undefined,
+      getRefreshToken: () => useAuthStore.getState().getRefreshToken() ?? undefined,
+      refreshAccessToken: async () => {
+        return await useAuthStore.getState().refreshAccessToken();
+      },
       onRefreshFailed: () => {
         useAuthStore.getState().clearTokens();
       },
@@ -69,15 +73,14 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
     return {
       client,
       auth: authApi,
-      user: createUserApi(client),
       member: createMemberApi(client),
       coffeeChat: createCoffeeChatApi(client),
       project: createProjectApi(client),
-      schedules: createSchedulesApi(client),
       sponsorship: createSponsorshipApi(client),
       storage: createStorageApi(client),
       community: createCommunityApi(client),
       group: createGroupApi(client),
+      event: createEventApi(client),
     } as const as ApiInstances;
   }, []);
 

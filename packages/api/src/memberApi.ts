@@ -71,4 +71,71 @@ export class MemberApi {
   getMemberStats() {
     return this.api.get<MemberStatsResponse>(`${this.adminBase}/stats`);
   }
+
+  // ===== 일반 사용자용 API =====
+
+  // 9. 멤버 검색 (공개)
+  searchMembers(params?: { q?: string; limit?: number }) {
+    const searchParams = new URLSearchParams();
+    if (params?.q) searchParams.set('q', params.q);
+    if (params?.limit) searchParams.set('limit', String(params.limit));
+    
+    const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return this.api.get<any[]>(`${this.base}/ids${query}`);
+  }
+
+  // 10. 공개 멤버 목록 조회
+  getPublicMembers(params?: any) {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set('page', String(params.page));
+    if (params?.size) searchParams.set('size', String(params.size));
+    if (params?.search) searchParams.set('search', params.search);
+    if (params?.executive !== undefined) searchParams.set('executive', String(params.executive));
+    if (params?.gen !== undefined) searchParams.set('gen', String(params.gen));
+    if (params?.mbti) searchParams.set('mbti', params.mbti);
+    if (params?.school) searchParams.set('school', params.school);
+    
+    const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return this.api.get<any>(`${this.base}/list/public${query}`);
+  }
+
+  // 11. 인증된 사용자용 멤버 목록 조회
+  getPrivateMembers(params?: any) {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set('page', String(params.page));
+    if (params?.size) searchParams.set('size', String(params.size));
+    if (params?.search) searchParams.set('search', params.search);
+    if (params?.executive !== undefined) searchParams.set('executive', String(params.executive));
+    if (params?.gen !== undefined) searchParams.set('gen', String(params.gen));
+    if (params?.mbti) searchParams.set('mbti', params.mbti);
+    if (params?.school) searchParams.set('school', params.school);
+    
+    const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return this.api.get<any>(`${this.base}/list/private${query}`);
+  }
+
+  // 12. 내 프로필 조회
+  me() {
+    return this.api.get<any>(`${this.base}/me`);
+  }
+
+  // 13. 내 프로필 수정
+  updateMe(payload: any) {
+    return this.api.put<any>(`${this.base}/me`, payload);
+  }
+
+  // 14. 멤버 상세 정보 조회 (일반 사용자용)
+  getMemberDetail(memberId: string) {
+    return this.api.get<any>(`${this.base}/${memberId}`);
+  }
+
+  // 15. 멤버 프로젝트 목록 조회
+  getMemberProjects(memberId: string) {
+    return this.api.get<any[]>(`${this.base}/${memberId}/projects`);
+  }
+
+  // 16. 멤버 게시글 목록 조회
+  getMemberPosts(memberId: string) {
+    return this.api.get<any[]>(`${this.base}/${memberId}/posts`);
+  }
 }

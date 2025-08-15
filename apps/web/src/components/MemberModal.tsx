@@ -456,13 +456,12 @@ export default function MemberModal({ isOpen, member, onClose, onSubmit, onDelet
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Prometheus background */}
-      <div className="prometheus-bg"></div>
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0 relative z-10">
         {/* 배경 오버레이 */}
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={!isUploadingImage ? closeModal : undefined} />
 
         {/* 모달 컨텐츠 */}
-        <div className="inline-block align-bottom bg-black/80 backdrop-blur-lg rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full relative border border-white/20 max-h-[90vh] flex flex-col">
+        <div className="inline-block align-bottom bg-black/80 backdrop-blur-lg rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle md:max-w-4xl max-w-lg sm:w-full relative border border-white/20 max-h-[90vh] flex flex-col">
           {/* 헤더 */}
           <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex-shrink-0">
             <div className="text-center w-full">
@@ -501,6 +500,40 @@ export default function MemberModal({ isOpen, member, onClose, onSubmit, onDelet
                       </button>
                     ))}
                   </nav>
+              </div>
+              
+              {/* 버튼 영역 */}
+              <div className="mt-4 flex justify-end space-x-3">
+                <button
+                  onClick={handleSubmit}
+                  disabled={isSubmitting || isUploadingImage || (isEdit && !canModifyEntireMember())}
+                  className={`inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 ${
+                    isEdit 
+                      ? 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500' 
+                      : 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
+                  }`}
+                >
+                  {isSubmitting && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  )}
+                  {isEdit ? '수정 완료' : '멤버 추가'}
+                </button>
+                {isEdit && canDeleteMember() && onDelete && (
+                  <button
+                    onClick={handleDelete}
+                    disabled={isSubmitting || isUploadingImage}
+                    className="inline-flex justify-center rounded-md border border-red-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    삭제
+                  </button>
+                )}
+                <button
+                  onClick={!isUploadingImage ? closeModal : undefined}
+                  disabled={isUploadingImage}
+                  className="inline-flex justify-center rounded-lg border border-white/30 shadow-sm px-4 py-2 bg-white/10 text-sm font-medium text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  닫기
+                </button>
               </div>
                 </div>
           </div>
@@ -1120,39 +1153,7 @@ export default function MemberModal({ isOpen, member, onClose, onSubmit, onDelet
               </div>
             </div>
 
-            {/* 고정된 하단 버튼 영역 */}
-            <div className="bg-white/5 border-t border-white/20 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse flex-shrink-0">
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting || isUploadingImage || (isEdit && !canModifyEntireMember())}
-              className={`w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 ${
-                isEdit 
-                  ? 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500' 
-                  : 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
-              }`}
-            >
-              {isSubmitting && (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-              )}
-              {isEdit ? '수정 완료' : '멤버 추가'}
-            </button>
-            {isEdit && canDeleteMember() && onDelete && (
-              <button
-                onClick={handleDelete}
-                disabled={isSubmitting || isUploadingImage}
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-red-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                삭제
-              </button>
-            )}
-            <button
-              onClick={!isUploadingImage ? closeModal : undefined}
-              disabled={isUploadingImage}
-              className="mt-3 w-full inline-flex justify-center rounded-lg border border-white/30 shadow-sm px-4 py-2 bg-white/10 text-base font-medium text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-            >
-              닫기
-            </button>
-          </div>
+
 
             {/* 업로드 중 오버레이 */}
             {isUploadingImage && (

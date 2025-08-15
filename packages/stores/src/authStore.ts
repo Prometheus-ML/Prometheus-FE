@@ -36,6 +36,7 @@ export interface AuthState {
   // Authentication flows
   googleCallback: (code: string) => Promise<boolean>;
   logout: () => Promise<void>;
+  refreshAccessToken: () => Promise<boolean>;
   
   // Error management
   clearError: () => void;
@@ -203,6 +204,41 @@ export const useAuthStore = create<AuthState>()(
               isLoading: false,
               error: error?.message || '로그아웃 실패',
             });
+          }
+        },
+
+        refreshAccessToken: async () => {
+          if (!authApiInstance) {
+            console.error('AuthApi가 초기화되지 않았습니다.');
+            return false;
+          }
+
+          const { refreshToken } = get();
+          if (!refreshToken) {
+            console.error('Refresh token이 없습니다.');
+            return false;
+          }
+
+          try {
+            set({ isLoading: true });
+            const tokens = await authApiInstance.refresh(refreshToken);
+            
+            // 새로운 토큰 저장
+            get().setTokens(tokens.access_token, tokens.refresh_token);
+            
+            set({ isLoading: false });
+            console.log('Access token refreshed successfully');
+            return true;
+          } catch (error: any) {
+            console.error('Token refresh failed:', error);
+            set({ isLoading: false });
+            
+            // Refresh token도 유효하지 않으면 로그아웃
+            if (error?.status === 401 || error?.status === 403) {
+              get().clearTokens();
+            }
+            
+            return false;
           }
         },
 
