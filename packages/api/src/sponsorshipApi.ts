@@ -1,81 +1,117 @@
 import { ApiClient } from './apiClient';
-import type {
-  SponsorCreateRequest,
-  SponsorUpdateRequest,
-  SponsorResponse,
-  SponsorListResponse,
-  SponsorshipApplicationCreateRequest,
-  SponsorshipApplicationUpdateRequest,
-  SponsorshipApplicationResponse,
-  SponsorshipApplicationListResponse,
-  HonorHallCreateRequest,
-  HonorHallUpdateRequest,
-  HonorHallResponse,
-  HonorHallListResponse,
-} from '@prometheus-fe/types';
+import {
+  AdminSponsorListResponseDto,
+  AdminHonorHallListResponseDto,
+  SponsorCreateRequestDto,
+  SponsorCreateResponseDto,
+  HonorHallCreateRequestDto,
+  HonorHallCreateResponseDto,
+  PublicSponsorListResponseDto,
+  PublicHonorHallListResponseDto
+} from './dto/sponsorship.dto';
 
 export class SponsorshipApi {
   private readonly api: ApiClient;
-  private readonly base = '/sponsorship';
+  private readonly adminBase = '/admin/sponsorship';
+  private readonly publicBase = '/sponsorship';
 
   constructor(apiClient: ApiClient) {
     this.api = apiClient;
   }
 
-  // Sponsors
-  createSponsor(data: SponsorCreateRequest) {
-    return this.api.post<SponsorResponse>(`${this.base}/sponsors`, data);
+  // ===== 관리자용 API =====
+
+  // 관리자용 후원사 목록 조회
+  async getAdminSponsors(): Promise<AdminSponsorListResponseDto> {
+    try {
+      const response = await this.api.get<AdminSponsorListResponseDto>(`${this.adminBase}/sponsors`);
+      return response;
+    } catch (error: any) {
+      console.error('Error fetching admin sponsors:', error);
+      throw new Error(error.message || 'Failed to fetch admin sponsors');
+    }
   }
 
-  getSponsors(params?: Record<string, string | number | boolean | undefined>) {
-    const sp = new URLSearchParams();
-    Object.entries(params || {}).forEach(([k, v]) => { if (v !== undefined && v !== null) sp.set(k, String(v)); });
-    const q = sp.toString() ? `?${sp.toString()}` : '';
-    return this.api.get<SponsorListResponse>(`${this.base}/sponsors${q}`);
+  // 관리자용 명예의전당 목록 조회
+  async getAdminHonorHall(): Promise<AdminHonorHallListResponseDto> {
+    try {
+      const response = await this.api.get<AdminHonorHallListResponseDto>(`${this.adminBase}/honor-hall`);
+      return response;
+    } catch (error: any) {
+      console.error('Error fetching admin honor hall:', error);
+      throw new Error(error.message || 'Failed to fetch admin honor hall');
+    }
   }
 
-  getSponsor(sponsorId: number | string) {
-    return this.api.get<SponsorResponse>(`${this.base}/sponsors/${sponsorId}`);
+  // 후원사 생성
+  async createSponsor(data: SponsorCreateRequestDto): Promise<SponsorCreateResponseDto> {
+    try {
+      const response = await this.api.post<SponsorCreateResponseDto>(`${this.adminBase}/sponsors`, data);
+      return response;
+    } catch (error: any) {
+      console.error('Error creating sponsor:', error);
+      throw new Error(error.message || 'Failed to create sponsor');
+    }
   }
 
-  updateSponsor(sponsorId: number | string, data: SponsorUpdateRequest) {
-    return this.api.put<SponsorResponse>(`${this.base}/sponsors/${sponsorId}`, data);
+  // 후원사 삭제
+  async deleteSponsor(sponsorId: number): Promise<void> {
+    try {
+      await this.api.delete(`${this.adminBase}/sponsors/${sponsorId}`);
+    } catch (error: any) {
+      console.error(`Error deleting sponsor ${sponsorId}:`, error);
+      throw new Error(error.message || 'Failed to delete sponsor');
+    }
   }
 
-  deleteSponsor(sponsorId: number | string) {
-    return this.api.delete<void>(`${this.base}/sponsors/${sponsorId}`);
+  // 명예의전당 생성
+  async createHonorHall(data: HonorHallCreateRequestDto): Promise<HonorHallCreateResponseDto> {
+    try {
+      const response = await this.api.post<HonorHallCreateResponseDto>(`${this.adminBase}/honor-hall`, data);
+      return response;
+    } catch (error: any) {
+      console.error('Error creating honor hall:', error);
+      throw new Error(error.message || 'Failed to create honor hall');
+    }
   }
 
-  // Applications
-  createApplication(data: SponsorshipApplicationCreateRequest) {
-    return this.api.post<SponsorshipApplicationResponse>(`${this.base}/applications`, data);
+  // 명예의전당 삭제
+  async deleteHonorHall(honorId: number): Promise<void> {
+    try {
+      await this.api.delete(`${this.adminBase}/honor-hall/${honorId}`);
+    } catch (error: any) {
+      console.error(`Error deleting honor hall ${honorId}:`, error);
+      throw new Error(error.message || 'Failed to delete honor hall');
+    }
   }
 
-  getApplications(params?: Record<string, string | number | undefined>) {
-    const sp = new URLSearchParams();
-    Object.entries(params || {}).forEach(([k, v]) => { if (v !== undefined && v !== null) sp.set(k, String(v)); });
-    const q = sp.toString() ? `?${sp.toString()}` : '';
-    return this.api.get<SponsorshipApplicationListResponse>(`${this.base}/applications${q}`);
+  // ===== 일반 사용자용 API =====
+
+  // 일반 사용자용 후원사 목록 조회
+  async getPublicSponsors(params?: any): Promise<PublicSponsorListResponseDto> {
+    try {
+      const sp = new URLSearchParams();
+      if (params?.page) sp.set('page', String(params.page));
+      if (params?.size) sp.set('size', String(params.size));
+      
+      const query = sp.toString() ? `?${sp.toString()}` : '';
+      const response = await this.api.get<PublicSponsorListResponseDto>(`${this.publicBase}/sponsors${query}`);
+      return response;
+    } catch (error: any) {
+      console.error('Error fetching public sponsors:', error);
+      throw new Error(error.message || 'Failed to fetch public sponsors');
+    }
   }
 
-  updateApplication(applicationId: number | string, data: SponsorshipApplicationUpdateRequest) {
-    return this.api.put<SponsorshipApplicationResponse>(`${this.base}/applications/${applicationId}`, data);
-  }
-
-  // Honor hall
-  createHonor(data: HonorHallCreateRequest) {
-    return this.api.post<HonorHallResponse>(`${this.base}/honor-hall`, data);
-  }
-
-  getHonorHall(params?: Record<string, string | number | boolean | undefined>) {
-    const sp = new URLSearchParams();
-    Object.entries(params || {}).forEach(([k, v]) => { if (v !== undefined && v !== null) sp.set(k, String(v)); });
-    const q = sp.toString() ? `?${sp.toString()}` : '';
-    return this.api.get<HonorHallListResponse>(`${this.base}/honor-hall${q}`);
-  }
-
-  updateHonor(honorId: number | string, data: HonorHallUpdateRequest) {
-    return this.api.put<HonorHallResponse>(`${this.base}/honor-hall/${honorId}`, data);
+  // 일반 사용자용 명예의전당 목록 조회
+  async getPublicHonorHall(): Promise<PublicHonorHallListResponseDto> {
+    try {
+      const response = await this.api.get<PublicHonorHallListResponseDto>(`${this.publicBase}/honor-hall/`);
+      return response;
+    } catch (error: any) {
+      console.error('Error fetching public honor hall:', error);
+      throw new Error(error.message || 'Failed to fetch public honor hall');
+    }
   }
 }
 

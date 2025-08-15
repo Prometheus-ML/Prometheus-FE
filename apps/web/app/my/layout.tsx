@@ -71,10 +71,10 @@ export default function MyLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Navbar */}
       <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-md mx-auto px-4 py-3">
+        <div className="md:max-w-4xl max-w-lg mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-lg font-semibold text-gray-900">내 정보</h1>
             <Link 
@@ -113,7 +113,7 @@ export default function MyLayout({
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-md mx-auto bg-white min-h-screen shadow-lg">
+      <main className="md:max-w-4xl max-w-lg mx-auto bg-white min-h-screen shadow-lg">
         {children}
       </main>
     </div>

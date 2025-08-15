@@ -20,8 +20,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Prometheus background */}
-      <div className="prometheus-bg"></div>
       
       {/* Login container */}
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4">

@@ -1,23 +1,23 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@prometheus-fe/stores';
-import { useApi } from '@prometheus-fe/context';
+import { useMember } from '@prometheus-fe/hooks';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { MyProfileResponse } from '@prometheus-fe/types';
+import GlassCard from '../src/components/GlassCard';
 
 export default function Page() {
   const isAuthenticated = useAuthStore((s: any) => s.isAuthenticated);
-  const [me, setMe] = useState<MyProfileResponse | null>(null);
+  const canAccessManager = useAuthStore((s: any) => s.canAccessManager);
   const [daysCount, setDaysCount] = useState(0);
-  const { user: userApi } = useApi();
+  const { myProfile, getMyProfile, isLoadingProfile } = useMember();
 
   useEffect(() => {
     if (!isAuthenticated()) return;
     
-    userApi.me()
-      .then((userData) => {
-        setMe(userData);
+    getMyProfile()
+      .then((userData: MyProfileResponse) => {
         // 활동 시작일로부터 경과일 계산
         if (userData.activity_start_date) {
           const startDate = new Date(userData.activity_start_date);
@@ -27,19 +27,15 @@ export default function Page() {
           setDaysCount(diffDays);
         }
       })
-      .catch((error) => {
+      .catch((error: Error) => {
         console.error('Failed to fetch user profile:', error);
-        setMe(null);
       });
-  }, [isAuthenticated, userApi]);
+  }, [isAuthenticated, getMyProfile]);
 
   return (
-    <div className="min-h-screen">
-      {/* Prometheus background */}
-      <div className="prometheus-bg"></div>
-      
+    <div>
       {/* Header */}
-      <header className="max-w-md mx-auto relative z-10 px-4 py-6">
+      <header className="px-4 py-6">
           <div className="flex items-center justify-between">
           {/* Left: Logo */}
           <div className="flex items-center gap-3">
@@ -66,6 +62,14 @@ export default function Page() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M9 11h.01M9 8h.01M9 5h.01M9 2h.01" />
               </svg>
             </Link>
+            {canAccessManager() && (
+              <Link href="/admin" className="text-white hover:text-gray-300">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </Link>
+            )}
             <Link href="/profile" className="text-white hover:text-gray-300">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -76,26 +80,26 @@ export default function Page() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-md mx-auto relative z-10 px-4 pb-8">
-        {isAuthenticated() && me ? (
+      <main className="px-4 pb-8">
+        {isAuthenticated() && myProfile ? (
           <>
             {/* Personalized Greeting */}
             <div className="mb-8">
               <h2 className="text-2xl font-pretendard text-white mb-2">
-                <span className="text-white">{me.name}</span> 님은{' '}
+                <span className="text-white">{myProfile.name}</span> 님은{' '}
                 <br/>
                 <span className="font-bold">PROMETHEUS</span>와{' '}
                 <span className="text-white">{daysCount}</span>일째
               </h2>
               <div className="inline-block bg-red-600/20 border border-red-500/30 rounded-full px-3 py-1">
-                <span className="text-red-300 text-sm font-pretendard">{me.gen || 0}기</span>
+                <span className="text-red-300 text-sm font-pretendard">{myProfile.gen || 0}기</span>
             </div>
           </div>
 
             {/* Routing Cards - 2x3 Grid */}
             <div className="grid grid-cols-2 gap-4 mb-8">
               {/* 출석하기 */}
-              <Link href="/attendance" className="bg-[#1e1e1e] rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors">
+              <GlassCard href="/attendance" className="p-4">
                 <div className="flex flex-col items-center text-center">
                   <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mb-3">
                     <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -104,10 +108,10 @@ export default function Page() {
                 </div>
                   <h3 className="text-white font-semibold text-sm">출석하기</h3>
                 </div>
-              </Link>
+              </GlassCard>
 
               {/* 모임/스터디 */}
-              <Link href="/group" className="bg-[#1e1e1e] rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors">
+              <GlassCard href="/group" className="p-4">
                 <div className="flex flex-col items-center text-center">
                   <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mb-3">
                     <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,10 +120,10 @@ export default function Page() {
                 </div>
                   <h3 className="text-white font-semibold text-sm">모임/스터디</h3>
               </div>
-              </Link>
+              </GlassCard>
 
               {/* 커뮤니티 */}
-              <Link href="/community" className="bg-[#1e1e1e] rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors">
+              <GlassCard href="/community" className="p-4">
                 <div className="flex flex-col items-center text-center">
                   <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center mb-3">
                     <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,10 +132,10 @@ export default function Page() {
             </div>
                   <h3 className="text-white font-semibold text-sm">커뮤니티</h3>
         </div>
-              </Link>
+              </GlassCard>
 
               {/* 멤버 */}
-              <Link href="/member" className="bg-[#1e1e1e] rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors">
+              <GlassCard href="/member" className="p-4">
                 <div className="flex flex-col items-center text-center">
                   <div className="w-12 h-12 bg-orange-500/20 rounded-full flex items-center justify-center mb-3">
                     <svg className="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,10 +144,22 @@ export default function Page() {
                   </div>
                   <h3 className="text-white font-semibold text-sm">멤버</h3>
                   </div>
-              </Link>
+              </GlassCard>
+
+              {/* 이벤트 */}
+              <GlassCard href="/event" className="p-4">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center mb-3">
+                    <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-white font-semibold text-sm">이벤트</h3>
+                  </div>
+              </GlassCard>
 
               {/* 프로젝트 */}
-              <Link href="/project" className="bg-[#1e1e1e] rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors">
+              <GlassCard href="/project" className="p-4">
                 <div className="flex flex-col items-center text-center">
                   <div className="w-12 h-12 bg-indigo-500/20 rounded-full flex items-center justify-center mb-3">
                     <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -153,11 +169,11 @@ export default function Page() {
                   </div>
                   <h3 className="text-white font-semibold text-sm">프로젝트</h3>
                 </div>
-              </Link>
+              </GlassCard>
 
               {/* 관리자 (조건부) */}
-              {(me.grant === 'Super' || me.grant === 'Administrator' || me.grant === 'Manager') && (
-                <Link href="/admin" className="bg-[#1e1e1e] rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors">
+              {(myProfile.grant === 'Super' || myProfile.grant === 'Administrator' || myProfile.grant === 'Manager') && (
+                <GlassCard href="/admin" className="p-4">
                   <div className="flex flex-col items-center text-center">
                     <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mb-3">
                       <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -167,7 +183,7 @@ export default function Page() {
                 </div>
                     <h3 className="text-white font-semibold text-sm">관리자</h3>
               </div>
-                </Link>
+                </GlassCard>
               )}
           </div>
           </>
@@ -188,7 +204,7 @@ export default function Page() {
             {/* Non-member Cards - 3 columns */}
             <div className="grid grid-cols-3 gap-4 mb-8">
               {/* 프로메테우스의 철학 */}
-              <Link href="/philosophy" className="bg-[#1e1e1e] rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors">
+              <GlassCard href="/philosophy" className="p-4">
                 <div className="flex flex-col items-center text-center">
                   <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center mb-2">
                     <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,10 +213,10 @@ export default function Page() {
                 </div>
                   <h3 className="text-white font-semibold text-xs">프로메테우스의 철학</h3>
                 </div>
-              </Link>
+              </GlassCard>
 
               {/* 멤버 */}
-              <Link href="/members" className="bg-[#1e1e1e] rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors">
+              <GlassCard href="/members" className="p-4">
                 <div className="flex flex-col items-center text-center">
                   <div className="w-10 h-10 bg-orange-500/20 rounded-full flex items-center justify-center mb-2">
                     <svg className="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,10 +225,10 @@ export default function Page() {
               </div>
                   <h3 className="text-white font-semibold text-xs">멤버</h3>
           </div>
-              </Link>
+              </GlassCard>
 
               {/* 프로젝트 */}
-              <Link href="/projects" className="bg-[#1e1e1e] rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors">
+              <GlassCard href="/projects" className="p-4">
                 <div className="flex flex-col items-center text-center">
                   <div className="w-10 h-10 bg-indigo-500/20 rounded-full flex items-center justify-center mb-2">
                     <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -222,7 +238,7 @@ export default function Page() {
             </div>
                   <h3 className="text-white font-semibold text-xs">프로젝트</h3>
           </div>
-              </Link>
+              </GlassCard>
         </div>
           </>
         )}

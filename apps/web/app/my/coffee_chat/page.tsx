@@ -2,21 +2,21 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useAuthStore } from '@prometheus-fe/stores';
-import { useImage, useUser } from '@prometheus-fe/hooks';
+import { useImage, useCoffeeChat } from '@prometheus-fe/hooks';
 import { 
-  CoffeeChatAvailableUserResponse,
-  CoffeeChatRequestResponse,
-  CoffeeChatRequestCreate,
-  CoffeeChatResponseRequest
+  CoffeeChatMember,
+  CoffeeChatRequest,
+  CoffeeChatCreateRequest,
+  CoffeeChatRespondRequest,
+  CoffeeChatStatus
 } from '@prometheus-fe/types';
 
 // 커피챗 요청 모달 컴포넌트
 interface CoffeeChatRequestModalProps {
   isOpen: boolean;
   onClose: () => void;
-  target: CoffeeChatAvailableUserResponse | null;
+  target: CoffeeChatMember | null;
   onSendRequest: (message: string) => void;
   isRequesting: boolean;
 }
@@ -77,20 +77,20 @@ function CoffeeChatRequestModal({
 export default function CoffeeChatPage() {
   const { isAuthenticated } = useAuthStore();
   const { 
-    getAvailableUsers, 
-    createCoffeeChatRequest, 
+    getAvailableMembers, 
+    createRequest, 
     getSentRequests, 
     getReceivedRequests, 
     respondToRequest, 
     getContactInfo 
-  } = useUser();
+  } = useCoffeeChat();
   const { getThumbnailUrl } = useImage();
 
   // 탭 상태
   const [tab, setTab] = useState<'available' | 'sent' | 'received'>('available');
 
   // 가능한 사용자 상태
-  const [availableUsers, setAvailableUsers] = useState<CoffeeChatAvailableUserResponse[]>([]);
+  const [availableUsers, setAvailableUsers] = useState<CoffeeChatMember[]>([]);
   const [availableTotal, setAvailableTotal] = useState(0);
   const [availablePage, setAvailablePage] = useState(1);
   const [availableSize] = useState(12);
@@ -98,16 +98,16 @@ export default function CoffeeChatPage() {
   const [loadingAvailable, setLoadingAvailable] = useState(false);
 
   // 요청 상태
-  const [sentRequests, setSentRequests] = useState<CoffeeChatRequestResponse[]>([]);
-  const [receivedRequests, setReceivedRequests] = useState<CoffeeChatRequestResponse[]>([]);
-  const [sentStatus, setSentStatus] = useState('');
-  const [receivedStatus, setReceivedStatus] = useState('');
+  const [sentRequests, setSentRequests] = useState<CoffeeChatRequest[]>([]);
+  const [receivedRequests, setReceivedRequests] = useState<CoffeeChatRequest[]>([]);
+  const [sentStatus, setSentStatus] = useState<CoffeeChatStatus | ''>('');
+  const [receivedStatus, setReceivedStatus] = useState<CoffeeChatStatus | ''>('');
   const [loadingSent, setLoadingSent] = useState(false);
   const [loadingReceived, setLoadingReceived] = useState(false);
 
   // 모달 상태
   const [showRequest, setShowRequest] = useState(false);
-  const [requestTarget, setRequestTarget] = useState<CoffeeChatAvailableUserResponse | null>(null);
+  const [requestTarget, setRequestTarget] = useState<CoffeeChatMember | null>(null);
   const [isRequesting, setIsRequesting] = useState(false);
 
   // 계산된 값들
@@ -128,9 +128,9 @@ export default function CoffeeChatPage() {
         ...(availableFilters.search && { search: availableFilters.search }),
         ...(availableFilters.gen_filter !== null && { gen_filter: availableFilters.gen_filter })
       };
-      const res = await getAvailableUsers(params);
-      setAvailableUsers(res.users || []);
-      setAvailableTotal(res.total || res.users?.length || 0);
+      const res = await getAvailableMembers(params);
+      setAvailableUsers(res.members || []);
+      setAvailableTotal(res.total || res.members?.length || 0);
     } catch (err) {
       console.error('Failed to load available users:', err);
       setAvailableUsers([]);
@@ -138,7 +138,7 @@ export default function CoffeeChatPage() {
     } finally {
       setLoadingAvailable(false);
     }
-  }, [availablePage, availableSize, availableFilters, getAvailableUsers]);
+  }, [availablePage, availableSize, availableFilters, getAvailableMembers]);
 
   // 보낸 요청 조회
   const fetchSent = useCallback(async () => {
@@ -192,7 +192,7 @@ export default function CoffeeChatPage() {
   }, [availablePage, availableTotalPages]);
 
   // 요청 모달 관련
-  const openRequest = useCallback((user: CoffeeChatAvailableUserResponse) => {
+  const openRequest = useCallback((user: CoffeeChatMember) => {
     setRequestTarget(user);
     setShowRequest(true);
   }, []);
@@ -202,16 +202,16 @@ export default function CoffeeChatPage() {
     setRequestTarget(null);
   }, []);
 
-  const createRequest = useCallback(async (message: string) => {
+  const handleCreateRequest = useCallback(async (message: string) => {
     if (!requestTarget) return;
     
     try {
       setIsRequesting(true);
-      const payload: CoffeeChatRequestCreate = {
+      const payload: CoffeeChatCreateRequest = {
         recipient_id: requestTarget.id,
-        message: message || undefined
+        message: message || ''
       };
-      await createCoffeeChatRequest(payload);
+      await createRequest(payload);
       alert('요청을 보냈습니다.');
       closeRequest();
       fetchSent();
@@ -221,12 +221,15 @@ export default function CoffeeChatPage() {
     } finally {
       setIsRequesting(false);
     }
-  }, [requestTarget, createCoffeeChatRequest, closeRequest, fetchSent]);
+  }, [requestTarget, createRequest, closeRequest, fetchSent]);
 
   // 요청 응답
-  const respond = useCallback(async (req: CoffeeChatRequestResponse, status: string) => {
+  const respond = useCallback(async (req: CoffeeChatRequest, status: 'accepted' | 'rejected') => {
     try {
-      const payload: CoffeeChatResponseRequest = { status };
+      const payload: CoffeeChatRespondRequest = { 
+        status,
+        response_message: ''
+      };
       await respondToRequest(req.id, payload);
       fetchReceived();
     } catch (err) {
@@ -236,7 +239,7 @@ export default function CoffeeChatPage() {
   }, [respondToRequest, fetchReceived]);
 
   // 연락처 조회
-  const viewContact = useCallback(async (req: CoffeeChatRequestResponse) => {
+  const viewContact = useCallback(async (req: CoffeeChatRequest) => {
     try {
       const res = await getContactInfo(req.id);
       alert(`연락처: ${res?.requester_kakao_id || res?.requester_instagram_id || '제공되지 않음'}`);
@@ -247,15 +250,15 @@ export default function CoffeeChatPage() {
   }, [getContactInfo]);
 
   // 헬퍼 함수들
-  const getRecipientName = useCallback((r: CoffeeChatRequestResponse) => r.recipient_name || '', []);
-  const getRecipientGen = useCallback((r: CoffeeChatRequestResponse) => r.recipient_gen, []);
-  const getRecipientSchool = useCallback((r: CoffeeChatRequestResponse) => r.recipient_school || '', []);
-  const getRecipientMajor = useCallback((r: CoffeeChatRequestResponse) => r.recipient_major || '', []);
+  const getRecipientName = useCallback((r: CoffeeChatRequest) => r.recipient_name || '', []);
+  const getRecipientGen = useCallback((r: CoffeeChatRequest) => r.recipient_gen, []);
+  const getRecipientSchool = useCallback((r: CoffeeChatRequest) => r.recipient_school || '', []);
+  const getRecipientMajor = useCallback((r: CoffeeChatRequest) => r.recipient_major || '', []);
 
-  const getRequesterName = useCallback((r: CoffeeChatRequestResponse) => r.requester_name || '', []);
-  const getRequesterGen = useCallback((r: CoffeeChatRequestResponse) => r.requester_gen, []);
-  const getRequesterSchool = useCallback((r: CoffeeChatRequestResponse) => r.requester_school || '', []);
-  const getRequesterMajor = useCallback((r: CoffeeChatRequestResponse) => r.requester_major || '', []);
+  const getRequesterName = useCallback((r: CoffeeChatRequest) => r.requester_name || '', []);
+  const getRequesterGen = useCallback((r: CoffeeChatRequest) => r.requester_gen, []);
+  const getRequesterSchool = useCallback((r: CoffeeChatRequest) => r.requester_school || '', []);
+  const getRequesterMajor = useCallback((r: CoffeeChatRequest) => r.requester_major || '', []);
 
   // 초기 로드
   useEffect(() => {
@@ -311,232 +314,232 @@ export default function CoffeeChatPage() {
         </nav>
       </div>
 
-        {/* 가능 사용자 */}
-        {tab === 'available' && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <input 
-                value={availableFilters.search} 
-                onChange={(e) => setAvailableFilters(prev => ({ ...prev, search: e.target.value }))}
-                type="text" 
-                placeholder="검색" 
-                className="border rounded px-3 py-2" 
-              />
-              <select 
-                value={availableFilters.gen_filter || ''} 
-                onChange={(e) => setAvailableFilters(prev => ({ 
-                  ...prev, 
-                  gen_filter: e.target.value ? parseInt(e.target.value) : null 
-                }))}
-                className="border rounded px-3 py-2"
-              >
-                <option value="">기수 전체</option>
-                {Array.from({ length: 20 }, (_, i) => i + 1).map((g) => (
-                  <option key={g} value={g}>{g}기</option>
-                ))}
-              </select>
+      {/* 가능 사용자 */}
+      {tab === 'available' && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <input 
+              value={availableFilters.search} 
+              onChange={(e) => setAvailableFilters(prev => ({ ...prev, search: e.target.value }))}
+              type="text" 
+              placeholder="검색" 
+              className="border rounded px-3 py-2" 
+            />
+            <select 
+              value={availableFilters.gen_filter || ''} 
+              onChange={(e) => setAvailableFilters(prev => ({ 
+                ...prev, 
+                gen_filter: e.target.value ? parseInt(e.target.value) : null 
+              }))}
+              className="border rounded px-3 py-2"
+            >
+              <option value="">기수 전체</option>
+              {Array.from({ length: 20 }, (_, i) => i + 1).map((g) => (
+                <option key={g} value={g}>{g}기</option>
+              ))}
+            </select>
+            <button 
+              onClick={fetchAvailableUsers} 
+              className="bg-blue-600 text-white px-3 py-2 rounded cursor-pointer"
+            >
+              검색
+            </button>
+          </div>
+          
+          {loadingAvailable ? (
+            <div className="py-8 text-center">불러오는 중...</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {availableUsers.map((user) => (
+                <div key={user.id} className="border rounded p-4 flex items-center gap-4">
+                  <div className="relative w-12 h-12">
+                    {user.profile_image_url ? (
+                      <Image
+                        src={getThumbnailUrl(user.profile_image_url, 96)}
+                        alt={user.name}
+                        fill
+                        className="rounded-full object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-medium">
+                        {getFirstLetter(user.name)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium">
+                      {user.name} 
+                      {user.gen && <span className="text-xs text-gray-500"> · {user.gen}기</span>}
+                    </div>
+                    <div className="text-sm text-gray-600">{user.school} {user.major}</div>
+                    {user.mbti && <div className="text-xs text-gray-500">MBTI: {user.mbti}</div>}
+                  </div>
+                  <button 
+                    onClick={() => openRequest(user)} 
+                    className="bg-yellow-500 text-white px-3 py-1 rounded cursor-pointer"
+                  >
+                    요청
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {availableTotalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-4">
               <button 
-                onClick={fetchAvailableUsers} 
-                className="bg-blue-600 text-white px-3 py-2 rounded cursor-pointer"
+                onClick={prevAvailable} 
+                disabled={availablePage === 1} 
+                className="px-2 py-1 border rounded disabled:opacity-50 cursor-pointer"
               >
-                검색
+                이전
+              </button>
+              <span className="text-sm text-gray-600">{availablePage}/{availableTotalPages}</span>
+              <button 
+                onClick={nextAvailable} 
+                disabled={availablePage === availableTotalPages} 
+                className="px-2 py-1 border rounded disabled:opacity-50 cursor-pointer"
+              >
+                다음
               </button>
             </div>
-            
-            {loadingAvailable ? (
-              <div className="py-8 text-center">불러오는 중...</div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {availableUsers.map((user) => (
-                  <div key={user.id} className="border rounded p-4 flex items-center gap-4">
-                    <div className="relative w-12 h-12">
-                      {user.profile_image_url ? (
-                        <Image
-                          src={getThumbnailUrl(user.profile_image_url, 96)}
-                          alt={user.name}
-                          fill
-                          className="rounded-full object-cover"
-                          unoptimized
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-medium">
-                          {getFirstLetter(user.name)}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1">
+          )}
+        </div>
+      )}
+
+      {/* 보낸 요청 */}
+      {tab === 'sent' && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <select 
+              value={sentStatus} 
+              onChange={(e) => setSentStatus(e.target.value as CoffeeChatStatus | '')} 
+              className="border rounded px-3 py-2"
+            >
+              <option value="">전체</option>
+              <option value="pending">대기</option>
+              <option value="accepted">수락</option>
+              <option value="rejected">거절</option>
+            </select>
+            <button 
+              onClick={fetchSent} 
+              className="bg-blue-600 text-white px-3 py-2 rounded cursor-pointer"
+            >
+              조회
+            </button>
+          </div>
+          
+          {loadingSent ? (
+            <div className="py-8 text-center">불러오는 중...</div>
+          ) : (
+            <div>
+              {sentRequests.map((request) => (
+                <div key={request.id} className="border rounded p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
                       <div className="font-medium">
-                        {user.name} 
-                        {user.gen && <span className="text-xs text-gray-500"> · {user.gen}기</span>}
+                        {getRecipientName(request)}
+                        {getRecipientGen(request) !== null && (
+                          <span className="text-xs text-gray-500"> · {getRecipientGen(request)}기</span>
+                        )}
                       </div>
-                      <div className="text-sm text-gray-600">{user.school} {user.major}</div>
-                      {user.mbti && <div className="text-xs text-gray-500">MBTI: {user.mbti}</div>}
+                      <div className="text-xs text-gray-600">
+                        {getRecipientSchool(request)} {getRecipientMajor(request)}
+                      </div>
+                      <div className="text-sm text-gray-600 mt-1">상태: {request.status}</div>
+                      <div className="text-sm text-gray-700">메시지: {request.message || '없음'}</div>
                     </div>
-                    <button 
-                      onClick={() => openRequest(user)} 
-                      className="bg-yellow-500 text-white px-3 py-1 rounded cursor-pointer"
-                    >
-                      요청
-                    </button>
+                    {request.status === 'accepted' && (
+                      <button 
+                        onClick={() => viewContact(request)} 
+                        className="text-blue-600 text-sm cursor-pointer"
+                      >
+                        연락처 보기
+                      </button>
+                    )}
                   </div>
-                ))}
-              </div>
-            )}
-            
-            {availableTotalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-4">
-                <button 
-                  onClick={prevAvailable} 
-                  disabled={availablePage === 1} 
-                  className="px-2 py-1 border rounded disabled:opacity-50 cursor-pointer"
-                >
-                  이전
-                </button>
-                <span className="text-sm text-gray-600">{availablePage}/{availableTotalPages}</span>
-                <button 
-                  onClick={nextAvailable} 
-                  disabled={availablePage === availableTotalPages} 
-                  className="px-2 py-1 border rounded disabled:opacity-50 cursor-pointer"
-                >
-                  다음
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* 보낸 요청 */}
-        {tab === 'sent' && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <select 
-                value={sentStatus} 
-                onChange={(e) => setSentStatus(e.target.value)} 
-                className="border rounded px-3 py-2"
-              >
-                <option value="">전체</option>
-                <option value="pending">대기</option>
-                <option value="accepted">수락</option>
-                <option value="rejected">거절</option>
-              </select>
-              <button 
-                onClick={fetchSent} 
-                className="bg-blue-600 text-white px-3 py-2 rounded cursor-pointer"
-              >
-                조회
-              </button>
+                </div>
+              ))}
             </div>
-            
-            {loadingSent ? (
-              <div className="py-8 text-center">불러오는 중...</div>
-            ) : (
-              <div>
-                {sentRequests.map((request) => (
-                  <div key={request.id} className="border rounded p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium">
-                          {getRecipientName(request)}
-                          {getRecipientGen(request) !== null && (
-                            <span className="text-xs text-gray-500"> · {getRecipientGen(request)}기</span>
-                          )}
-                        </div>
-                        <div className="text-xs text-gray-600">
-                          {getRecipientSchool(request)} {getRecipientMajor(request)}
-                        </div>
-                        <div className="text-sm text-gray-600 mt-1">상태: {request.status}</div>
-                        <div className="text-sm text-gray-700">메시지: {request.message || '없음'}</div>
+          )}
+        </div>
+      )}
+
+      {/* 받은 요청 */}
+      {tab === 'received' && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <select 
+              value={receivedStatus} 
+              onChange={(e) => setReceivedStatus(e.target.value as CoffeeChatStatus | '')} 
+              className="border rounded px-3 py-2"
+            >
+              <option value="">전체</option>
+              <option value="pending">대기</option>
+              <option value="accepted">수락</option>
+              <option value="rejected">거절</option>
+            </select>
+            <button 
+              onClick={fetchReceived} 
+              className="bg-blue-600 text-white px-3 py-2 rounded cursor-pointer"
+            >
+              조회
+            </button>
+          </div>
+          
+          {loadingReceived ? (
+            <div className="py-8 text-center">불러오는 중...</div>
+          ) : (
+            <div>
+              {receivedRequests.map((request) => (
+                <div key={request.id} className="border rounded p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">
+                        {getRequesterName(request)}
+                        {getRequesterGen(request) !== null && (
+                          <span className="text-xs text-gray-500"> · {getRequesterGen(request)}기</span>
+                        )}
                       </div>
-                      {request.status === 'accepted' && (
+                      <div className="text-xs text-gray-600">
+                        {getRequesterSchool(request)} {getRequesterMajor(request)}
+                      </div>
+                      <div className="text-sm text-gray-600 mt-1">상태: {request.status}</div>
+                      <div className="text-sm text-gray-700">메시지: {request.message || '없음'}</div>
+                    </div>
+                    {request.status === 'pending' && (
+                      <div className="flex items-center gap-2">
                         <button 
-                          onClick={() => viewContact(request)} 
-                          className="text-blue-600 text-sm cursor-pointer"
+                          onClick={() => respond(request, 'accepted')} 
+                          className="bg-green-600 text-white px-3 py-1 rounded cursor-pointer"
                         >
-                          연락처 보기
+                          수락
                         </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* 받은 요청 */}
-        {tab === 'received' && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <select 
-                value={receivedStatus} 
-                onChange={(e) => setReceivedStatus(e.target.value)} 
-                className="border rounded px-3 py-2"
-              >
-                <option value="">전체</option>
-                <option value="pending">대기</option>
-                <option value="accepted">수락</option>
-                <option value="rejected">거절</option>
-              </select>
-              <button 
-                onClick={fetchReceived} 
-                className="bg-blue-600 text-white px-3 py-2 rounded cursor-pointer"
-              >
-                조회
-              </button>
-            </div>
-            
-            {loadingReceived ? (
-              <div className="py-8 text-center">불러오는 중...</div>
-            ) : (
-              <div>
-                {receivedRequests.map((request) => (
-                  <div key={request.id} className="border rounded p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium">
-                          {getRequesterName(request)}
-                          {getRequesterGen(request) !== null && (
-                            <span className="text-xs text-gray-500"> · {getRequesterGen(request)}기</span>
-                          )}
-                        </div>
-                        <div className="text-xs text-gray-600">
-                          {getRequesterSchool(request)} {getRequesterMajor(request)}
-                        </div>
-                        <div className="text-sm text-gray-600 mt-1">상태: {request.status}</div>
-                        <div className="text-sm text-gray-700">메시지: {request.message || '없음'}</div>
+                        <button 
+                          onClick={() => respond(request, 'rejected')} 
+                          className="bg-red-600 text-white px-3 py-1 rounded cursor-pointer"
+                        >
+                          거절
+                        </button>
                       </div>
-                      {request.status === 'pending' && (
-                        <div className="flex items-center gap-2">
-                          <button 
-                            onClick={() => respond(request, 'accepted')} 
-                            className="bg-green-600 text-white px-3 py-1 rounded cursor-pointer"
-                          >
-                            수락
-                          </button>
-                          <button 
-                            onClick={() => respond(request, 'rejected')} 
-                            className="bg-red-600 text-white px-3 py-1 rounded cursor-pointer"
-                          >
-                            거절
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                    )}
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
-        {/* 요청 모달 */}
-        <CoffeeChatRequestModal
-          isOpen={showRequest}
-          onClose={closeRequest}
-          target={requestTarget}
-          onSendRequest={createRequest}
-          isRequesting={isRequesting}
-        />
-      </div>
+      {/* 요청 모달 */}
+      <CoffeeChatRequestModal
+        isOpen={showRequest}
+        onClose={closeRequest}
+        target={requestTarget}
+        onSendRequest={handleCreateRequest}
+        isRequesting={isRequesting}
+      />
+    </div>
   );
 }

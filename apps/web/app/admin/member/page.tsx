@@ -14,6 +14,7 @@ import {
   MemberUpdateRequest
 } from '@prometheus-fe/types';
 import MemberModal from '../../../src/components/MemberModal';
+import GlassCard from '../../../src/components/GlassCard';
 
 
 
@@ -365,76 +366,61 @@ export default function AdminMemberPage() {
   return (
     <div className="py-6">
       {/* 기능 버튼들 */}
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 mb-6">
-        <div className="flex flex-wrap gap-2 justify-center">
-            <button
-              onClick={downloadExcelTemplate}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <svg className="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Excel 템플릿
-            </button>
+      <div className="flex flex-wrap gap-2 justify-center mb-6">
+          <GlassCard as="button" onClick={downloadExcelTemplate} className="inline-flex items-center px-4 py-2 text-sm font-medium text-white">
+            <svg className="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Excel 템플릿
+          </GlassCard>
 
-            {/* Excel 업로드 섹션 */}
-            <div className="flex items-center space-x-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".csv"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <svg className="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-                파일 선택
-              </button>
-              {excelFile && (
-                <span className="text-sm text-gray-600">
-                  {excelFile.name}
-                </span>
-              )}
-              {excelFile && (
-                <button
-                  onClick={handleExcelUpload}
-                  disabled={isUploading}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isUploading ? (
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                  ) : (
-                    <svg className="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                  )}
-                  {isUploading ? '업로드 중...' : '대량 추가'}
-                </button>
-              )}
-            </div>
-
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
+          {/* Excel 업로드 섹션 */}
+          <div className="flex items-center space-x-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            <GlassCard as="button" onClick={() => fileInputRef.current?.click()} className="inline-flex items-center px-4 py-2 text-sm font-medium text-white">
               <svg className="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
-              멤버 추가
-            </button>
-        </div>
+              파일 선택
+            </GlassCard>
+            {excelFile && (
+              <span className="text-sm text-white">
+                {excelFile.name}
+              </span>
+            )}
+            {excelFile && (
+              <GlassCard as="button" onClick={handleExcelUpload} disabled={isUploading} className="inline-flex items-center px-4 py-2 text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed">
+                {isUploading ? (
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                ) : (
+                  <svg className="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                )}
+                {isUploading ? '업로드 중...' : '대량 추가'}
+              </GlassCard>
+            )}
+          </div>
+
+          <GlassCard as="button" onClick={() => setShowAddModal(true)} className="inline-flex items-center px-4 py-2 text-sm font-medium text-white" disabled={true}>
+            <svg className="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            멤버 추가
+          </GlassCard>
       </div>
 
       {/* 검색 및 필터 */}
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 mb-6">
+      <GlassCard className="p-4 mb-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* 검색 */}
           <div>
@@ -500,20 +486,14 @@ export default function AdminMemberPage() {
         </div>
 
         <div className="mt-4 flex justify-end space-x-3">
-          <button
-            onClick={clearFilters}
-            className="inline-flex items-center px-4 py-2 border border-white/30 text-sm font-medium rounded-md text-white bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
+          <GlassCard as="button" onClick={clearFilters} className="inline-flex items-center px-4 py-2 text-sm font-medium text-white">
             필터 초기화
-          </button>
-          <button
-            onClick={applyFilters}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-          >
+          </GlassCard>
+          <GlassCard as="button" onClick={applyFilters} className="inline-flex items-center px-4 py-2 text-sm font-medium text-white">
             검색
-          </button>
+          </GlassCard>
         </div>
-      </div>
+      </GlassCard>
 
       {/* Excel 업로드 에러 메시지 */}
       {uploadError && (
@@ -535,7 +515,7 @@ export default function AdminMemberPage() {
       )}
 
       {/* 멤버 목록 */}
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 overflow-hidden">
+      <GlassCard className="overflow-hidden">
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
@@ -609,20 +589,12 @@ export default function AdminMemberPage() {
         {pages > 1 && (
           <div className="bg-white/5 px-4 py-3 flex items-center justify-between border-t border-white/10">
             <div className="flex-1 flex justify-between sm:hidden">
-              <button
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-white/30 text-sm font-medium rounded-md text-white bg-white/10 hover:bg-white/20"
-              >
+              <GlassCard as="button" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-white">
                 이전
-              </button>
-              <button
-                onClick={() => setPage(p => Math.min(pages, p + 1))}
-                disabled={page === pages}
-                className="ml-3 relative inline-flex items-center px-4 py-2 border border-white/30 text-sm font-medium rounded-md text-white bg-white/10 hover:bg-white/20"
-              >
+              </GlassCard>
+              <GlassCard as="button" onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page === pages} className="ml-3 relative inline-flex items-center px-4 py-2 text-sm font-medium text-white">
                 다음
-              </button>
+              </GlassCard>
             </div>
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
@@ -637,39 +609,32 @@ export default function AdminMemberPage() {
               </div>
               <div>
                 <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                  <button
-                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-white/30 bg-white/10 text-sm font-medium text-white hover:bg-white/20"
-                  >
+                  <GlassCard as="button" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="relative inline-flex items-center px-2 py-2 rounded-l-md text-sm font-medium text-white">
                     이전
-                  </button>
+                  </GlassCard>
                   {visiblePages.map((pageNum) => (
-                    <button
+                    <GlassCard
                       key={pageNum}
+                      as="button"
                       onClick={() => setPage(pageNum)}
-                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                      className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
                         pageNum === page
                           ? 'z-10 bg-red-500 border-red-500 text-white'
-                          : 'bg-white/10 border-white/30 text-white hover:bg-white/20'
+                          : 'text-white'
                       }`}
                     >
                       {pageNum}
-                    </button>
+                    </GlassCard>
                   ))}
-                  <button
-                    onClick={() => setPage(p => Math.min(pages, p + 1))}
-                    disabled={page === pages}
-                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-white/30 bg-white/10 text-sm font-medium text-white hover:bg-white/20"
-                  >
+                  <GlassCard as="button" onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page === pages} className="relative inline-flex items-center px-2 py-2 rounded-r-md text-sm font-medium text-white">
                     다음
-                  </button>
+                  </GlassCard>
                 </nav>
               </div>
             </div>
           </div>
         )}
-      </div>
+      </GlassCard>
 
       {/* 멤버 추가 모달 */}
       <MemberModal

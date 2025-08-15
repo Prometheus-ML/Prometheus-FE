@@ -18,7 +18,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" href="/icons/favicon.ico" />
       </head>
       <body>
-        <AppProviders>{children}</AppProviders>
+        <div className="min-h-screen relative">
+          {/* Prometheus Background */}
+          <div className="prometheus-bg"></div>
+          
+          {/* Main Content Container */}
+          <div className="md:max-w-4xl max-w-lg mx-auto relative z-10">
+            <AppProviders>{children}</AppProviders>
+          </div>
+        </div>
       </body>
     </html>
   );

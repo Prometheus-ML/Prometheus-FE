@@ -3,18 +3,19 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { useAuthStore } from '@prometheus-fe/stores';
-import { useImage, useUser } from '@prometheus-fe/hooks';
+import { useImage, useMember, useCoffeeChat } from '@prometheus-fe/hooks';
+import GlassCard from '../../src/components/GlassCard';
 import { 
-  UserDetailResponse,
-  UserPublicListItem,
-  UserPrivateListItem
+  MemberDetailResponse,
+  MemberPublicListItem,
+  MemberPrivateListItem
 } from '@prometheus-fe/types';
 
 // 멤버 상세 모달 컴포넌트
 interface MemberDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  member: UserDetailResponse | null;
+  member: MemberDetailResponse | null;
   onSendCoffeeChat: (message: string) => void;
   isRequesting: boolean;
 }
@@ -154,7 +155,7 @@ function MemberDetailModal({
             <div className="pt-2">
               <span className="font-medium">이력:</span>
               <ul className="mt-1 list-disc list-inside text-gray-700">
-                {member.history.map((h, i) => (
+                {member.history.map((h: string, i: number) => (
                   <li key={i}>{h}</li>
                 ))}
               </ul>
@@ -194,11 +195,12 @@ function MemberDetailModal({
 
 export default function MemberPage() {
   const { isAuthenticated } = useAuthStore();
-  const { getPublicUsers, getPrivateUsers, getUser, createCoffeeChatRequest, isLoadingPublic, isLoadingPrivate, isLoadingUser } = useUser();
+  const { getPublicMembers, getPrivateMembers, getMemberDetail, isLoadingMembers, isLoadingMember } = useMember();
+  const { createRequest } = useCoffeeChat();
   const { getThumbnailUrl } = useImage();
 
   // 상태 관리
-  const [users, setUsers] = useState<(UserPublicListItem | UserPrivateListItem)[]>([]);
+  const [members, setMembers] = useState<(MemberPublicListItem | MemberPrivateListItem)[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
   const [size] = useState<number>(20);
@@ -209,6 +211,7 @@ export default function MemberPage() {
   // 필터 상태
   const [filters, setFilters] = useState({
     search: '',
+    school: '',
     executive: false,
     gen: null as number | null
   });
@@ -218,7 +221,7 @@ export default function MemberPage() {
 
   // 모달 상태
   const [showDetail, setShowDetail] = useState<boolean>(false);
-  const [selectedUser, setSelectedUser] = useState<UserDetailResponse | null>(null);
+  const [selectedMember, setSelectedMember] = useState<MemberDetailResponse | null>(null);
 
   // 계산된 값들
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / size)), [total, size]);
@@ -229,12 +232,12 @@ export default function MemberPage() {
     return name && name.length ? name.trim().charAt(0) : 'U';
   }, []);
 
-  const handleImageError = useCallback((userId: string) => {
-    setImageErrors(prev => ({ ...prev, [userId]: true }));
+  const handleImageError = useCallback((memberId: string) => {
+    setImageErrors(prev => ({ ...prev, [memberId]: true }));
   }, []);
 
   // 사용자 목록 조회
-  const fetchUsers = useCallback(async () => {
+  const fetchMembers = useCallback(async () => {
     try {
       setIsLoading(true);
       
@@ -248,6 +251,7 @@ export default function MemberPage() {
         params = {
           ...params,
           ...(filters.search && { search: filters.search }),
+          ...(filters.school && { school: filters.school }),
           ...(filters.executive && { executive: filters.executive }),
           ...(filters.gen !== null && { gen: filters.gen })
         };
@@ -262,22 +266,22 @@ export default function MemberPage() {
 
       let response;
       if (isPrivate) {
-        response = await getPrivateUsers(params);
+        response = await getPrivateMembers(params);
       } else {
-        response = await getPublicUsers(params);
+        response = await getPublicMembers(params);
       }
 
-      setUsers(response.users || []);
+      setMembers(response.members || []);
       setTotal(response.total || 0);
       setImageErrors({});
     } catch (err) {
-      console.error('Failed to fetch users:', err);
-      setUsers([]);
+      console.error('Failed to fetch members:', err);
+      setMembers([]);
       setTotal(0);
     } finally {
       setIsLoading(false);
     }
-  }, [page, size, filters, selectedGenTab, isPrivate, getPublicUsers, getPrivateUsers]);
+  }, [page, size, filters, selectedGenTab, isPrivate, getPublicMembers, getPrivateMembers]);
 
   // 필터 적용
   const applyFilters = useCallback(() => {
@@ -285,7 +289,7 @@ export default function MemberPage() {
   }, []);
 
   const resetFilters = useCallback(() => {
-    setFilters({ search: '', executive: false, gen: null });
+    setFilters({ search: '', school: '', executive: false, gen: null });
     setPage(1);
   }, []);
 
@@ -303,39 +307,39 @@ export default function MemberPage() {
   }, [page, totalPages]);
 
   // 카드 클릭 핸들러
-  const onCardClick = useCallback(async (user: UserPublicListItem | UserPrivateListItem) => {
+  const onCardClick = useCallback(async (member: MemberPublicListItem | MemberPrivateListItem) => {
     if (!isPrivate) return;
     
-    // UserPrivateListItem에만 id가 있음
-    if ('id' in user) {
+    // MemberPrivateListItem에만 id가 있음
+    if ('id' in member) {
       try {
-        const userDetail = await getUser(user.id);
-        setSelectedUser(userDetail);
+        const memberDetail = await getMemberDetail(member.id);
+        setSelectedMember(memberDetail);
         setShowDetail(true);
       } catch (err) {
-        console.error('Failed to get user details:', err);
+        console.error('Failed to get member details:', err);
         alert('사용자 정보를 불러오는 중 오류가 발생했습니다.');
       }
     }
-  }, [isPrivate, getUser]);
+  }, [isPrivate, getMemberDetail]);
 
   // 모달 닫기
   const closeDetail = useCallback(() => {
     setShowDetail(false);
-    setSelectedUser(null);
+    setSelectedMember(null);
   }, []);
 
   // 커피챗 요청
   const sendCoffeeChat = useCallback(async (message: string) => {
-    if (!selectedUser) return;
+    if (!selectedMember) return;
     
     try {
       setIsRequesting(true);
       
       // 커피챗 API 호출
-      await createCoffeeChatRequest({
-        recipient_id: selectedUser.id,
-        message: message || undefined
+      await createRequest({
+        recipient_id: selectedMember.id,
+        message: message || ''
       });
       
       alert('커피챗 요청을 보냈습니다.');
@@ -346,7 +350,7 @@ export default function MemberPage() {
     } finally {
       setIsRequesting(false);
     }
-  }, [selectedUser, closeDetail, createCoffeeChatRequest]);
+  }, [selectedMember, closeDetail, createRequest]);
 
   // 필터 변경 핸들러
   const handleFilterChange = useCallback((key: string, value: string | number | boolean | null) => {
@@ -355,39 +359,38 @@ export default function MemberPage() {
 
   // 페이지 변경 시 목록 다시 로드
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    fetchMembers();
+  }, [fetchMembers]);
 
   // 기수별 탭 변경 시 데이터 다시 로드 (외부인용)
   useEffect(() => {
     if (!isPrivate) {
       setPage(1); // 페이지 초기화
-      fetchUsers();
+      fetchMembers();
     }
-  }, [selectedGenTab, isPrivate, fetchUsers]);
+  }, [selectedGenTab, isPrivate, fetchMembers]);
 
   return (
-    <div className="min-h-screen prometheus-bg">
-      <div className="max-w-md mx-auto bg-white min-h-screen shadow-lg relative z-10">
+    <div className="min-h-screen">
         {/* 헤더 */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="px-6 py-4">
           <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <GlassCard href="/" className="w-10 h-10 flex items-center justify-center text-white">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </GlassCard>
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">멤버</h1>
-              <p className="text-sm text-gray-600 mt-1">프로메테우스 멤버 목록</p>
+                <h1 className="text-xl font-semibold text-white">멤버</h1>
+                <p className="text-sm text-gray-300 mt-1">프로메테우스 멤버 목록</p>
+              </div>
             </div>
             <div className="text-right">
-              <div className="text-lg font-bold text-blue-600">{total}</div>
-              <div className="text-xs text-gray-500">총 멤버</div>
+              <div className="text-lg font-bold text-white">{total}</div>
+              <div className="text-xs text-gray-300">총 멤버</div>
             </div>
           </div>
-          {isPrivate && (
-            <div className="mt-2">
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                로그인 전용 상세보기 활성화
-              </span>
-            </div>
-          )}
         </div>
 
         <div className="px-6 py-6">
@@ -395,38 +398,35 @@ export default function MemberPage() {
           {!isPrivate && (
             <div className="mb-6">
               <div className="flex flex-wrap gap-2">
-                <button
+                <GlassCard 
+                  as="button" 
                   onClick={() => setSelectedGenTab('all')}
-                  className={`px-3 py-2 text-sm rounded-md cursor-pointer ${
-                    selectedGenTab === 'all'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  className={`px-3 py-2 text-sm text-white ${
+                    selectedGenTab === 'all' ? 'bg-gradient-to-r from-red-800 to-red-600' : ''
                   }`}
                 >
                   전체
-                </button>
-                <button
+                </GlassCard>
+                <GlassCard 
+                  as="button" 
                   onClick={() => setSelectedGenTab('executive')}
-                  className={`px-3 py-2 text-sm rounded-md cursor-pointer ${
-                    selectedGenTab === 'executive'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  className={`px-3 py-2 text-sm text-white ${
+                    selectedGenTab === 'executive' ? 'bg-gradient-to-r from-red-800 to-red-600' : ''
                   }`}
                 >
                   운영진
-                </button>
+                </GlassCard>
                 {Array.from({ length: 20 }, (_, i) => i).map((gen) => (
-                  <button
+                  <GlassCard
                     key={gen}
+                    as="button"
                     onClick={() => setSelectedGenTab(gen)}
-                    className={`px-3 py-2 text-sm rounded-md cursor-pointer ${
-                      selectedGenTab === gen
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    className={`px-3 py-2 text-sm text-white ${
+                      selectedGenTab === gen ? 'bg-gradient-to-r from-red-800 to-red-600' : ''
                     }`}
                   >
                     {gen}기
-                  </button>
+                  </GlassCard>
                 ))}
               </div>
             </div>
@@ -434,19 +434,26 @@ export default function MemberPage() {
 
           {/* 필터 (로그인 사용자용) */}
           {isPrivate && (
-            <div className="bg-white border rounded-md p-4 mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <GlassCard className="p-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <input
                   value={filters.search}
                   onChange={(e) => handleFilterChange('search', e.target.value)}
                   type="text"
                   placeholder="이름/이메일 검색"
-                  className="border rounded-md px-3 py-2"
+                  className="border rounded-md px-3 py-2 bg-white/90 text-gray-900"
+                />
+                <input
+                  value={filters.school || ''}
+                  onChange={(e) => handleFilterChange('school', e.target.value)}
+                  type="text"
+                  placeholder="학교 검색"
+                  className="border rounded-md px-3 py-2 bg-white/90 text-gray-900"
                 />
                 <select
                   value={filters.executive ? 'true' : 'false'}
                   onChange={(e) => handleFilterChange('executive', e.target.value === 'true')}
-                  className="border rounded-md px-3 py-2"
+                  className="border rounded-md px-3 py-2 bg-white/90 text-gray-900"
                 >
                   <option value="false">전체</option>
                   <option value="true">운영진만</option>
@@ -454,7 +461,7 @@ export default function MemberPage() {
                 <select
                   value={filters.gen || ''}
                   onChange={(e) => handleFilterChange('gen', e.target.value ? parseInt(e.target.value) : null)}
-                  className="border rounded-md px-3 py-2"
+                  className="border rounded-md px-3 py-2 bg-white/90 text-gray-900"
                 >
                   <option value="">기수 전체</option>
                   {Array.from({ length: 20 }, (_, i) => i + 1).map((g) => (
@@ -462,21 +469,15 @@ export default function MemberPage() {
                   ))}
                 </select>
                 <div className="flex items-center space-x-2">
-                  <button
-                    onClick={applyFilters}
-                    className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 cursor-pointer"
-                  >
+                  <GlassCard as="button" onClick={applyFilters} className="flex-1 px-3 py-2 text-sm font-medium text-white">
                     검색
-                  </button>
-                  <button
-                    onClick={resetFilters}
-                    className="flex-1 bg-gray-200 text-gray-800 px-3 py-2 rounded-md hover:bg-gray-300 cursor-pointer"
-                  >
+                  </GlassCard>
+                  <GlassCard as="button" onClick={resetFilters} className="flex-1 px-3 py-2 text-sm font-medium text-white">
                     초기화
-                  </button>
+                  </GlassCard>
                 </div>
               </div>
-            </div>
+            </GlassCard>
           )}
 
         {/* 로딩 상태 */}
@@ -487,70 +488,70 @@ export default function MemberPage() {
         ) : (
           /* 멤버 카드 그리드 */
           <div className="grid grid-cols-1 gap-4">
-            {users.map((user, index) => (
-              <div
-                key={'id' in user ? user.id : index}
-                className={`relative bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition ${
+            {members.map((member, index) => (
+              <GlassCard
+                key={'id' in member ? member.id : index}
+                className={`relative p-4 ${
                   isPrivate ? 'cursor-pointer' : 'cursor-default'
                 }`}
-                onClick={() => onCardClick(user)}
+                onClick={() => onCardClick(member)}
               >
                 <div className="flex items-center gap-4">
                   <div className="relative">
-                    {user.profile_image_url && !imageErrors['id' in user ? user.id : index] ? (
+                    {member.profile_image_url && !imageErrors['id' in member ? member.id : index] ? (
                       <div className="relative w-16 h-16">
                         <Image
-                          src={getThumbnailUrl(user.profile_image_url, 128)}
-                          alt={user.name}
+                          src={getThumbnailUrl(member.profile_image_url, 128)}
+                          alt={member.name}
                           fill
                           className="rounded-full object-cover"
-                          onError={() => handleImageError('id' in user ? user.id : index.toString())}
+                          onError={() => handleImageError('id' in member ? member.id : index.toString())}
                           unoptimized
                         />
                       </div>
                     ) : (
                       <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-medium">
-                        {getFirstLetter(user.name)}
+                        {getFirstLetter(member.name)}
                       </div>
                     )}
-                    {isPrivate && 'coffee_chat_enabled' in user && user.coffee_chat_enabled && (
+                    {isPrivate && 'coffee_chat_enabled' in member && member.coffee_chat_enabled && (
                       <div className="absolute -top-1 -left-1 bg-yellow-500 text-white text-xs rounded-full px-2 py-0.5">
                         ☕
                       </div>
                     )}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900">{user.name}</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">{member.name}</h3>
                   
                   {!isPrivate ? (
                     <div className="mt-1 flex flex-wrap gap-1 text-xs">
-                      {user.school && (
+                      {member.school && (
                         <span className="px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-700">
-                          {user.school}
+                          {member.school}
                         </span>
                       )}
-                      {user.major && (
+                      {member.major && (
                         <span className="px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-700">
-                          {user.major}
+                          {member.major}
                         </span>
                       )}
                       
                     </div>
                   ) : (
                     <div className="mt-1 flex flex-wrap gap-1">
-                      {user.gen && (
+                      {member.gen && (
                         <span className="px-1.5 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                          {user.gen}기
+                          {member.gen}기
                         </span>
                       )}
-                      {user.school && (
+                      {member.school && (
                         <span className="px-1.5 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full">
-                          {user.school}
+                          {member.school}
                         </span>
                       )}
-                      {user.major && (
+                      {member.major && (
                         <span className="px-1.5 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full">
-                          {user.major}
+                          {member.major}
                         </span>
                       )}
                       
@@ -558,21 +559,21 @@ export default function MemberPage() {
                   )}
                 </div>
 
-                {user.history && user.history.length > 0 && (
+                {member.history && member.history.length > 0 && (
                   <div className="mt-2 text-xs text-gray-700 bg-gray-50 p-2 rounded">
                     <div className="font-medium mb-1">이력:</div>
                     <div className="space-y-0.5">
-                      {user.history.slice(0, 3).map((h, idx) => (
+                      {member.history.slice(0, 3).map((h: string, idx: number) => (
                         <div key={idx}>• {h}</div>
                       ))}
-                      {user.history.length > 3 && (
-                        <div className="text-gray-500">+{user.history.length - 3}개 더...</div>
+                      {member.history.length > 3 && (
+                        <div className="text-gray-500">+{member.history.length - 3}개 더...</div>
                       )}
                     </div>
                   </div>
                 )}
                 </div>
-              </div>
+              </GlassCard>
             ))}
           </div>
         )}
@@ -580,23 +581,15 @@ export default function MemberPage() {
         {/* 페이지네이션 */}
         {totalPages > 1 && (
           <div className="mt-6 flex items-center justify-center space-x-2">
-            <button
-              onClick={prevPage}
-              disabled={page === 1}
-              className="px-3 py-1 border rounded disabled:opacity-50 cursor-pointer"
-            >
+            <GlassCard as="button" onClick={prevPage} disabled={page === 1} className="px-3 py-1 text-sm font-medium text-white disabled:opacity-50">
               이전
-            </button>
-            <span className="text-sm text-gray-600">
+            </GlassCard>
+            <span className="text-sm text-white">
               {page} / {totalPages}
             </span>
-            <button
-              onClick={nextPage}
-              disabled={page === totalPages}
-              className="px-3 py-1 border rounded disabled:opacity-50 cursor-pointer"
-            >
+            <GlassCard as="button" onClick={nextPage} disabled={page === totalPages} className="px-3 py-1 text-sm font-medium text-white disabled:opacity-50">
               다음
-            </button>
+            </GlassCard>
           </div>
         )}
       </div>
@@ -605,11 +598,10 @@ export default function MemberPage() {
       <MemberDetailModal
         isOpen={showDetail}
         onClose={closeDetail}
-        member={selectedUser}
+        member={selectedMember}
         onSendCoffeeChat={sendCoffeeChat}
         isRequesting={isRequesting}
       />
-      </div>
     </div>
   );
 }

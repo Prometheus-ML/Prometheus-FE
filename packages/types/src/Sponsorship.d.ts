@@ -1,118 +1,67 @@
-export interface SponsorCreateRequest {
-  name: string;
-  logo_url?: string | null;
-  description?: string | null;
-  website_url?: string | null;
-  contact_email?: string | null;
-  sponsorship_level?: string | null;
-}
+// Sponsorship 관련 타입 정의
 
-export interface SponsorUpdateRequest {
-  name?: string | null;
-  logo_url?: string | null;
-  description?: string | null;
-  website_url?: string | null;
-  contact_email?: string | null;
-  sponsorship_level?: string | null;
-  is_active?: boolean | null;
-}
-
-export interface SponsorResponse {
+export interface Sponsor {
   id: number;
   name: string;
-  logo_url?: string | null;
-  description?: string | null;
-  website_url?: string | null;
-  contact_email?: string | null;
-  sponsorship_level?: string | null;
-  is_active: boolean;
-  created_at: string; // ISO
-  updated_at: string; // ISO
-  meta?: Record<string, any> | null;
+  logo_url: string;
+  purpose: string;
+  amount: number;
+  note: string;
+  sponsored_at: string;
+}
+
+export interface HonorHall {
+  id: number;
+  member_id: string;
+  contribution_type: string;
+  amount: number;
+  description: string;
+  benefit_info: string;
+  is_public: boolean;
+  created_at: string;
+}
+
+export interface HonorHallPublic {
+  name: string;
+  purpose: string;
+}
+
+export interface SponsorListParams {
+  page?: number;
+  size?: number;
 }
 
 export interface SponsorListResponse {
-  sponsors: SponsorResponse[];
+  sponsors: Sponsor[];
   total: number;
   page: number;
   size: number;
 }
 
-export interface SponsorshipApplicationCreateRequest {
-  sponsor_id: number;
-  applicant_name: string;
-  applicant_email: string;
-  company_name: string;
-  position?: string | null;
-  phone?: string | null;
-  sponsorship_type: string;
-  amount?: number | null;
-  description?: string | null;
-}
-
-export interface SponsorshipApplicationUpdateRequest {
-  status?: string | null;
-  notes?: string | null;
-}
-
-export interface SponsorshipApplicationResponse {
-  id: number;
-  sponsor_id: number;
-  applicant_name: string;
-  applicant_email: string;
-  company_name: string;
-  position?: string | null;
-  phone?: string | null;
-  sponsorship_type: string;
-  amount?: number | null;
-  description?: string | null;
-  status: string;
-  notes?: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface SponsorshipApplicationListResponse {
-  applications: SponsorshipApplicationResponse[];
-  total: number;
-  page: number;
-  size: number;
+export interface SponsorCreateRequest {
+  name: string;
+  logo_url: string;
+  purpose: string;
+  amount: number;
+  note: string;
+  sponsored_at: string;
 }
 
 export interface HonorHallCreateRequest {
   member_id: string;
   contribution_type: string;
-  amount?: number | null;
-  description?: string | null;
-  benefit_info?: string | null;
+  amount: number;
+  description: string;
+  benefit_info: string;
   is_public: boolean;
 }
 
-export interface HonorHallUpdateRequest {
-  contribution_type?: string | null;
-  amount?: number | null;
-  description?: string | null;
-  benefit_info?: string | null;
-  is_public?: boolean | null;
-}
-
-export interface HonorHallResponse {
+export interface SponsorCreateResponse {
   id: number;
-  member_id: string;
-  contribution_type: string;
-  amount?: number | null;
-  description?: string | null;
-  benefit_info?: string | null;
-  is_public: boolean;
-  created_at: string;
-  updated_at: string;
 }
 
-export interface HonorHallListResponse {
-  honor_hall: HonorHallResponse[];
-  total: number;
-  page: number;
-  size: number;
+export interface HonorHallCreateResponse {
+  id: number;
 }
 
 

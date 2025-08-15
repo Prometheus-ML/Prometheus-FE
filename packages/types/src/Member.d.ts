@@ -188,3 +188,121 @@ export interface MemberStatsResponse {
   active_members: number;
   recent_members: MemberResponse[];
 }
+
+// ===== 일반 사용자용 타입들 =====
+
+// 공개 멤버 목록 아이템
+export interface MemberPublicListItem {
+  name: string;
+  profile_image_url?: string;
+  gen?: number;
+  school?: string;
+  major?: string;
+  history?: string[];
+}
+
+// 인증된 사용자용 멤버 목록 아이템
+export interface MemberPrivateListItem {
+  id: string;
+  name: string;
+  profile_image_url?: string;
+  gen?: number;
+  school?: string;
+  major?: string;
+  history?: string[];
+  coffee_chat_enabled?: boolean;
+  status?: string;
+}
+
+// 공개 멤버 목록 응답
+export interface MemberPublicListResponse {
+  members: MemberPublicListItem[];
+  total: number;
+  page: number;
+  size: number;
+}
+
+// 인증된 사용자용 멤버 목록 응답
+export interface MemberPrivateListResponse {
+  members: MemberPrivateListItem[];
+  total: number;
+  page: number;
+  size: number;
+}
+
+// 내 프로필 응답
+export interface MyProfileResponse {
+  id: string;
+  name: string;
+  email: string;
+  grant: string;
+  status: string;
+  gen?: number;
+  school?: string;
+  major?: string;
+  student_id?: string;
+  birthdate?: string;
+  phone?: string;
+  gender?: string;
+  github?: string;
+  notion?: string;
+  figma?: string;
+  kakao_id?: string;
+  instagram_id?: string;
+  mbti?: string;
+  coffee_chat_enabled?: boolean;
+  self_introduction?: string;
+  additional_career?: string;
+  profile_image_url?: string;
+  activity_start_date?: string;
+  active_gens?: number[];
+  history?: string[];
+  meta?: Record<string, any>;
+}
+
+// 내 프로필 수정 요청
+export interface MyProfileUpdateRequest {
+  github?: string;
+  notion?: string;
+  figma?: string;
+  kakao_id?: string;
+  instagram_id?: string;
+  mbti?: string;
+  gender?: string;
+  coffee_chat_enabled?: boolean;
+  self_introduction?: string;
+  additional_career?: string;
+  profile_image_url?: string;
+}
+
+// 멤버 상세 정보 응답 (일반 사용자용)
+export interface MemberDetailResponse {
+  id: string;
+  name: string;
+  email: string;
+  profile_image_url?: string;
+  grant: string;
+  gen?: number;
+  school?: string;
+  major?: string;
+  student_id?: string;
+  birthdate?: string;
+  phone?: string;
+  gender?: string;
+  github?: string;
+  notion?: string;
+  figma?: string;
+  kakao_id?: string;
+  instagram_id?: string;
+  mbti?: string;
+  self_introduction?: string;
+  additional_career?: string;
+  coffee_chat_enabled?: boolean;
+  active_gens?: number[];
+  history?: string[];
+  status: string;
+  activity_start_date?: string;
+  meta?: Record<string, any>;
+  created_at?: string;
+  updated_at?: string;
+}

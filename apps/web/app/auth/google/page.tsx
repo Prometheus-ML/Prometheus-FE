@@ -51,9 +51,7 @@ export default function GoogleCallbackPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Prometheus background */}
-      <div className="prometheus-bg"></div>
-      
+
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">

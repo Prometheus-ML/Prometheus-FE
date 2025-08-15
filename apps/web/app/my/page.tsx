@@ -4,12 +4,12 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuthStore } from '@prometheus-fe/stores';
-import { useImage, useUser } from '@prometheus-fe/hooks';
+import { useImage, useMember } from '@prometheus-fe/hooks';
 import { MyProfileUpdateRequest } from '@prometheus-fe/types';
 
 export default function MyPage() {
   const { isAuthenticated } = useAuthStore();
-  const { getMyProfile, updateMyProfile, myProfile, isLoadingProfile } = useUser();
+  const { getMyProfile, updateMyProfile, myProfile, isLoadingProfile } = useMember();
   const { getThumbnailUrl } = useImage();
 
   // 상태 관리
