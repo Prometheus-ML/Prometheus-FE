@@ -5,13 +5,12 @@ export interface Event {
   title: string;
   description: string;
   event_type: string;
-  gen: number;
-  is_attendance_required: boolean;
-  start_date: string;
-  end_date: string;
+  current_gen: number;  // gen → current_gen으로 수정
+  start_time: string;   // start_date → start_time으로 수정
+  end_time: string;     // end_date → end_time으로 수정
   location: string;
-  max_participants: number;
-  current_participants: number;
+  is_attendance_required: boolean;  // 출석 필수 여부 필드 추가
+  meta?: any;           // 백엔드에 있는 meta 필드 추가
   created_at: string;
   updated_at: string;
 }
@@ -20,31 +19,30 @@ export interface EventSummary {
   id: number;
   title: string;
   event_type: string;
-  gen: number;
-  is_attendance_required: boolean;
-  start_date: string;
-  end_date: string;
+  current_gen: number;  // gen → current_gen으로 수정
+  start_time: string;   // start_date → start_time으로 수정
+  end_time: string;     // end_date → end_time으로 수정
   location: string;
-  max_participants: number;
-  current_participants: number;
+  is_attendance_required: boolean;  // 출석 필수 여부 필드 추가
+  meta?: any;           // meta 필드 추가
 }
 
 export interface EventFilters {
-  gen?: number;
+  current_gen?: number;  // gen → current_gen으로 수정
   event_type?: string;
-  is_attendance_required?: boolean;
-  start_date?: string;
-  end_date?: string;
+  is_attendance_required?: boolean;  // 출석 필수 여부 필터 추가
+  start_date?: string;   // 필터용으로 유지 (YYYY-MM-DD 형식)
+  end_date?: string;     // 필터용으로 유지 (YYYY-MM-DD 형식)
 }
 
 export interface EventListParams {
   page?: number;
   size?: number;
-  gen?: number;
+  current_gen?: number;  // gen → current_gen으로 수정
   event_type?: string;
-  is_attendance_required?: boolean;
-  start_date?: string;
-  end_date?: string;
+  is_attendance_required?: boolean | string;  // 출석 필수 여부 필터 추가 (string도 허용하여 폼 상태와 호환)
+  start_date?: string;   // 필터용으로 유지
+  end_date?: string;     // 필터용으로 유지
 }
 
 export interface EventListResponse {
@@ -56,12 +54,11 @@ export interface EventListResponse {
 export interface Attendance {
   id: number;
   event_id: number;
-  member_id: number;
+  member_id: string;     // number → string으로 수정 (백엔드와 일치)
   member_name: string;
   status: 'present' | 'absent' | 'late' | 'excused';
-  check_in_time?: string;
-  check_out_time?: string;
-  notes?: string;
+  checked_in_at?: string;  // check_in_time → checked_in_at으로 수정
+  reason?: string;          // notes → reason으로 수정
   created_at: string;
   updated_at: string;
 }

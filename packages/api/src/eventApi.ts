@@ -27,14 +27,14 @@ export class EventApi {
       const sp = new URLSearchParams();
       if (params?.page) sp.set('page', String(params.page));
       if (params?.size) sp.set('size', String(params.size));
-      if (params?.gen) sp.set('gen', String(params.gen));
+      if (params?.current_gen) sp.set('current_gen', String(params.current_gen));  // gen → current_gen
       if (params?.event_type) sp.set('event_type', params.event_type);
-      if (params?.is_attendance_required !== undefined) sp.set('is_attendance_required', String(params.is_attendance_required));
+      if (params?.is_attendance_required !== undefined && params?.is_attendance_required !== '') sp.set('is_attendance_required', String(params.is_attendance_required));  // 출석 필수 여부 필터 추가 (빈 문자열 제외)
       if (params?.start_date) sp.set('start_date', params.start_date);
       if (params?.end_date) sp.set('end_date', params.end_date);
       
       const query = sp.toString() ? `?${sp.toString()}` : '';
-      const response = await this.api.get<EventListResponse>(`${this.base}/${query}`);
+      const response = await this.api.get<EventListResponse>(`${this.base}${query}`);  // 쿼리스트링 위치 수정
       return response;
     } catch (error: any) {
       console.error('Error fetching events:', error);
@@ -152,14 +152,14 @@ export class EventApi {
       const sp = new URLSearchParams();
       if (params?.page) sp.set('page', String(params.page));
       if (params?.size) sp.set('size', String(params.size));
-      if (params?.gen) sp.set('gen', String(params.gen));
+      if (params?.current_gen) sp.set('current_gen', String(params.current_gen));  // gen → current_gen
       if (params?.event_type) sp.set('event_type', params.event_type);
-      if (params?.is_attendance_required !== undefined) sp.set('is_attendance_required', String(params.is_attendance_required));
+      if (params?.is_attendance_required !== undefined && params?.is_attendance_required !== '') sp.set('is_attendance_required', String(params.is_attendance_required));  // 출석 필수 여부 필터 추가 (빈 문자열 제외)
       if (params?.start_date) sp.set('start_date', params.start_date);
       if (params?.end_date) sp.set('end_date', params.end_date);
       
       const query = sp.toString() ? `?${sp.toString()}` : '';
-      const response = await this.api.get(`/events/${query}`);
+      const response = await this.api.get(`/events${query}`);  // 엔드포인트 수정
       return response;
     } catch (error: any) {
       console.error('Error fetching public events:', error);
@@ -186,7 +186,7 @@ export class EventApi {
       if (params?.member_id_filter) sp.set('member_id_filter', params.member_id_filter);
       
       const query = sp.toString() ? `?${sp.toString()}` : '';
-      const response = await this.api.get(`/events/attendance/${eventId}${query}`);
+      const response = await this.api.get(`/events/${eventId}/attendances${query}`);  // 엔드포인트 수정
       return response;
     } catch (error: any) {
       console.error(`Error fetching public attendances for event ${eventId}:`, error);
