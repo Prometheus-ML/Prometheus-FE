@@ -16,7 +16,12 @@ export function useImage(options: UseImageOptions = {}) {
 
   // 이미지 URL 최적화 함수
   const getOptimizedImageUrl = useCallback((response: ImageUploadResponse, size?: number) => {
-    // 우선순위: publicCdnUrl > publicEmbedUrlAlt > publicEmbedUrl > id 기반 폴백
+    // 우선순위: webViewLink > publicCdnUrl > publicEmbedUrlAlt > publicEmbedUrl > id 기반 폴백
+    if (response.webViewLink) {
+      // webViewLink는 Google Drive 웹 뷰 링크로 안정적
+      return response.webViewLink;
+    }
+    
     if (response.publicCdnUrl) {
       return size ? `${response.publicCdnUrl}=s${size}-c` : response.publicCdnUrl;
     }
@@ -77,6 +82,15 @@ export function useImage(options: UseImageOptions = {}) {
   const resizeImageUrl = useCallback((url: string, size: number): string => {
     // Google Drive URL 패턴 감지 및 크기 조정
     if (url.includes('googleusercontent.com') || url.includes('drive.google.com')) {
+      // webViewLink의 경우 썸네일 URL로 변환
+      if (url.includes('/view?usp=')) {
+        // webViewLink를 썸네일 URL로 변환
+        const fileId = url.match(/\/d\/([^\/]+)/)?.[1];
+        if (fileId) {
+          return `https://drive.google.com/thumbnail?id=${fileId}&sz=w${size}`;
+        }
+      }
+      
       // 기존 크기 파라미터 제거
       const baseUrl = url.split('=')[0];
       return `${baseUrl}=s${size}-c`;
@@ -91,6 +105,27 @@ export function useImage(options: UseImageOptions = {}) {
     return resizeImageUrl(url, size);
   }, [resizeImageUrl]);
 
+  // 응답에서 최적의 썸네일 URL 가져오기
+  const getBestThumbnailUrl = useCallback((response: ImageUploadResponse, size: number = 200): string => {
+    // 우선순위: thumbnailLink > publicCdnUrl > webViewLink 변환
+    if (response.thumbnailLink) {
+      return response.thumbnailLink;
+    }
+    
+    if (response.publicCdnUrl) {
+      return size ? `${response.publicCdnUrl}=s${size}-c` : response.publicCdnUrl;
+    }
+    
+    if (response.webViewLink) {
+      // webViewLink를 썸네일 URL로 변환
+      const fileId = response.id;
+      return `https://drive.google.com/thumbnail?id=${fileId}&sz=w${size}`;
+    }
+    
+    // 폴백: Google Drive 직접 링크
+    return `https://lh3.googleusercontent.com/d/${response.id}=s${size}-c`;
+  }, []);
+
   // 이미지 로딩 에러 처리용 폴백 URL
   const getDefaultImageUrl = useCallback((initials?: string): string => {
     if (initials) {
@@ -99,7 +134,7 @@ export function useImage(options: UseImageOptions = {}) {
     }
     
     // 기본 아바타 URL
-    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRTVFN0VCIi8+CjxwYXRoIGQ9Ik0xMDAgODBDMTE2LjU2OSA4MCAxMzAgOTMuNDMxNSAxMzAgMTEwQzEzMCAxMjYuNTY5IDExNi41NjkgMTQwIDEwMCAxNDBDODMuNDMxNSAxNDAgNzAgMTI2LjU2OSA3MCAxMTBDNzAgOTMuNDMxNSA4My40MzE1IDgwIDEwMCA4MFoiIGZpbGw9IiM2QjczODAiLz4KPHBhdGggZD0iTTYwIDE3MEM2MCA5OS4yMDUxIDc5LjIwNTEgODAgMTAwIDgwQzEyMC43OTUgODAgMTQwIDk5LjIwNTEgMTQwIDE3MEg2MFoiIGZpbGw9IiM2QjczODAiLz4KPC9zdmc+';
+    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRTVFN0VCIi8+CjxwYXRoIGQ9Ik0xMDAgODBDMTE2LjU2OSA4MCAxMzAgOTMuNDMxNSAxMzAgMTEwQzEzMCAxMjYuNTY5IDExNi41NjkgMTQwIDEwMCAxNDBDODMuNDMxNSAxNDAgNzAgMTI2LjU2OSA3MCAxMTEwQzMwIDkzLjQzMTUgODMuNDMxNSA4MCAxMDAgODBaIiBmaWxsPSIjNkI3MzgwIi8+CjxwYXRoIGQ9Ik02MCAxNzBDNjAgOTkuMjA1MSA3OS4yMDUxIDgwIDEwMCA4MEMxMjAuNzk1IDgwIDE0MCA5OS4yMDUxIDE0MCAxNzBIIDYwWiIgZmlsbD0iI0I3MzgwIi8+Cjwvc3ZnPg==';
   }, []);
 
   return {
@@ -113,6 +148,7 @@ export function useImage(options: UseImageOptions = {}) {
     getOptimizedImageUrl,
     resizeImageUrl,
     getThumbnailUrl,
+    getBestThumbnailUrl,
     getDefaultImageUrl,
     
     // 유틸리티

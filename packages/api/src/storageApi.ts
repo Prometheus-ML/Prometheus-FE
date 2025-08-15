@@ -9,7 +9,7 @@ export class StorageApi {
     this.api = apiClient;
   }
 
-  upload(file: File, category: ImageCategory) {
+  upload(file: File, category: ImageCategory): Promise<ImageUploadResponse> {
     const form = new FormData();
     form.append('file', file);
     form.append('category', category);

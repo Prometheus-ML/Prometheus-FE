@@ -6,7 +6,7 @@ import {
   createApiClient,
   createAuthApi,
   createUserApi,
-  createAdminApi,
+  createMemberApi,
   createCoffeeChatApi,
   createProjectApi,
   createSchedulesApi,
@@ -16,7 +16,7 @@ import {
   createGroupApi,
   AuthApi,
   UserApi,
-  AdminApi,
+  MemberApi,
   CoffeeChatApi,
   ProjectApi,
   SchedulesApi,
@@ -31,7 +31,7 @@ type ApiInstances = {
   client: ApiClient;
   auth: AuthApi;
   user: UserApi;
-  admin: AdminApi;
+  member: MemberApi;
   coffeeChat: CoffeeChatApi;
   project: ProjectApi;
   schedules: SchedulesApi;
@@ -70,7 +70,7 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
       client,
       auth: authApi,
       user: createUserApi(client),
-      admin: createAdminApi(client),
+      member: createMemberApi(client),
       coffeeChat: createCoffeeChatApi(client),
       project: createProjectApi(client),
       schedules: createSchedulesApi(client),

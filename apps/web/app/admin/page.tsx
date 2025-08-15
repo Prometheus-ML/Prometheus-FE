@@ -1,217 +1,210 @@
 "use client";
-import { useEffect, useState } from 'react';
-import { useAuthStore } from '@prometheus-fe/stores';
-import { useRouter, usePathname } from 'next/navigation';
-import Link from 'next/link';
 
-const sidebarItems = [
-  {
-    name: '멤버 관리',
-    href: '/admin/member',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
-      </svg>
-    ),
-    requiredGrant: 'Manager'
-  },
-  {
-    name: '프로젝트 관리',
-    href: '/admin/project',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-      </svg>
-    ),
-    requiredGrant: 'Manager'
-  },
-  {
-    name: '게시글 관리',
-    href: '/admin/posts',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    ),
-    requiredGrant: 'Manager'
-  },
-  {
-    name: '블랙리스트 관리',
-    href: '/admin/blacklist',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636" />
-      </svg>
-    ),
-    requiredGrant: 'Administrator'
-  }
+import { useState, useEffect } from 'react';
+import { useAuthStore } from '@prometheus-fe/stores';
+import { useRouter } from 'next/navigation';
+
+// 임시 통계 데이터
+const statsData = {
+  totalMembers: 156,
+  activeMembers: 142,
+  totalProjects: 23,
+  activeProjects: 18,
+  totalPosts: 89,
+  thisMonthPosts: 12,
+  totalEvents: 8,
+  upcomingEvents: 3,
+  totalSponsors: 5,
+  activeSponsors: 4,
+  blacklistedUsers: 2
+};
+
+const recentActivities = [
+  { id: 1, type: 'member', action: '새 멤버 가입', user: '김철수', time: '2시간 전' },
+  { id: 2, type: 'project', action: '프로젝트 생성', user: '이영희', time: '4시간 전' },
+  { id: 3, type: 'post', action: '게시글 작성', user: '박민수', time: '6시간 전' },
+  { id: 4, type: 'event', action: '이벤트 등록', user: '최지영', time: '1일 전' },
+  { id: 5, type: 'sponsor', action: '스폰서십 계약', user: '정현우', time: '2일 전' }
 ];
 
-export default function AdminPage() {
+export default function AdminDashboard() {
   const canAccessManager = useAuthStore((s) => s.canAccessManager);
-  const canAccessAdministrator = useAuthStore((s) => s.canAccessAdministrator);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const router = useRouter();
-  const pathname = usePathname();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated()) {
-      alert('로그인이 필요합니다.');
       router.push('/auth/login');
       return;
     }
 
     if (!canAccessManager()) {
-      alert('관리자가 아닙니다.');
       router.push('/');
       return;
     }
   }, [isAuthenticated, canAccessManager, router]);
 
-  // 권한 체크가 완료되지 않았으면 로딩 표시
-  if (!isAuthenticated() || !canAccessManager()) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">권한 확인 중...</div>
-      </div>
-    );
-  }
-
-  const hasAccess = (requiredGrant: string) => {
-    switch (requiredGrant) {
-      case 'Manager':
-        return canAccessManager();
-      case 'Administrator':
-        return canAccessAdministrator();
+  const getIcon = (type: string) => {
+    switch (type) {
+      case 'member':
+        return (
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        );
+      case 'project':
+        return (
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+        );
+      case 'post':
+        return (
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        );
+      case 'event':
+        return (
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        );
+      case 'sponsor':
+        return (
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+          </svg>
+        );
       default:
-        return false;
+        return null;
     }
   };
 
-  const availableItems = sidebarItems.filter(item => hasAccess(item.requiredGrant));
-
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* 사이드바 - 모바일 오버레이 */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 flex z-40 md:hidden">
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
-            <div className="absolute top-0 right-0 -mr-12 pt-2">
-              <button
-                type="button"
-                className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-                onClick={() => setSidebarOpen(false)}
-              >
-                <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+    <div className="p-6">
+      {/* 헤더 */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">관리자 대시보드</h1>
+        <p className="text-gray-600">프로메테우스 전체 현황을 한눈에 확인하세요</p>
+      </div>
+
+      {/* 통계 카드 */}
+      <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-4 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm opacity-90">총 멤버</p>
+              <p className="text-2xl font-bold">{statsData.totalMembers}</p>
+              <p className="text-xs opacity-75">활성: {statsData.activeMembers}</p>
             </div>
-            <SidebarContent items={availableItems} pathname={pathname} />
+            <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+              </svg>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* 사이드바 - 데스크톱 */}
-      <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
-        <div className="flex-1 flex flex-col min-h-0 bg-white border-r border-gray-200">
-          <SidebarContent items={availableItems} pathname={pathname} />
+        <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-4 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm opacity-90">프로젝트</p>
+              <p className="text-2xl font-bold">{statsData.totalProjects}</p>
+              <p className="text-xs opacity-75">진행중: {statsData.activeProjects}</p>
+            </div>
+            <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-4 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm opacity-90">게시글</p>
+              <p className="text-2xl font-bold">{statsData.totalPosts}</p>
+              <p className="text-xs opacity-75">이번달: {statsData.thisMonthPosts}</p>
+            </div>
+            <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-4 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm opacity-90">이벤트</p>
+              <p className="text-2xl font-bold">{statsData.totalEvents}</p>
+              <p className="text-xs opacity-75">예정: {statsData.upcomingEvents}</p>
+            </div>
+            <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* 메인 콘텐츠 */}
-      <div className="md:pl-64 flex flex-col flex-1">
-        {/* 모바일 헤더 */}
-        <div className="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-gray-50">
-          <button
-            type="button"
-            className="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+      {/* 추가 통계 */}
+      <div className="grid grid-cols-1 gap-4 mb-8">
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">스폰서십 현황</h3>
+            <span className="text-sm text-gray-500">총 {statsData.totalSponsors}개</span>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="flex-1 bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-green-500 h-2 rounded-full" 
+                style={{ width: `${(statsData.activeSponsors / statsData.totalSponsors) * 100}%` }}
+              ></div>
+            </div>
+            <span className="text-sm font-medium text-gray-700">
+              {statsData.activeSponsors}개 활성
+            </span>
+          </div>
         </div>
 
-        <main className="flex-1">
-          <div className="py-6">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-              <h1 className="text-2xl font-semibold text-gray-900">관리자 대시보드</h1>
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">블랙리스트</h3>
+              <p className="text-sm text-gray-600">차단된 사용자 수</p>
             </div>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-              <div className="py-4">
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                  {availableItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow"
-                    >
-                      <div className="p-5">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0">
-                            <div className="text-blue-600">
-                              {item.icon}
-                            </div>
-                          </div>
-                          <div className="ml-5 w-0 flex-1">
-                            <dl>
-                              <dt className="text-sm font-medium text-gray-500 truncate">
-                                바로가기
-                              </dt>
-                              <dd className="text-lg font-medium text-gray-900">
-                                {item.name}
-                              </dd>
-                            </dl>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
+            <div className="text-right">
+              <p className="text-2xl font-bold text-red-600">{statsData.blacklistedUsers}</p>
+              <p className="text-xs text-gray-500">명</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 최근 활동 */}
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">최근 활동</h3>
+        <div className="space-y-3">
+          {recentActivities.map((activity) => (
+            <div key={activity.id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <div className="text-blue-600">
+                  {getIcon(activity.type)}
                 </div>
               </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-900">{activity.action}</p>
+                <p className="text-xs text-gray-500">{activity.user} • {activity.time}</p>
+              </div>
             </div>
-          </div>
-        </main>
+          ))}
+        </div>
       </div>
     </div>
-  );
-}
-
-function SidebarContent({ items, pathname }: { items: typeof sidebarItems, pathname: string }) {
-  return (
-    <>
-      <div className="flex items-center h-16 flex-shrink-0 px-4 bg-white border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">관리자 패널</h2>
-      </div>
-      <div className="flex-1 flex flex-col overflow-y-auto">
-        <nav className="flex-1 px-2 py-4 bg-white space-y-1">
-          {items.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`${
-                  isActive
-                    ? 'bg-blue-100 border-blue-500 text-blue-700'
-                    : 'border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                } group flex items-center px-2 py-2 text-sm font-medium border-l-4 rounded-r-md`}
-              >
-                <div className={`${
-                  isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
-                } mr-3 flex-shrink-0`}>
-                  {item.icon}
-                </div>
-                {item.name}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-    </>
   );
 }

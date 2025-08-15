@@ -48,10 +48,10 @@ export const useAuthStore = create<AuthState>()(
       let authApiInstance: AuthApi | null = null;
 
       return {
-        user: null,
-        accessToken: null,
-        refreshToken: null,
-        isLoading: false,
+      user: null,
+      accessToken: null,
+      refreshToken: null,
+      isLoading: false,
         error: null,
 
         // API 인스턴스 초기화 함수
@@ -70,9 +70,9 @@ export const useAuthStore = create<AuthState>()(
           return user?.grant || null;
         },
 
-        getUserGrantWeight: () => {
+  getUserGrantWeight: () => {
           const grant = get().getUserGrant();
-          const grantWeights = {
+    const grantWeights = {
             Root: 5,
             Super: 4,
             Administrator: 3,
@@ -80,36 +80,36 @@ export const useAuthStore = create<AuthState>()(
             Member: 1,
           } as const;
           return grantWeights[grant as keyof typeof grantWeights] || 0;
-        },
+  },
 
-        canAccessMember: () => {
+  canAccessMember: () => {
           return get().getUserGrantWeight() >= 1; // Member 이상
-        },
+  },
 
-        canAccessManager: () => {
+  canAccessManager: () => {
           return get().getUserGrantWeight() >= 2; // Manager 이상
-        },
+  },
 
-        canAccessAdministrator: () => {
+  canAccessAdministrator: () => {
           return get().getUserGrantWeight() >= 3; // Administrator 이상
-        },
+  },
 
-        canAccessSuper: () => {
+  canAccessSuper: () => {
           return get().getUserGrantWeight() >= 4; // Super 이상
-        },
+  },
 
-        canAccessRoot: () => {
+  canAccessRoot: () => {
           return get().getUserGrantWeight() >= 5; // Root만
         },
 
         // Token management
         setTokens: (access: string, refresh: string) => {
-          set({ accessToken: access, refreshToken: refresh });
-        },
+    set({ accessToken: access, refreshToken: refresh });
+  },
 
-        clearTokens: () => {
-          set({ accessToken: null, refreshToken: null, user: null });
-        },
+  clearTokens: () => {
+    set({ accessToken: null, refreshToken: null, user: null });
+  },
 
         getAccessToken: () => {
           return get().accessToken;

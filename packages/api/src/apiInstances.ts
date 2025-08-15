@@ -1,7 +1,7 @@
 import { ApiClient, ApiClientOptions, AuthCallbacks } from './apiClient';
 import { AuthApi } from './authApi';
 import { UserApi } from './userApi';
-import { AdminApi } from './adminApi';
+import { MemberApi } from './memberApi';
 import { CoffeeChatApi } from './coffeeChatApi';
 import { ProjectApi } from './projectApi';
 import { SchedulesApi } from './schedulesApi';
@@ -34,7 +34,7 @@ export const createApiClient = (authCallbacks: AuthCallbacks = {}) => {
 // API 서비스 생성 함수
 export const createAuthApi = (apiClient: ApiClient) => new AuthApi(apiClient);
 export const createUserApi = (apiClient: ApiClient) => new UserApi(apiClient);
-export const createAdminApi = (apiClient: ApiClient) => new AdminApi(apiClient);
+export const createMemberApi = (apiClient: ApiClient) => new MemberApi(apiClient);
 export const createCoffeeChatApi = (apiClient: ApiClient) => new CoffeeChatApi(apiClient);
 export const createProjectApi = (apiClient: ApiClient) => new ProjectApi(apiClient);
 export const createSchedulesApi = (apiClient: ApiClient) => new SchedulesApi(apiClient);
@@ -47,7 +47,7 @@ export const createGroupApi = (apiClient: ApiClient) => new GroupApi(apiClient);
 export type { 
   AuthApi, 
   UserApi, 
-  AdminApi, 
+  MemberApi, 
   CoffeeChatApi, 
   ProjectApi, 
   SchedulesApi, 

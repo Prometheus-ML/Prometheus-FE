@@ -156,4 +156,74 @@ export interface StatusUpdateRequest {
   status: string; 
 }
 
+// Coffee Chat Types
+export interface CoffeeChatRequestCreate {
+  recipient_id: string;
+  message?: string;
+}
+
+export interface CoffeeChatRequestResponse {
+  id: number;
+  requester_id: string;
+  recipient_id: string;
+  status: string; // pending, accepted, rejected, cancelled
+  message?: string;
+  response_message?: string;
+  requested_at: string;
+  responded_at?: string;
+  
+  // Requester info
+  requester_name: string;
+  requester_gen?: number;
+  requester_school?: string;
+  requester_major?: string;
+  
+  // Recipient info
+  recipient_name: string;
+  recipient_gen?: number;
+  recipient_school?: string;
+  recipient_major?: string;
+}
+
+export interface CoffeeChatRequestListResponse {
+  requests: CoffeeChatRequestResponse[];
+  total: number;
+  page: number;
+  size: number;
+}
+
+export interface CoffeeChatResponseRequest {
+  status: string; // accepted, rejected
+  response_message?: string;
+}
+
+export interface CoffeeChatContactInfoResponse {
+  request_id: number;
+  requester_id: string;
+  recipient_id: string;
+  status: string;
+  requester_kakao_id?: string;
+  requester_instagram_id?: string;
+  recipient_kakao_id?: string;
+  recipient_instagram_id?: string;
+}
+
+export interface CoffeeChatAvailableUserResponse {
+  id: string;
+  name: string;
+  gen?: number;
+  school?: string;
+  major?: string;
+  mbti?: string;
+  self_introduction?: string;
+  profile_image_url?: string;
+}
+
+export interface CoffeeChatAvailableUserListResponse {
+  users: CoffeeChatAvailableUserResponse[];
+  total: number;
+  page: number;
+  size: number;
+}
+
 
