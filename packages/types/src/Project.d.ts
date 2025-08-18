@@ -4,7 +4,7 @@ export type Project = {
   title: string;
   keywords?: string[] | null;
   description?: string | null;
-  start_date: string;
+  start_date?: string | null;
   end_date?: string | null;
   status: string;
   github_url?: string | null;

@@ -13,7 +13,7 @@ interface Project {
   description: string;
   gen: number;
   status: 'active' | 'completed' | 'paused';
-  start_date: string;
+  start_date?: string | null;
   end_date?: string;
   github_url?: string;
   demo_url?: string;
@@ -108,7 +108,7 @@ export default function ProjectDetailPage() {
   // useImage 훅 사용
   const { getThumbnailUrl, getDefaultImageUrl } = useImage();
 
-  const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('ko-KR') : '');
+  const formatDate = (d?: string | null) => (d ? new Date(d).toLocaleDateString('ko-KR') : '');
 
   const getStatusText = (status: string) => {
     switch (status) {
@@ -320,7 +320,7 @@ export default function ProjectDetailPage() {
             <span className="px-2 py-0.5 rounded-full border bg-gray-50">
               {getStatusText(selectedProject.status)}
             </span>
-            <span>시작: {formatDate(selectedProject.start_date)}</span>
+            {selectedProject.start_date && <span>시작: {formatDate(selectedProject.start_date)}</span>}
             {selectedProject.end_date && <span>종료: {formatDate(selectedProject.end_date)}</span>}
           </div>
         </div>
