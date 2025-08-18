@@ -7,6 +7,8 @@ import { useProject, useImage } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
 import GlassCard from '../../../src/components/GlassCard';
 import RedButton from '../../../src/components/RedButton';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch, faUndo } from '@fortawesome/free-solid-svg-icons';
 
 export default function AdminProjectPage() {
   const { 
@@ -145,10 +147,10 @@ export default function AdminProjectPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800 border-green-200';
-      case 'completed': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'paused': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'completed': return 'bg-blue-100 text-blue-800';
+      case 'paused': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -164,211 +166,201 @@ export default function AdminProjectPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <GlassCard className="p-6 mb-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-white">프로젝트 관리</h1>
-          <div className="flex items-center space-x-2">
-            <RedButton
-              href="/admin/project/new"
-              className="text-sm font-medium"
+    <div className="py-6">
+      {/* 기능 버튼들 */}
+      <div className="flex flex-wrap gap-2 justify-center mb-6">
+        <RedButton
+          href="/admin/project/new"
+          className="inline-flex items-center px-4 py-2 text-sm font-medium"
+        >
+          <FontAwesomeIcon icon={faSearch} className="-ml-1 mr-2 h-4 w-4" />
+          프로젝트 생성
+        </RedButton>
+      </div>
+
+      {/* 검색 및 필터 */}
+      <div className="p-4 mb-6 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20">
+        <div className="flex gap-4 items-end">
+          {/* 검색 */}
+          <div className="flex-1">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder="프로젝트 제목, 설명, 키워드를 검색해보세요!"
+              className="block w-full px-3 py-2 text-sm text-black placeholder-gray-300 focus:outline-none bg-white/20 rounded-md"
+            />
+          </div>
+
+          {/* 상태 필터 */}
+          <div className="flex-1">
+            <select
+              value={statusFilter}
+              onChange={handleStatusChange}
+              className="block w-full px-3 py-2 text-sm bg-white/20 text-white border-white/30 rounded-md focus:outline-none focus:ring-1 focus:ring-white/50"
             >
-              프로젝트 생성
-            </RedButton>
+              <option value="" className="bg-gray-100 text-black">상태</option>
+              <option value="active" className="bg-gray-100 text-black">진행중</option>
+              <option value="completed" className="bg-gray-100 text-black">완료</option>
+              <option value="paused" className="bg-gray-100 text-black">중지</option>
+            </select>
+          </div>
+
+          {/* 필터 초기화 버튼 */}
+          <RedButton onClick={handleClearFilters} className="px-4 py-2">
+            <FontAwesomeIcon icon={faUndo} className="text-sm" />
+          </RedButton>
+
+          {/* 검색 버튼 */}
+          <RedButton onClick={() => {}} className="px-4 py-2">
+            <FontAwesomeIcon icon={faSearch} className="text-sm" />
+          </RedButton>
+        </div>
+      </div>
+
+      {/* 검색 결과 개수 */}
+      <div className="text-center mb-4">
+        <span className="text-sm text-white">
+          {searchQuery || statusFilter ? (
+            `검색 결과: ${projects.length}개`
+          ) : (
+            `전체: ${projects.length}개`
+          )}
+        </span>
+      </div>
+
+      {/* 로딩 상태 */}
+      {isLocalLoading || isLoadingProjects ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        </div>
+      ) : null}
+      
+      {/* 에러 상태 */}
+      {error && !isLocalLoading && !isLoadingProjects && (
+        <div className="px-4 py-5 sm:p-6">
+          <div className="text-center">
+            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 className="mt-2 text-sm font-medium text-white">오류 발생</h3>
+            <p className="mt-1 text-sm text-gray-300">{error}</p>
           </div>
         </div>
-      </GlassCard>
-
-        {/* 검색 및 필터 섹션 */}
-        <GlassCard className="p-6 mb-6">
-          <div className="space-y-4">
-            {/* 검색창 */}
-            <div className="flex items-center space-x-3">
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  placeholder="프로젝트 제목, 설명, 키워드 검색..."
-                  className="w-full border rounded-md px-4 py-2 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder-gray-300"
-                />
-                <svg
-                  className="absolute left-3 top-2.5 h-4 w-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
-            </div>
-            
-            {/* 필터 및 액션 버튼 */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <select 
-                  value={statusFilter} 
-                  onChange={handleStatusChange}
-                  className="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/10 backdrop-blur-sm border-white/20 text-white"
-                >
-                  <option value="">전체 상태</option>
-                  <option value="active">진행중</option>
-                  <option value="completed">완료</option>
-                  <option value="paused">중지</option>
-                </select>
-                
-                {(searchQuery || statusFilter) && (
-                  <button 
-                    onClick={handleClearFilters}
-                    className="px-3 py-2 text-sm rounded-md border border-white/20 text-gray-300 hover:bg-white/10 transition-colors"
-                  >
-                    필터 초기화
-                  </button>
-                )}
-              </div>
-              
-              {/* 검색 결과 개수 */}
-              <div className="text-sm text-gray-300">
-                {searchQuery || statusFilter ? (
-                  <span>검색 결과: {projects.length}개</span>
-                ) : (
-                  <span>전체: {projects.length}개</span>
-                )}
-              </div>
-            </div>
-          </div>
-        </GlassCard>
-
-        {isLocalLoading || isLoadingProjects ? (
-          <div className="py-20 text-center text-gray-500">불러오는 중...</div>
-        ) : null}
-        
-        {error && !isLocalLoading && !isLoadingProjects && (
-          <div className="py-8 text-center text-red-600">{error}</div>
-        )}
-        
-        {!isLocalLoading && !isLoadingProjects && !error && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      )}
+      
+      {/* 프로젝트 목록 */}
+      {!isLocalLoading && !isLoadingProjects && !error && (
+        <GlassCard className="overflow-hidden">
+          <ul className="divide-y divide-gray-200">
             {projects.map((project) => (
-              <GlassCard key={project.id} className="bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-                {/* 썸네일 이미지 섹션 */}
-                <div className="aspect-video w-full bg-gray-100 relative">
-                  <Image
-                    src={project.panel_url ? getThumbnailUrl(project.panel_url, 400) : getDefaultImageUrl(project.title)}
-                    alt={project.title}
-                    fill
-                    className="object-cover"
-                    onError={(e) => {
-                      // 이미지 로드 실패 시 기본 이미지로 대체
-                      const target = e.target as HTMLImageElement;
-                      target.src = getDefaultImageUrl(project.title);
-                    }}
-                  />
-                </div>
-                
-                {/* 프로젝트 정보 섹션 */}
-                <div className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">
-                        <HighlightedText text={project.title} searchTerm={searchQuery} />
-                      </h3>
-                      <p className="mt-1 text-sm text-gray-600 line-clamp-2">
+              <li key={project.id} className="px-4 py-4 hover:bg-white/10 cursor-pointer border-b border-white/10 last:border-b-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      {project.panel_url ? (
+                        <div className="relative h-16 w-16">
+                          <Image
+                            src={getThumbnailUrl(project.panel_url, 80)}
+                            alt={project.title}
+                            fill
+                            className="rounded-lg object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.innerHTML = `
+                                  <div class="h-16 w-16 rounded-lg bg-white/20 flex items-center justify-center">
+                                    <span class="text-sm font-medium text-white">${project.title.charAt(0)}</span>
+                                  </div>
+                                `;
+                              }
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="h-16 w-16 rounded-lg bg-white/20 flex items-center justify-center">
+                          <span className="text-sm font-medium text-white">{project.title.charAt(0)}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="ml-4">
+                      <div className="flex items-center">
+                        <p className="text-sm font-medium text-white">
+                          <HighlightedText text={project.title} searchTerm={searchQuery} />
+                        </p>
+                        <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
+                          {getStatusText(project.status)}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-300">
                         <HighlightedText 
                           text={project.description || '설명이 없습니다.'} 
                           searchTerm={searchQuery} 
                         />
                       </p>
-                      <div className="mt-2 text-xs text-gray-500 space-x-2 flex items-center flex-wrap gap-1">
-                        <span>{project.gen}기</span>
-                        <span className={`px-2 py-0.5 rounded-full border text-xs ${getStatusColor(project.status)}`}>
-                          {getStatusText(project.status)}
-                        </span>
+                      <p className="text-sm text-gray-300">
+                        {project.gen}기
                         {project.keywords && project.keywords.length > 0 && (
-                          <div className="flex items-center space-x-1">
-                            <span className="text-xs text-gray-400">키워드:</span>
-                            <div className="flex flex-wrap gap-1">
-                              {project.keywords.slice(0, 3).map((keyword, idx) => (
-                                <span 
-                                  key={idx}
-                                  className="px-1.5 py-0.5 bg-gray-100 rounded text-xs"
-                                >
-                                  <HighlightedText text={keyword} searchTerm={searchQuery} />
-                                </span>
-                              ))}
-                              {project.keywords.length > 3 && (
-                                <span className="text-xs text-gray-400">
-                                  +{project.keywords.length - 3}개
-                                </span>
-                              )}
-                            </div>
-                          </div>
+                          <span className="ml-2">
+                            · 키워드: {project.keywords.slice(0, 3).join(', ')}
+                            {project.keywords.length > 3 && ` +${project.keywords.length - 3}개`}
+                          </span>
                         )}
-                      </div>
+                      </p>
                       {project.start_date && (
-                        <div className="mt-1 text-xs text-gray-400">
+                        <p className="text-sm text-gray-300">
                           시작일: {new Date(project.start_date).toLocaleDateString('ko-KR')}
-                        </div>
+                        </p>
                       )}
                     </div>
                   </div>
-                  
-                  {/* 관리자 액션 버튼들 */}
-                  <div className="mt-3 flex justify-between items-center">
+                  <div className="flex items-center space-x-2">
                     <Link 
-                      href={`/project/${project.id}`} 
-                      className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                      href={`/project/${project.id}`}
+                      className="text-blue-400 hover:text-blue-300 text-sm font-medium"
                     >
                       상세보기
                     </Link>
-                    <div className="flex space-x-2">
-                      <Link 
-                        href={`/project/${project.id}/edit`} 
-                        className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                      >
-                        편집
-                      </Link>
-                      <button 
-                        className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-                        onClick={() => {
-                          if (confirm('정말로 이 프로젝트를 삭제하시겠습니까?')) {
-                            // TODO: 프로젝트 삭제 기능 구현
-                            alert('삭제 기능은 곧 구현될 예정입니다.');
-                          }
-                        }}
-                      >
-                        삭제
-                      </button>
-                    </div>
+                    <Link 
+                      href={`/project/${project.id}/edit`}
+                      className="text-green-400 hover:text-green-300 text-sm font-medium"
+                    >
+                      편집
+                    </Link>
+                    <button
+                      className="text-red-400 hover:text-red-300 text-sm font-medium"
+                      onClick={() => {
+                        if (confirm('정말로 이 프로젝트를 삭제하시겠습니까?')) {
+                          // TODO: 프로젝트 삭제 기능 구현
+                          alert('삭제 기능은 곧 구현될 예정입니다.');
+                        }
+                      }}
+                    >
+                      삭제
+                    </button>
                   </div>
                 </div>
-              </GlassCard>
+              </li>
             ))}
-          </div>
-        )}
+          </ul>
+        </GlassCard>
+      )}
 
-        {!isLocalLoading && !isLoadingProjects && !error && projects.length === 0 && (
-          <div className="py-20 text-center text-gray-500">
-            {searchQuery || statusFilter ? (
-              <div className="space-y-2">
-                <div>검색 결과가 없습니다.</div>
-                <button
-                  onClick={handleClearFilters}
-                  className="text-blue-600 hover:underline text-sm"
-                >
-                  모든 프로젝트 보기
-                </button>
-              </div>
-            ) : (
-              <div>프로젝트가 없습니다.</div>
-            )}
+      {/* 빈 상태 */}
+      {!isLocalLoading && !isLoadingProjects && !error && projects.length === 0 && (
+        <div className="px-4 py-5 sm:p-6">
+          <div className="text-center">
+            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h3 className="mt-2 text-sm font-medium text-white">
+              {searchQuery || statusFilter ? '검색 결과가 없습니다.' : '프로젝트가 없습니다.'}
+            </h3>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+    </div>
   );
 }

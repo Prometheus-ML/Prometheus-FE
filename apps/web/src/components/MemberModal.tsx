@@ -456,12 +456,12 @@ export default function MemberModal({ isOpen, member, onClose, onSubmit, onDelet
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Prometheus background */}
-      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0 relative z-10">
+      <div className="flex items-start justify-center min-h-screen pt-16 px-4 pb-20 text-center sm:block sm:p-0 relative z-10">
         {/* 배경 오버레이 */}
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={!isUploadingImage ? closeModal : undefined} />
 
         {/* 모달 컨텐츠 */}
-        <div className="inline-block align-bottom bg-black/80 backdrop-blur-lg rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle md:max-w-4xl max-w-lg sm:w-full relative border border-white/20 max-h-[90vh] flex flex-col">
+        <div className="inline-block align-top bg-black/80 backdrop-blur-lg rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-top md:max-w-4xl max-w-lg sm:w-full relative border border-white/20 max-h-[80vh] flex flex-col">
           {/* 헤더 */}
           <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex-shrink-0">
             <div className="text-center w-full">

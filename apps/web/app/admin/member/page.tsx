@@ -15,6 +15,9 @@ import {
 } from '@prometheus-fe/types';
 import MemberModal from '../../../src/components/MemberModal';
 import GlassCard from '../../../src/components/GlassCard';
+import RedButton from '../../../src/components/RedButton';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUndo, faSearch } from '@fortawesome/free-solid-svg-icons';
 
 
 
@@ -420,80 +423,77 @@ export default function AdminMemberPage() {
       </div>
 
       {/* 검색 및 필터 */}
-      <GlassCard className="p-4 mb-6">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="p-4 mb-6 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20">
+        <div className="flex gap-4 items-end">
           {/* 검색 */}
-          <div>
-            <label htmlFor="search" className="block text-sm font-medium text-white">검색</label>
+          <div className="flex-1">
             <input
               id="search"
               value={filters.search}
               onChange={(e) => setFilters((prev: MemberFilters) => ({ ...prev, search: e.target.value }))}
               type="text"
-              placeholder="이름, 이메일, 학번"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              placeholder="이름, 학교를 검색해보세요!"
+              className="block w-full px-3 py-2 text-sm text-black placeholder-gray-300 focus:outline-none bg-white/20 rounded-md"
             />
           </div>
 
           {/* 권한 필터 */}
-          <div>
-            <label htmlFor="grant" className="block text-sm font-medium text-white">권한</label>
+          <div className="flex-1">
             <select
               id="grant"
               value={filters.grant_filter}
               onChange={(e) => setFilters((prev: MemberFilters) => ({ ...prev, grant_filter: e.target.value }))}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full px-3 py-2 text-sm bg-white/20 text-white border-white/30 rounded-md focus:outline-none focus:ring-1 focus:ring-white/50"
             >
-              <option value="">전체</option>
-              <option value="Root">Root</option>
-              <option value="Super">Super</option>
-              <option value="Administrator">Administrator</option>
-              <option value="Manager">Manager</option>
-              <option value="Member">Member</option>
+              <option value="" className="bg-white/20 text-white">권한</option>
+              <option value="Root" className="bg-white/20 text-white">Root</option>
+              <option value="Super" className="bg-white/20 text-white">Super</option>
+              <option value="Administrator" className="bg-white/20 text-white">Administrator</option>
+              <option value="Manager" className="bg-white/20 text-white">Manager</option>
+              <option value="Member" className="bg-white/20 text-white">Member</option>
             </select>
           </div>
 
           {/* 기수 필터 */}
-          <div>
-            <label htmlFor="gen" className="block text-sm font-medium text-white">기수</label>
+          <div className="flex-1">
             <select
               id="gen"
               value={filters.gen_filter}
               onChange={(e) => setFilters((prev: MemberFilters) => ({ ...prev, gen_filter: e.target.value }))}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full px-3 py-2 text-sm bg-white/20 text-white border-white/30 rounded-md focus:outline-none focus:ring-1 focus:ring-white/50"
             >
-              <option value="">전체</option>
+              <option value="" className="bg-white/20 text-white">기수</option>
               {Array.from({ length: 15 }, (_, i) => (
-                <option key={i + 1} value={i + 1}>{i + 1}기</option>
+                <option key={i + 1} value={i + 1} className="bg-white/20 text-white">{i + 1}기</option>
               ))}
             </select>
           </div>
 
           {/* 상태 필터 */}
-          <div>
-            <label htmlFor="status" className="block text-sm font-medium text-white">상태</label>
+          <div className="flex-1">
             <select
               id="status"
               value={filters.status_filter}
               onChange={(e) => setFilters((prev: MemberFilters) => ({ ...prev, status_filter: e.target.value }))}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full px-3 py-2 text-sm bg-white/20 text-white border-white/30 rounded-md focus:outline-none focus:ring-1 focus:ring-white/50"
             >
-              <option value="">전체</option>
-              <option value="active">활동기수</option>
-              <option value="alumni">알럼나이</option>
+              <option value="" className="bg-white/20 text-white">상태</option>
+              <option value="active" className="bg-white/20 text-white">활동기수</option>
+              <option value="alumni" className="bg-white/20 text-white">알럼나이</option>
             </select>
           </div>
-        </div>
 
-        <div className="mt-4 flex justify-end space-x-3">
-          <GlassCard as="button" onClick={clearFilters} className="inline-flex items-center px-4 py-2 text-sm font-medium text-white">
-            필터 초기화
-          </GlassCard>
-          <GlassCard as="button" onClick={applyFilters} className="inline-flex items-center px-4 py-2 text-sm font-medium text-white">
-            검색
-          </GlassCard>
+          {/* 필터 초기화 버튼 */}
+          <RedButton onClick={clearFilters} className="px-4 py-2">
+            <FontAwesomeIcon icon={faUndo} className="text-sm" />
+          </RedButton>
+
+          {/* 검색 버튼 */}
+          <RedButton onClick={applyFilters} className="px-4 py-2">
+            <FontAwesomeIcon icon={faSearch} className="text-sm" />
+          </RedButton>
         </div>
-      </GlassCard>
+      </div>
 
       {/* Excel 업로드 에러 메시지 */}
       {uploadError && (

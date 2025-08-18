@@ -23,6 +23,16 @@ const nextConfig: NextConfig = {
         hostname: 'ui-avatars.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'panel.xn-----k38i1wv5tf8o8ticmln6dm1am9c.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.xn-----k38i1wv5tf8o8ticmln6dm1am9c.com',
+        pathname: '/**',
+      },
     ],
   },
 };

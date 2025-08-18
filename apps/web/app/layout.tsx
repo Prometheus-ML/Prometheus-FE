@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="prometheus-bg"></div>
           
           {/* Main Content Container */}
-          <div className="md:max-w-4xl max-w-lg mx-auto relative z-10">
+          <div className="relative z-10">
             <AppProviders>{children}</AppProviders>
           </div>
         </div>

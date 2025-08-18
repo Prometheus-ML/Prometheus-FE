@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useImage, useMember, useCoffeeChat } from '@prometheus-fe/hooks';
 import GlassCard from '../../src/components/GlassCard';
-import TabBar from '../../src/components/TabBar';
 import RedButton from '../../src/components/RedButton';
 import ProfileModal from '../../src/components/ProfileModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -15,7 +14,8 @@ import {
   faCoffee, 
   faUsers,
   faRotateLeft,
-  faCircle
+  faCircle,
+  faSearch
 } from '@fortawesome/free-solid-svg-icons';
 import { 
   faGithub,
@@ -43,8 +43,10 @@ export default function MemberPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
-  // 기수별 탭 상태
-  const [selectedGenTab, setSelectedGenTab] = useState<string | number>('all'); // 초기값은 'all'로 설정
+  // 검색 상태
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [selectedGen, setSelectedGen] = useState<string>('all');
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
 
   // 모달 상태
   const [showDetail, setShowDetail] = useState<boolean>(false);
@@ -109,9 +111,19 @@ export default function MemberPage() {
         size
       };
 
-      // 기수별 탭 필터 적용 (전체가 아닐 때만)
-      if (selectedGenTab !== 'all' && typeof selectedGenTab === 'number') {
-        params.gen = selectedGenTab;
+      // 검색어 필터 적용
+      if (searchTerm.trim()) {
+        params.search = searchTerm.trim();
+      }
+
+      // 기수 필터 적용 (전체가 아닐 때만)
+      if (selectedGen !== 'all') {
+        params.gen = parseInt(selectedGen);
+      }
+
+      // 상태 필터 적용 (전체가 아닐 때만)
+      if (selectedStatus !== 'all') {
+        params.status = selectedStatus;
       }
 
       let response;
@@ -131,7 +143,7 @@ export default function MemberPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [page, size, selectedGenTab, isPrivate, getPublicMembers, getPrivateMembers]);
+  }, [page, size, searchTerm, selectedGen, selectedStatus, isPrivate, getPublicMembers, getPrivateMembers]);
 
   // 페이지 이동
   const prevPage = useCallback(() => {
@@ -179,18 +191,28 @@ export default function MemberPage() {
     fetchMembers();
   }, [fetchMembers]);
 
+  // 검색어 변경 시 디바운스 적용
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1);
+      fetchMembers();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, selectedGen, selectedStatus]);
+
   // 초기 기수 설정
   useEffect(() => {
-    setSelectedGenTab('all');
+    setSelectedGen('all');
   }, []);
 
   // 기수별 탭 변경 시 데이터 다시 로드 (공통)
   useEffect(() => {
-    if (selectedGenTab !== 0 && selectedGenTab !== 'all') { // 0이 아닐 때만 실행 (초기 로딩 방지)
+    if (selectedGen !== 'all') { // 0이 아닐 때만 실행 (초기 로딩 방지)
       setPage(1); // 페이지 초기화
       fetchMembers();
     }
-  }, [selectedGenTab, fetchMembers]);
+  }, [selectedGen, fetchMembers]);
 
   // Skeleton UI Component
   const SkeletonCard = () => (
@@ -223,16 +245,7 @@ export default function MemberPage() {
         </header>
 
         <div className="px-4 py-6">
-          {/* 기수별 탭 */}
-          <div className="mb-6">
-            <TabBar
-              tabs={genTabs}
-              activeTab={selectedGenTab.toString()}
-              onTabChange={(tabId) => {
-                setSelectedGenTab(tabId === 'all' ? 'all' : parseInt(tabId));
-              }}
-            />
-          </div>
+
 
           {/* Member Cards Skeleton */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -261,19 +274,65 @@ export default function MemberPage() {
               <p className="text-sm font-pretendard text-[#e0e0e0]">프로메테우스 멤버 목록</p>
             </div>
           </div>
+          <div className="text-right">
+            <p className="text-sm text-[#e0e0e0]">전체 <span className="text-[#ffa282] font-bold">{total}</span>명</p>
+          </div>
         </div>
       </header>
 
       <div className="px-4 py-6">
+        {/* 검색 및 필터 */}
+        <div className="mb-6 space-y-4">
+          {/* 검색 바 */}
+          <div className="relative">
+            <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#e0e0e0] w-4 h-4" />
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              type="text"
+              placeholder="이름, 학교를 검색해보세요!"
+              className="w-full border border-[#404040] rounded-md px-10 py-3 bg-[#1A1A1A] text-[#FFFFFF] placeholder-[#e0e0e0] focus:border-[#c2402a] focus:outline-none"
+            />
+          </div>
+          
+          {/* 필터 */}
+          <div className="flex flex-wrap gap-3">
+            {/* 기수 필터 */}
+            <select
+              value={selectedGen}
+              onChange={(e) => setSelectedGen(e.target.value)}
+              className="border border-[#404040] rounded-md px-3 py-2 bg-[#1A1A1A] text-[#FFFFFF] focus:border-[#c2402a] focus:outline-none"
+            >
+              <option value="all">전체 기수</option>
+              {genTabs.slice(1).map((tab) => (
+                <option key={tab.id} value={tab.id}>
+                  {tab.label}
+                </option>
+              ))}
+            </select>
+            
+            {/* 상태 필터 */}
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="border border-[#404040] rounded-md px-3 py-2 bg-[#1A1A1A] text-[#FFFFFF] focus:border-[#c2402a] focus:outline-none"
+            >
+              <option value="all">전체 상태</option>
+              <option value="active">활동중</option>
+              <option value="alumni">알럼나이</option>
+            </select>
+          </div>
+        </div>
                      {/* 기수별 탭 */}
         <div className="mb-6">
-             <TabBar
-               tabs={genTabs}
-               activeTab={selectedGenTab.toString()}
-               onTabChange={(tabId) => {
-              setSelectedGenTab(tabId === 'all' ? 'all' : parseInt(tabId));
-               }}
-             />
+             <div className="flex flex-wrap gap-3">
+              <option value="all">전체 기수</option>
+              {genTabs.slice(1).map((tab) => (
+                <option key={tab.id} value={tab.id}>
+                  {tab.label}
+                </option>
+              ))}
+            </div>
         </div>
 
         {/* 로딩 상태 */}
