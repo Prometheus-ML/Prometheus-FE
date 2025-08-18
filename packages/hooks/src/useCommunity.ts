@@ -3,7 +3,7 @@ import { Post, Comment } from '@prometheus-fe/types';
 import { useState, useCallback } from 'react';
 
 export function useCommunity() {
-  const { community } = useApi();
+  const { community, member } = useApi();
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -13,6 +13,30 @@ export function useCommunity() {
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [isCreatingPost, setIsCreatingPost] = useState(false);
   const [isCreatingComment, setIsCreatingComment] = useState(false);
+  const [memberCache, setMemberCache] = useState<Record<string, any>>({});
+
+  // 멤버 정보 가져오기 (캐시 활용)
+  const getMemberInfo = useCallback(async (memberId: string) => {
+    if (!member) return null;
+    
+    // 캐시에 있으면 반환
+    if (memberCache[memberId]) {
+      return memberCache[memberId];
+    }
+
+    try {
+      const memberData = await member.getMember(memberId);
+      // 캐시에 저장
+      setMemberCache(prev => ({
+        ...prev,
+        [memberId]: memberData
+      }));
+      return memberData;
+    } catch (error) {
+      console.error(`멤버 ${memberId} 정보 조회 실패:`, error);
+      return null;
+    }
+  }, [member, memberCache]);
 
   // 게시글 목록 조회
   const fetchPosts = useCallback(async (params?: any) => {
@@ -45,9 +69,22 @@ export function useCommunity() {
       setIsLoadingPost(true);
       const data = await community.getPost(postId);
       setSelectedPost(data);
+      
+      // 게시글을 가져온 후 댓글도 함께 가져오기
+      try {
+        setIsLoadingComments(true);
+        const commentsData = await community.getComments(postId);
+        setComments(commentsData || []);
+      } catch (commentError) {
+        console.error(`댓글 조회 실패:`, commentError);
+        setComments([]);
+      } finally {
+        setIsLoadingComments(false);
+      }
     } catch (error) {
       console.error(`게시글 ${postId} 조회 실패:`, error);
       setSelectedPost(null);
+      setComments([]);
     } finally {
       setIsLoadingPost(false);
     }
@@ -172,6 +209,7 @@ export function useCommunity() {
     isLoadingComments,
     isCreatingPost,
     isCreatingComment,
+    memberCache,
     
     // API 함수들
     fetchPosts,
@@ -181,6 +219,7 @@ export function useCommunity() {
     createComment,
     deleteComment,
     filterPostsByCategory,
+    getMemberInfo,
     
     // 핸들러들
     handlePostSelect,

@@ -85,4 +85,14 @@ export class CommunityApi {
       throw new Error(error.message || 'Failed to delete comment');
     }
   }
+
+  async getComments(postId: number | string): Promise<Comment[]> {
+    try {
+      const response = await this.api.get<Comment[]>(`${this.postsBase}/${postId}/comments`);
+      return response;
+    } catch (error: any) {
+      console.error(`Error fetching comments for post ${postId}:`, error);
+      throw new Error(error.message || 'Failed to fetch comments');
+    }
+  }
 }
