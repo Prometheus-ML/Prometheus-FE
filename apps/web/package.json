@@ -11,34 +11,34 @@
     "lint-fix": "eslint . --fix"
   },
   "dependencies": {
-    "next": "^15.2.4",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "@fortawesome/fontawesome-svg-core": "^6.5.1",
+    "@fortawesome/free-brands-svg-icons": "^7.0.0",
+    "@fortawesome/free-regular-svg-icons": "^6.5.1",
+    "@fortawesome/free-solid-svg-icons": "^6.5.1",
+    "@fortawesome/react-fontawesome": "^0.2.0",
     "@prometheus-fe/api": "workspace:*",
     "@prometheus-fe/context": "workspace:*",
     "@prometheus-fe/hooks": "workspace:*",
     "@prometheus-fe/types": "workspace:*",
-    "zustand": "^5.0.0",
-    "@fortawesome/fontawesome-svg-core": "^6.5.1",
-    "@fortawesome/free-solid-svg-icons": "^6.5.1",
-    "@fortawesome/free-regular-svg-icons": "^6.5.1",
-    "@fortawesome/react-fontawesome": "^0.2.0"
+    "next": "^15.2.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zustand": "^5.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
     "@prometheus-fe/eslint-config": "workspace:*",
     "@prometheus-fe/tailwind-config": "workspace:*",
     "@prometheus-fe/typescript-config": "workspace:*",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.20",
     "eslint": "^9",
     "eslint-config-next": "15.1.7",
     "postcss": "^8",
-    "autoprefixer": "^10.4.20",
     "prettier": "^3.5.3",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   }
 }
-
