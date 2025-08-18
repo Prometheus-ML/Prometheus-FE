@@ -309,11 +309,6 @@ export default function AdminProjectPage() {
                           </span>
                         )}
                       </p>
-                      {project.start_date && (
-                        <p className="text-sm text-gray-300">
-                          시작일: {new Date(project.start_date).toLocaleDateString('ko-KR')}
-                        </p>
-                      )}
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">

@@ -284,12 +284,6 @@ export default function ProjectPage() {
                       </div>
                     )}
 
-                    {/* 시작일 */}
-                    <div className="flex items-center text-sm text-gray-300">
-                      <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" />
-                      시작: {new Date(project.start_date).toLocaleDateString()}
-                    </div>
-
                     {/* 상세보기 버튼 */}
                     <div className="flex items-center justify-between pt-2">
                       <a

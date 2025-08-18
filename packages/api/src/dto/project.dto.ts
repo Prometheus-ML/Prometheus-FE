@@ -16,8 +16,6 @@ export interface CreateProjectRequest {
   title: string;
   keywords?: string[] | null;
   description?: string | null;
-  start_date?: string | null; // ISO
-  end_date?: string | null; // ISO
   github_url?: string | null;
   demo_url?: string | null;
   panel_url?: string | null;
@@ -56,8 +54,6 @@ export interface UpdateProjectRequest {
   title?: string | null;
   keywords?: string[] | null;
   description?: string | null;
-  start_date?: string | null;
-  end_date?: string | null;
   status?: string | null;
   github_url?: string | null;
   demo_url?: string | null;

@@ -182,7 +182,6 @@ export default function EditProjectPage() {
             github_url: selectedProject.github_url || '',
             demo_url: selectedProject.demo_url || '',
             panel_url: selectedProject.panel_url || '',
-            end_date: selectedProject.end_date || '',
             status: selectedProject.status as 'active' | 'completed' | 'paused',
           }}
           mode="edit"

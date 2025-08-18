@@ -28,40 +28,11 @@ export class ProjectApi {
 
   async create(formData: any): Promise<CreateProjectDto> {
     try {
-      // Helper function to ensure proper ISO date format
-      const ensureISODate = (dateString: string | null): string | null => {
-        if (!dateString) return null;
-        
-        try {
-          // If it's already in ISO format, return as is
-          if (dateString.includes('T') || dateString.includes('Z')) {
-            return dateString;
-          }
-          
-          // If it's YYYY-MM-DD format, convert to ISO
-          if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-            return new Date(dateString + 'T00:00:00.000Z').toISOString();
-          }
-          
-          // Try to parse and convert
-          const date = new Date(dateString);
-          if (isNaN(date.getTime())) {
-            throw new Error(`Invalid date format: ${dateString}`);
-          }
-          return date.toISOString();
-        } catch (error) {
-          console.warn('Date conversion warning:', error);
-          return dateString; // Return original if conversion fails
-        }
-      };
-
       // Transform form data to match API requirements
       const data: CreateProjectRequest = {
         title: formData.title.trim(),
         keywords: formData.keywords?.length > 0 ? formData.keywords : null,
         description: formData.description?.trim() || null,
-        start_date: formData.start_date ? ensureISODate(formData.start_date) : null,
-        end_date: formData.end_date ? ensureISODate(formData.end_date) : null,
         github_url: formData.github_url?.trim() || null,
         demo_url: formData.demo_url?.trim() || null,
         panel_url: formData.panel_url?.trim() || null,

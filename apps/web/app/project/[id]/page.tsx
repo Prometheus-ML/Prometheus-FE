@@ -18,8 +18,6 @@ interface Project {
   description: string;
   gen: number;
   status: 'active' | 'completed' | 'paused';
-  start_date?: string | null;
-  end_date?: string;
   github_url?: string;
   demo_url?: string;
   panel_url?: string;
@@ -329,16 +327,6 @@ export default function ProjectDetailPage() {
             <span className="px-2 py-0.5 rounded-full border bg-white/10">
               {getStatusText(selectedProject.status)}
             </span>
-            <span className="flex items-center">
-              <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" />
-              시작: {formatDate(selectedProject.start_date)}
-            </span>
-            {selectedProject.end_date && (
-              <span className="flex items-center">
-                <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" />
-                종료: {formatDate(selectedProject.end_date)}
-              </span>
-            )}
           </div>
         </div>
         <div className="flex items-center space-x-2">
