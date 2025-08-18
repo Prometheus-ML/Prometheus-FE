@@ -58,11 +58,13 @@ function EventDetailModal({
     if (!event || myAttendance) return false;
     
     const now = new Date();
-    const startTime = new Date(event.startTime);
-    const endTime = new Date(event.endTime);
     
-    // 이벤트가 진행 중이고 아직 출석하지 않은 경우
-    return startTime <= now && endTime >= now;
+    // 출석 시간이 설정된 경우 해당 시간을 사용, 아니면 이벤트 시간 사용
+    const attendanceStart = event.attendanceStartTime || event.startTime;
+    const attendanceEnd = event.attendanceEndTime || event.endTime;
+    
+    // 출석 가능 시간 내에 있고 아직 출석하지 않은 경우
+    return attendanceStart <= now && attendanceEnd >= now;
   };
 
   const getCheckInMessage = () => {
@@ -70,19 +72,29 @@ function EventDetailModal({
     if (myAttendance) return '이미 출석 체크가 완료되었습니다.';
     
     const now = new Date();
-    const startTime = new Date(event.startTime);
-    const endTime = new Date(event.endTime);
     
-    if (startTime > now) {
-      const timeDiff = Math.ceil((startTime.getTime() - now.getTime()) / (1000 * 60));
-      return `이벤트 시작 ${timeDiff}분 전입니다.`;
+    // 출석 시간이 설정된 경우 해당 시간을 사용, 아니면 이벤트 시간 사용
+    const attendanceStart = event.attendanceStartTime || event.startTime;
+    const attendanceEnd = event.attendanceEndTime || event.endTime;
+    
+    if (attendanceStart > now) {
+      const timeDiff = Math.ceil((attendanceStart.getTime() - now.getTime()) / (1000 * 60));
+      return `출석 가능 시간까지 ${timeDiff}분 남았습니다.`;
     }
     
-    if (endTime < now) {
-      return '이벤트가 이미 종료되었습니다.';
+    if (attendanceEnd < now) {
+      return '출석 가능 시간이 종료되었습니다.';
     }
     
-    return '출석 체크가 가능합니다.';
+    // 지각 시간 계산
+    const lateThreshold = event.lateThresholdMinutes || 15;
+    const lateDeadline = new Date(attendanceStart.getTime() + lateThreshold * 60 * 1000);
+    
+    if (now <= lateDeadline) {
+      return '출석 체크가 가능합니다.';
+    } else {
+      return '지각 처리됩니다. 출석 체크가 가능합니다.';
+    }
   };
 
   const getStatusColor = (status: AttendanceStatus) => {
@@ -385,9 +397,12 @@ export default function EventPage() {
 
   // 메인 이벤트 (가장 최근 이벤트)
   const mainEvent = events.length > 0 ? events[0] : null;
-  const isMainEventOngoing = mainEvent && 
-    new Date(mainEvent.startTime) <= new Date() && 
-    new Date(mainEvent.endTime) >= new Date();
+  const isMainEventOngoing = mainEvent && (() => {
+    const now = new Date();
+    const attendanceStart = mainEvent.attendanceStartTime || mainEvent.startTime;
+    const attendanceEnd = mainEvent.attendanceEndTime || mainEvent.endTime;
+    return attendanceStart <= now && attendanceEnd >= now;
+  })();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4">
@@ -421,13 +436,19 @@ export default function EventPage() {
                 </div>
                 <div className="text-right">
                   <div className="text-sm text-white/70">
-                    {isMainEventOngoing ? (
-                      <span className="text-green-400">진행중</span>
-                    ) : new Date(mainEvent.startTime) > new Date() ? (
-                      <span className="text-blue-400">예정</span>
-                    ) : (
-                      <span className="text-gray-400">종료</span>
-                    )}
+                    {(() => {
+                      const now = new Date();
+                      const attendanceStart = mainEvent.attendanceStartTime || mainEvent.startTime;
+                      const attendanceEnd = mainEvent.attendanceEndTime || mainEvent.endTime;
+                      
+                      if (attendanceStart <= now && attendanceEnd >= now) {
+                        return <span className="text-green-400">출석 가능</span>;
+                      } else if (attendanceStart > now) {
+                        return <span className="text-blue-400">예정</span>;
+                      } else {
+                        return <span className="text-gray-400">종료</span>;
+                      }
+                    })()}
                   </div>
                 </div>
               </div>

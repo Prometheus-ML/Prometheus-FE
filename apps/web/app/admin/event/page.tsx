@@ -26,6 +26,9 @@ function EventFormModal({
     eventType: '회의' as EventType,
     isAttendanceRequired: true,
     currentGen: 5,
+    attendanceStartTime: undefined,
+    attendanceEndTime: undefined,
+    lateThresholdMinutes: 15,
     meta: {}
   });
 
@@ -40,6 +43,9 @@ function EventFormModal({
         eventType: event.eventType,
         isAttendanceRequired: event.isAttendanceRequired,
         currentGen: event.currentGen,
+        attendanceStartTime: event.attendanceStartTime,
+        attendanceEndTime: event.attendanceEndTime,
+        lateThresholdMinutes: event.lateThresholdMinutes,
         meta: event.meta || {}
       });
     } else {
@@ -55,6 +61,9 @@ function EventFormModal({
         eventType: '회의' as EventType,
         isAttendanceRequired: true,
         currentGen: 5,
+        attendanceStartTime: undefined,
+        attendanceEndTime: undefined,
+        lateThresholdMinutes: 15,
         meta: {}
       });
     }
@@ -62,8 +71,24 @@ function EventFormModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit(formData);
-    onClose();
+    console.log('📝 [EventFormModal] 폼 제출 시작:', formData);
+    try {
+      console.log('📝 [EventFormModal] onSubmit 함수 호출 중...');
+      await onSubmit(formData);
+      console.log('✅ [EventFormModal] 폼 제출 성공');
+      onClose();
+    } catch (error) {
+      console.error('❌ [EventFormModal] 폼 제출 실패:', error);
+      // 에러 상세 정보 출력
+      if (error && typeof error === 'object') {
+        console.error('❌ [EventFormModal] 에러 상세:', {
+          message: (error as any).message,
+          status: (error as any).status,
+          data: (error as any).data,
+          stack: (error as any).stack
+        });
+      }
+    }
   };
 
   if (!isOpen) return null;
@@ -186,6 +211,58 @@ function EventFormModal({
               <span>출석 필수</span>
             </label>
           </div>
+
+          {/* 출석 시간 설정 */}
+          {formData.isAttendanceRequired && (
+            <div className="space-y-4 p-4 bg-white/5 rounded-lg border border-white/10">
+              <h3 className="text-white font-medium text-sm">출석 시간 설정</h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-white text-sm font-medium mb-2">출석 인정 시작 시간</label>
+                  <input
+                    type="datetime-local"
+                    value={formData.attendanceStartTime?.toISOString().slice(0, 16) || ''}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      attendanceStartTime: e.target.value ? new Date(e.target.value) : undefined 
+                    }))}
+                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-red-400"
+                    placeholder="미설정시 이벤트 시작시간"
+                  />
+                  <p className="text-xs text-white/60 mt-1">미설정시 이벤트 시작 시간 사용</p>
+                </div>
+                <div>
+                  <label className="block text-white text-sm font-medium mb-2">출석 인정 종료 시간</label>
+                  <input
+                    type="datetime-local"
+                    value={formData.attendanceEndTime?.toISOString().slice(0, 16) || ''}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      attendanceEndTime: e.target.value ? new Date(e.target.value) : undefined 
+                    }))}
+                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-red-400"
+                    placeholder="미설정시 이벤트 종료시간"
+                  />
+                  <p className="text-xs text-white/60 mt-1">미설정시 이벤트 종료 시간 사용</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-white text-sm font-medium mb-2">지각 허용 시간 (분)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="120"
+                  value={formData.lateThresholdMinutes}
+                  onChange={(e) => setFormData(prev => ({ ...prev, lateThresholdMinutes: parseInt(e.target.value) || 15 }))}
+                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-red-400"
+                  placeholder="15"
+                />
+                <p className="text-xs text-white/60 mt-1">출석 시작 시간 후 몇 분까지 지각으로 처리할지 설정</p>
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-end space-x-3 pt-4">
             <button
@@ -380,10 +457,24 @@ export default function AdminEventPage() {
 
   const handleCreateEvent = async (formData: EventFormData) => {
     try {
+      console.log('🎯 [AdminEventPage] 이벤트 생성 핸들러 호출:', formData);
+      console.log('🎯 [AdminEventPage] createEvent 함수 호출 중...');
       await createEvent(formData);
+      console.log('🎯 [AdminEventPage] 이벤트 생성 완료, 목록 새로고침 중...');
       fetchEvents(pagination.page, pagination.size);
     } catch (error) {
-      console.error('이벤트 생성 실패:', error);
+      console.error('🎯 [AdminEventPage] 이벤트 생성 실패:', error);
+      // 에러 상세 정보 출력
+      if (error && typeof error === 'object') {
+        console.error('🎯 [AdminEventPage] 에러 상세:', {
+          message: (error as any).message,
+          status: (error as any).status,
+          data: (error as any).data,
+          stack: (error as any).stack
+        });
+      }
+      // 에러를 다시 throw하여 상위로 전파
+      throw error;
     }
   };
 

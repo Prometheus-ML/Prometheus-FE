@@ -16,6 +16,9 @@ export interface CreateEventRequest {
   event_type: string;
   is_attendance_required: boolean;
   current_gen: number;
+  attendance_start_time?: string; // ISO 8601 형식
+  attendance_end_time?: string;   // ISO 8601 형식
+  late_threshold_minutes: number;
   meta?: Record<string, any>;
 }
 
@@ -31,6 +34,9 @@ export interface UpdateEventRequest {
   event_type?: string;
   is_attendance_required?: boolean;
   current_gen?: number;
+  attendance_start_time?: string; // ISO 8601 형식
+  attendance_end_time?: string;   // ISO 8601 형식
+  late_threshold_minutes?: number;
   meta?: Record<string, any>;
 }
 
@@ -47,6 +53,9 @@ export interface EventResponseDto {
   event_type: string;
   is_attendance_required: boolean;
   current_gen: number;
+  attendance_start_time?: string; // ISO 8601 형식
+  attendance_end_time?: string;   // ISO 8601 형식
+  late_threshold_minutes: number;
   meta?: Record<string, any>;
 }
 

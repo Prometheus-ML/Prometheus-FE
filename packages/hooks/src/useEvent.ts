@@ -131,6 +131,7 @@ export function useEventManagement() {
 
   const createEvent = useCallback(async (formData: EventFormData): Promise<Event> => {
     try {
+      console.log('🚀 [EventManagement] 이벤트 생성 시작:', formData);
       setIsCreating(true);
       setError(null);
 
@@ -145,12 +146,14 @@ export function useEventManagement() {
         throw new Error('과거 날짜로 이벤트를 생성할 수 없습니다.');
       }
 
+      console.log('✅ [EventManagement] 유효성 검사 통과, API 호출 중...');
       const result = await event.createEvent(formData);
+      console.log('🎉 [EventManagement] 이벤트 생성 성공:', result);
       return result;
     } catch (err: any) {
       const errorMessage = err?.message || '이벤트 생성에 실패했습니다.';
       setError(errorMessage);
-      console.error('이벤트 생성 실패:', err);
+      console.error('❌ [EventManagement] 이벤트 생성 실패:', err);
       throw err;
     } finally {
       setIsCreating(false);

@@ -40,6 +40,22 @@ export class EventApi {
   constructor(private apiClient: ApiClient) {}
 
   /**
+   * 백엔드에서 처리할 수 있도록 날짜를 포맷팅
+   * 타임존 정보를 제거하고 로컬 시간으로 변환
+   */
+  private formatDateTimeForBackend(date: Date): string {
+    // 로컬 시간대를 고려하여 YYYY-MM-DDTHH:mm:ss 형식으로 변환
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+  }
+
+  /**
    * 이벤트 목록 조회
    */
   async getEvents(
@@ -90,20 +106,26 @@ export class EventApi {
     const requestData: CreateEventRequest = {
       title: formData.title.trim(),
       description: formData.description?.trim() || undefined,
-      start_time: formData.startTime.toISOString(),
-      end_time: formData.endTime.toISOString(),
+      start_time: this.formatDateTimeForBackend(formData.startTime),
+      end_time: this.formatDateTimeForBackend(formData.endTime),
       location: formData.location?.trim() || undefined,
       event_type: formData.eventType,
       is_attendance_required: formData.isAttendanceRequired,
       current_gen: formData.currentGen,
+      attendance_start_time: formData.attendanceStartTime ? this.formatDateTimeForBackend(formData.attendanceStartTime) : undefined,
+      attendance_end_time: formData.attendanceEndTime ? this.formatDateTimeForBackend(formData.attendanceEndTime) : undefined,
+      late_threshold_minutes: formData.lateThresholdMinutes,
       meta: formData.meta || undefined
     };
 
+    console.log('📡 [EventApi] POST /admin/event/ 요청 데이터:', requestData);
+    
     const response = await this.apiClient.post<EventResponseDto>(
-      '/admin/events/',
+      '/admin/event/',
       requestData
     );
 
+    console.log('📡 [EventApi] 응답 데이터:', response);
     return this.transformEventResponse(response);
   }
 
@@ -120,10 +142,10 @@ export class EventApi {
       requestData.description = formData.description?.trim() || undefined;
     }
     if (formData.startTime !== undefined) {
-      requestData.start_time = formData.startTime.toISOString();
+      requestData.start_time = this.formatDateTimeForBackend(formData.startTime);
     }
     if (formData.endTime !== undefined) {
-      requestData.end_time = formData.endTime.toISOString();
+      requestData.end_time = this.formatDateTimeForBackend(formData.endTime);
     }
     if (formData.location !== undefined) {
       requestData.location = formData.location?.trim() || undefined;
@@ -137,12 +159,21 @@ export class EventApi {
     if (formData.currentGen !== undefined) {
       requestData.current_gen = formData.currentGen;
     }
+    if (formData.attendanceStartTime !== undefined) {
+      requestData.attendance_start_time = formData.attendanceStartTime ? this.formatDateTimeForBackend(formData.attendanceStartTime) : undefined;
+    }
+    if (formData.attendanceEndTime !== undefined) {
+      requestData.attendance_end_time = formData.attendanceEndTime ? this.formatDateTimeForBackend(formData.attendanceEndTime) : undefined;
+    }
+    if (formData.lateThresholdMinutes !== undefined) {
+      requestData.late_threshold_minutes = formData.lateThresholdMinutes;
+    }
     if (formData.meta !== undefined) {
       requestData.meta = formData.meta;
     }
 
     const response = await this.apiClient.put<EventResponseDto>(
-      `/admin/events/${eventId}`,
+      `/admin/event/${eventId}`,
       requestData
     );
 
@@ -154,7 +185,7 @@ export class EventApi {
    */
   async deleteEvent(eventId: number): Promise<void> {
     await this.apiClient.delete<SuccessResponseDto>(
-      `/admin/events/${eventId}`
+      `/admin/event/${eventId}`
     );
   }
 
@@ -195,7 +226,7 @@ export class EventApi {
     };
 
     const response = await this.apiClient.post<AttendanceResponseDto>(
-      `/admin/events/${eventId}/attendance`,
+      `/admin/event/${eventId}/attendance`,
       requestData
     );
 
@@ -232,7 +263,7 @@ export class EventApi {
     }
 
     const response = await this.apiClient.put<AttendanceResponseDto>(
-      `/admin/events/${eventId}/attendance/${attendanceId}`,
+      `/admin/event/${eventId}/attendance/${attendanceId}`,
       requestData
     );
 
@@ -244,7 +275,7 @@ export class EventApi {
    */
   async deleteAttendance(eventId: number, attendanceId: number): Promise<void> {
     await this.apiClient.delete<SuccessResponseDto>(
-      `/admin/events/${eventId}/attendance/${attendanceId}`
+      `/admin/event/${eventId}/attendance/${attendanceId}`
     );
   }
 
@@ -264,7 +295,7 @@ export class EventApi {
     };
 
     const response = await this.apiClient.post<BulkAttendanceResponseDto>(
-      `/admin/events/${eventId}/attendance/bulk`,
+      `/admin/event/${eventId}/attendance/bulk`,
       requestData
     );
 
@@ -281,7 +312,7 @@ export class EventApi {
    */
   async getAttendanceStats(eventId: number): Promise<AttendanceStats> {
     const response = await this.apiClient.get<AttendanceStatsResponseDto>(
-      `/admin/events/${eventId}/attendance/stats`
+      `/admin/event/${eventId}/attendance/stats`
     );
 
     return {
@@ -351,6 +382,9 @@ export class EventApi {
       eventType: dto.event_type as EventType,
       isAttendanceRequired: dto.is_attendance_required,
       currentGen: dto.current_gen,
+      attendanceStartTime: dto.attendance_start_time ? new Date(dto.attendance_start_time) : undefined,
+      attendanceEndTime: dto.attendance_end_time ? new Date(dto.attendance_end_time) : undefined,
+      lateThresholdMinutes: dto.late_threshold_minutes,
       meta: dto.meta
     };
   }

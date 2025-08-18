@@ -58,6 +58,15 @@ export interface Event {
   /** 현재 기수 */
   currentGen: number;
   
+  /** 출석 인정 시작 시간 */
+  attendanceStartTime?: Date;
+  
+  /** 출석 인정 종료 시간 */
+  attendanceEndTime?: Date;
+  
+  /** 지각 허용 시간(분) */
+  lateThresholdMinutes: number;
+  
   /** 추가 메타데이터 */
   meta?: Record<string, any>;
 }
@@ -179,6 +188,9 @@ export interface EventFormData {
   eventType: EventType;
   isAttendanceRequired: boolean;
   currentGen: number;
+  attendanceStartTime?: Date;
+  attendanceEndTime?: Date;
+  lateThresholdMinutes: number;
   meta?: Record<string, any>;
 }
 
