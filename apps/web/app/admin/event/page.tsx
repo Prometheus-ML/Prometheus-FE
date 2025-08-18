@@ -434,10 +434,29 @@ export default function AdminEventPage() {
   const handleDeleteEvent = async (eventId: number) => {
     if (confirm('정말 삭제하시겠습니까?')) {
       try {
+        console.log(`🗑️ [AdminEventPage] 이벤트 삭제 시작: ID ${eventId}`);
         await deleteEvent(eventId);
+        console.log(`✅ [AdminEventPage] 이벤트 삭제 완료: ID ${eventId}`);
+        
+        // 성공 메시지 표시
+        alert('이벤트가 성공적으로 삭제되었습니다.');
+        
+        // 목록 새로고침
         fetchEvents(pagination.page, pagination.size);
       } catch (error) {
-        console.error('이벤트 삭제 실패:', error);
+        console.error(`❌ [AdminEventPage] 이벤트 삭제 실패: ID ${eventId}`, error);
+        
+        // 사용자에게 에러 메시지 표시
+        let errorMessage = '이벤트 삭제에 실패했습니다.';
+        if (error && typeof error === 'object') {
+          if ((error as any).detail) {
+            errorMessage = (error as any).detail;
+          } else if ((error as any).message) {
+            errorMessage = (error as any).message;
+          }
+        }
+        
+        alert(`삭제 실패: ${errorMessage}`);
       }
     }
   };

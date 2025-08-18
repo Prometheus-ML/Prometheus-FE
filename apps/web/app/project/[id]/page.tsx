@@ -18,7 +18,7 @@ interface Project {
   description: string;
   gen: number;
   status: 'active' | 'completed' | 'paused';
-  start_date: string;
+  start_date?: string | null;
   end_date?: string;
   github_url?: string;
   demo_url?: string;
@@ -110,7 +110,7 @@ export default function ProjectDetailPage() {
   // useImage 훅 사용
   const { getThumbnailUrl, getDefaultImageUrl } = useImage();
 
-  const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('ko-KR') : '');
+  const formatDate = (d?: string | null) => (d ? new Date(d).toLocaleDateString('ko-KR') : '');
 
   const getStatusText = (status: string) => {
     switch (status) {

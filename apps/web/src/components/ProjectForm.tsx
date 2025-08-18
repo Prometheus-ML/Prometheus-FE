@@ -16,8 +16,8 @@ interface ProjectFormData {
   title: string;
   description: string;
   keywords: string[];
-  start_date: string;
-  end_date: string;
+  start_date?: string | null;
+  end_date?: string | null;
   github_url: string;
   demo_url: string;
   panel_url: string;
@@ -43,8 +43,8 @@ export default function ProjectForm({
     title: '',
     description: '',
     keywords: [],
-    start_date: '',
-    end_date: '',
+    start_date: null,
+    end_date: null,
     github_url: '',
     demo_url: '',
     panel_url: '',
@@ -90,8 +90,8 @@ export default function ProjectForm({
         title: p?.title || '',
         description: p?.description || '',
         keywords: Array.isArray(p?.keywords) ? [...p.keywords] : [],
-        start_date: p?.start_date ? String(p.start_date).substring(0, 10) : '',
-        end_date: p?.end_date ? String(p.end_date).substring(0, 10) : '',
+        start_date: p?.start_date ? String(p.start_date).substring(0, 10) : null,
+        end_date: p?.end_date ? String(p.end_date).substring(0, 10) : null,
         github_url: p?.github_url || '',
         demo_url: p?.demo_url || '',
         panel_url: p?.panel_url || '',
@@ -267,14 +267,9 @@ export default function ProjectForm({
       return;
     }
     
-    if (!formData.start_date) {
-      alert('프로젝트 시작일을 선택해주세요.');
-      return;
-    }
-    
     // Convert date strings to ISO 8601 format
-    const convertToISO = (dateString: string) => {
-      if (!dateString) return '';
+    const convertToISO = (dateString?: string | null) => {
+      if (!dateString) return null;
       // HTML date input returns YYYY-MM-DD, convert to ISO format
       return new Date(dateString + 'T00:00:00.000Z').toISOString();
     };
@@ -285,7 +280,7 @@ export default function ProjectForm({
       description: formData.description.trim() || '',
       keywords: formData.keywords.length ? formData.keywords : [],
       start_date: convertToISO(formData.start_date),
-      end_date: formData.end_date ? convertToISO(formData.end_date) : '',
+      end_date: convertToISO(formData.end_date),
       github_url: formData.github_url.trim() || '',
       demo_url: formData.demo_url.trim() || '',
       panel_url: formData.panel_url.trim() || '',
@@ -462,22 +457,7 @@ export default function ProjectForm({
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-        <input
-          type="date"
-          value={formData.start_date}
-          onChange={(e) => updateFormData('start_date', e.target.value)}
-          className="border border-white/30 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/20 text-black"
-          placeholder="시작일(필수)"
-        />
-        <input
-          type="date"
-          value={formData.end_date}
-          onChange={(e) => updateFormData('end_date', e.target.value)}
-          className="border border-white/30 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/20 text-black"
-          placeholder="종료일"
-        />
-      </div>
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         <input
