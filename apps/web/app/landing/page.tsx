@@ -39,7 +39,7 @@ export default function LandingPage() {
             </div>
             <p className="text-xl md:text-2xl text-[#e0e0e0] mb-6">
               프로메테우스는 인공지능으로 가치 있는 도전과 경험을 하고자 하는<br />
-              '업'에 대한 열정을 지닌 대학생들이 모인 인공지능 동아리입니다.
+              &apos;업&apos;에 대한 열정을 지닌 대학생들이 모인 인공지능 동아리입니다.
             </p>
           </div>
         </div>
