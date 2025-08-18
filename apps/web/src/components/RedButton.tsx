@@ -30,7 +30,7 @@ export default function RedButton({
   href,
   as = 'button'
 }: RedButtonProps) {
-  const baseClasses = "px-4 py-2 rounded-md bg-gradient-to-r from-red-800 to-red-600 text-white border-red-700 shadow-lg hover:from-red-700 hover:to-red-500 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed";
+  const baseClasses = "px-4 py-2 rounded-md bg-red-600 text-white border border-red-700 shadow-lg hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed";
   const combinedClasses = `${baseClasses} ${className}`.trim();
 
   if (href) {

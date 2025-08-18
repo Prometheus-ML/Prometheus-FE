@@ -304,34 +304,34 @@ export default function ProjectForm({
   };
 
   return (
-    <div className="space-y-4 bg-white border rounded-lg p-6">
+    <div className="space-y-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">
       <input
         value={formData.title}
         onChange={(e) => updateFormData('title', e.target.value)}
-        className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="border border-white/30 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/20 text-black placeholder-gray-600"
         placeholder="제목 (필수)"
       />
       
       <textarea
         value={formData.description}
         onChange={(e) => updateFormData('description', e.target.value)}
-        className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-blue-500 focus:border-transparent"
+        className="border border-white/30 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/20 text-black placeholder-gray-600"
         rows={6}
         placeholder="설명"
       />
 
       <div>
-        <label className="block text-sm mb-1 font-medium text-gray-700">키워드</label>
+        <label className="block text-sm mb-1 font-medium text-white">키워드</label>
         <div className="flex flex-wrap gap-2 mb-2">
           {formData.keywords.map((keyword, i) => (
             <span
               key={keyword + i}
-              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-gray-50 text-gray-700"
+              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border border-white/30 bg-white/20 text-white"
             >
               {keyword}
               <button
                 type="button"
-                className="ml-1 text-xs text-gray-500 hover:text-gray-700"
+                className="ml-1 text-xs text-white hover:text-gray-300"
                 onClick={() => removeKeyword(i)}
               >
                 ✕
@@ -343,7 +343,7 @@ export default function ProjectForm({
           value={keywordInput}
           onChange={(e) => setKeywordInput(e.target.value)}
           onKeyDown={handleKeywordKeydown}
-          className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="border border-white/30 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/20 text-black placeholder-gray-600"
           placeholder="키워드를 입력하고 Enter로 추가"
         />
       </div>
@@ -351,7 +351,7 @@ export default function ProjectForm({
       {/* 멤버 관리 섹션 */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <label className="block text-sm font-medium text-gray-700">팀원</label>
+          <label className="block text-sm font-medium text-white">팀원</label>
           <span className="text-xs text-gray-500">
             {formData.members.length}명
           </span>
@@ -384,14 +384,14 @@ export default function ProjectForm({
                 membersWithDetails.map((member, index) => (
                   <div
                     key={member.member_id}
-                    className="flex items-center justify-between p-3 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                    className="flex items-center justify-between p-3 border border-white/30 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm text-gray-900">
+                      <div className="font-medium text-sm text-white">
                         {member.name || member.member_id}
-                        {member.role && <span className="text-gray-500 ml-2">/ {member.role}</span>}
+                        {member.role && <span className="text-gray-300 ml-2">/ {member.role}</span>}
                       </div>
-                      <div className="text-xs text-gray-600 mt-1">
+                      <div className="text-xs text-gray-300 mt-1">
                         {member.email && `${member.email}`}
                         {member.contribution && member.email && ` • `}
                         {member.contribution && `${member.contribution}`}
@@ -401,7 +401,7 @@ export default function ProjectForm({
                       <button
                         type="button"
                         onClick={() => openEditMember(member)}
-                        className="px-2 py-1 text-xs border rounded hover:bg-gray-100 transition-colors"
+                        className="px-2 py-1 text-xs border border-white/30 rounded hover:bg-white/20 transition-colors text-white"
                       >
                         수정
                       </button>
@@ -420,22 +420,22 @@ export default function ProjectForm({
                 formData.members.map((member, index) => (
                   <div
                     key={member.member_id}
-                    className="flex items-center justify-between p-3 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                    className="flex items-center justify-between p-3 border border-white/30 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm text-gray-900">
+                      <div className="font-medium text-sm text-white">
                         {member.member_id}
-                        {member.role && <span className="text-gray-500 ml-2">/ {member.role}</span>}
+                        {member.role && <span className="text-gray-300 ml-2">/ {member.role}</span>}
                       </div>
                       {member.contribution && (
-                        <div className="text-xs text-gray-600 mt-1">{member.contribution}</div>
+                        <div className="text-xs text-gray-300 mt-1">{member.contribution}</div>
                       )}
                     </div>
                     <div className="flex items-center space-x-2 ml-3 flex-shrink-0">
                       <button
                         type="button"
                         onClick={() => openEditMember(member)}
-                        className="px-2 py-1 text-xs border rounded hover:bg-gray-100 transition-colors"
+                        className="px-2 py-1 text-xs border border-white/30 rounded hover:bg-white/20 transition-colors text-white"
                       >
                         수정
                       </button>
@@ -454,7 +454,7 @@ export default function ProjectForm({
             <button
               type="button"
               onClick={openAddMember}
-              className="px-3 py-2 text-sm border border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors w-full"
+              className="px-3 py-2 text-sm border border-dashed border-white/30 rounded-lg text-white hover:border-white/50 hover:bg-white/10 transition-colors w-full"
             >
               + 팀원 추가
             </button>
@@ -467,14 +467,14 @@ export default function ProjectForm({
           type="date"
           value={formData.start_date}
           onChange={(e) => updateFormData('start_date', e.target.value)}
-          className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="border border-white/30 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/20 text-black"
           placeholder="시작일(필수)"
         />
         <input
           type="date"
           value={formData.end_date}
           onChange={(e) => updateFormData('end_date', e.target.value)}
-          className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="border border-white/30 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/20 text-black"
           placeholder="종료일"
         />
       </div>
@@ -483,13 +483,13 @@ export default function ProjectForm({
         <input
           value={formData.github_url}
           onChange={(e) => updateFormData('github_url', e.target.value)}
-          className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="border border-white/30 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/20 text-black placeholder-gray-600"
           placeholder="GitHub URL"
         />
         <input
           value={formData.demo_url}
           onChange={(e) => updateFormData('demo_url', e.target.value)}
-          className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="border border-white/30 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/20 text-black placeholder-gray-600"
           placeholder="Demo URL"
         />
       </div>
@@ -501,17 +501,17 @@ export default function ProjectForm({
             accept="image/*"
             onChange={handlePanelFileChange}
             disabled={isUploading}
-            className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-sm text-white file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-white/20 file:text-white hover:file:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
           />
-          {isUploading && <span className="text-sm text-gray-400">업로드 중...</span>}
+          {isUploading && <span className="text-sm text-gray-300">업로드 중...</span>}
         </div>
         {uploadError && (
-          <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">
+          <div className="text-sm text-red-400 bg-red-500/20 border border-red-500/30 rounded px-3 py-2">
             {uploadError}
             <button
               type="button"
               onClick={clearError}
-              className="ml-2 text-red-800 hover:text-red-900"
+              className="ml-2 text-red-300 hover:text-red-200"
             >
               ✕
             </button>
@@ -552,18 +552,18 @@ export default function ProjectForm({
           type="number"
           value={formData.gen || ''}
           onChange={(e) => updateFormData('gen', e.target.value ? Number(e.target.value) : undefined)}
-          className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="border border-white/30 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/20 text-black placeholder-gray-600"
           placeholder="기수 (숫자)"
         />
         {showStatus && (
           <select
             value={formData.status}
             onChange={(e) => updateFormData('status', e.target.value as 'active' | 'completed' | 'paused')}
-            className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="border border-white/30 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/20 text-white"
           >
-            <option value="active">진행중</option>
-            <option value="completed">완료</option>
-            <option value="paused">중지</option>
+            <option value="active" className="bg-gray-800 text-white">진행중</option>
+            <option value="completed" className="bg-gray-800 text-white">완료</option>
+            <option value="paused" className="bg-gray-800 text-white">중지</option>
           </select>
         )}
       </div>
@@ -571,7 +571,7 @@ export default function ProjectForm({
       <div className="flex justify-end space-x-2">
         <button
           onClick={handleSubmit}
-          className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors border border-red-700 shadow-lg"
         >
           {mode === 'edit' ? '저장' : '생성'}
         </button>

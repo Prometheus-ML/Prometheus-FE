@@ -4,6 +4,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ProjectForm from '@/src/components/ProjectForm';
 import { useProject } from '@prometheus-fe/hooks';
+import RedButton from '../../../../src/components/RedButton';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft, faList } from '@fortawesome/free-solid-svg-icons';
 
 export default function NewProjectPage() {
   const router = useRouter();
@@ -30,13 +33,13 @@ export default function NewProjectPage() {
   // Check permissions
   if (!canCreate) {
     return (
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="py-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">접근 권한 없음</h1>
-          <p className="text-gray-600 mb-4">프로젝트 생성 권한이 없습니다.</p>
+          <h1 className="text-2xl font-bold text-white mb-4">접근 권한 없음</h1>
+          <p className="text-gray-300 mb-4">프로젝트 생성 권한이 없습니다.</p>
           <Link 
             href="/admin/project" 
-            className="text-blue-600 hover:underline"
+            className="text-blue-400 hover:text-blue-300"
           >
             어드민 프로젝트 목록으로 돌아가기
           </Link>
@@ -46,13 +49,14 @@ export default function NewProjectPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="py-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">프로젝트 생성</h1>
+        <h1 className="text-2xl font-bold text-white">프로젝트 생성</h1>
         <Link 
           href="/admin/project" 
-          className="text-sm text-gray-600 hover:underline"
+          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white hover:text-gray-300"
         >
+          <FontAwesomeIcon icon={faList} className="mr-2" />
           목록으로
         </Link>
       </div>

@@ -3,6 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useGroup } from '@prometheus-fe/hooks';
+import GlassCard from '../../../src/components/GlassCard';
+import RedButton from '../../../src/components/RedButton';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus, faUsers, faUserGraduate, faCheck, faTimes, faEye } from '@fortawesome/free-solid-svg-icons';
 
 const CATEGORIES = [
   { value: 'STUDY', label: '스터디 그룹' },
@@ -121,8 +125,6 @@ export default function AdminGroupPage() {
     }
   };
 
-
-
   const handleGroupClick = async (groupId: number) => {
     setSelectedGroupId(groupId);
     setShowGroupDetail(true);
@@ -171,10 +173,10 @@ export default function AdminGroupPage() {
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
-      STUDY: 'bg-blue-100 text-blue-800 border-blue-200',
-      CASUAL: 'bg-green-100 text-green-800 border-green-200',
+      STUDY: 'bg-blue-100 text-blue-800',
+      CASUAL: 'bg-green-100 text-green-800',
     };
-    return colors[category] || 'bg-gray-100 text-gray-800 border-gray-200';
+    return colors[category] || 'bg-gray-100 text-gray-800';
   };
 
   // Hydration이 완료되지 않았거나 권한이 없는 경우
@@ -189,55 +191,57 @@ export default function AdminGroupPage() {
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">그룹 관리</h1>
-          <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-600">
-              총 {groups.length}개의 그룹
-            </div>
-            <button
-              onClick={() => setShowCreateForm(!showCreateForm)}
-              className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-            >
-              그룹 만들기
-            </button>
+    <div className="py-6">
+      {/* 헤더 */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-white">그룹 관리</h1>
+        <div className="flex items-center space-x-4">
+          <div className="text-sm text-gray-300">
+            총 {groups.length}개의 그룹
           </div>
+          <RedButton
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            className="inline-flex items-center px-4 py-2 text-sm font-medium"
+          >
+            <FontAwesomeIcon icon={faPlus} className="mr-2 h-4 w-4" />
+            그룹 만들기
+          </RedButton>
         </div>
+      </div>
 
-        {/* 그룹 생성 폼 */}
-        {showCreateForm && (
-          <div className="mb-6 p-4 border rounded-lg bg-gray-50">
-            <h3 className="text-lg font-semibold mb-4">새 그룹 만들기</h3>
+      {/* 그룹 생성 폼 */}
+      {showCreateForm && (
+        <GlassCard className="mb-6">
+          <div className="p-6">
+            <h3 className="text-lg font-semibold mb-4 text-white">새 그룹 만들기</h3>
             <form onSubmit={handleCreateGroup}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    그룹 이름 *
+                  <label className="block text-sm font-medium text-white mb-1">
+                    그룹 이름
                   </label>
                   <input
                     type="text"
                     value={newGroup.name}
                     onChange={(e) => setNewGroup((prev: any) => ({ ...prev, name: e.target.value }))}
-                    className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-white/20 text-black border border-white/30 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                     placeholder="그룹 이름을 입력하세요"
                     maxLength={200}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    카테고리 *
+                  <label className="block text-sm font-medium text-white mb-1">
+                    카테고리
                   </label>
                   <select
                     value={newGroup.category}
                     onChange={(e) => setNewGroup((prev: any) => ({ ...prev, category: e.target.value as 'STUDY' | 'CASUAL' }))}
-                    className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-white/20 text-white border border-white/30 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                     required
                   >
                     {CATEGORIES.map(category => (
-                      <option key={category.value} value={category.value}>
+                      <option key={category.value} value={category.value} className="bg-gray-800 text-white">
                         {category.label}
                       </option>
                     ))}
@@ -245,19 +249,19 @@ export default function AdminGroupPage() {
                 </div>
               </div>
               <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-white mb-1">
                   그룹 설명
                 </label>
                 <textarea
                   value={newGroup.description}
                   onChange={(e) => setNewGroup((prev: any) => ({ ...prev, description: e.target.value }))}
                   rows={3}
-                  className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-white/20 text-black border border-white/30 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   placeholder="그룹에 대한 설명을 입력하세요"
                 />
               </div>
               <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-white mb-1">
                   최대 인원
                 </label>
                 <input
@@ -267,19 +271,15 @@ export default function AdminGroupPage() {
                     ...prev, 
                     max_members: e.target.value ? parseInt(e.target.value) : undefined 
                   }))}
-                  className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-white/20 text-black border border-white/30 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   placeholder="최대 인원 (선택사항)"
                   min="1"
                 />
               </div>
               <div className="flex items-center space-x-2 mt-4">
-                <button
-                  type="submit"
-                  disabled={isCreatingGroup}
-                  className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                >
+                <RedButton type="submit" disabled={isCreatingGroup}>
                   {isCreatingGroup ? '생성 중...' : '그룹 만들기'}
-                </button>
+                </RedButton>
                 <button
                   type="button"
                   onClick={() => {
@@ -292,24 +292,26 @@ export default function AdminGroupPage() {
                       thumbnail_url: '',
                     });
                   }}
-                  className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 rounded-md bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-colors"
                 >
                   취소
                 </button>
               </div>
             </form>
           </div>
-        )}
+        </GlassCard>
+      )}
 
-        {/* 카테고리 필터 */}
-        <div className="mb-6">
+      {/* 카테고리 필터 */}
+      <GlassCard className="mb-6">
+        <div className="p-4">
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => handleCategoryFilter('')}
               className={`px-3 py-1 text-sm rounded-full transition-colors ${
                 selectedCategory === '' 
-                  ? 'bg-blue-100 text-blue-800 border border-blue-200' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-red-600 text-white' 
+                  : 'bg-white/10 text-white hover:bg-white/20'
               }`}
             >
               전체
@@ -320,8 +322,8 @@ export default function AdminGroupPage() {
                 onClick={() => handleCategoryFilter(category.value)}
                 className={`px-3 py-1 text-sm rounded-full transition-colors ${
                   selectedCategory === category.value 
-                    ? 'bg-blue-100 text-blue-800 border border-blue-200' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-red-600 text-white' 
+                    : 'bg-white/10 text-white hover:bg-white/20'
                 }`}
               >
                 {category.label}
@@ -329,141 +331,171 @@ export default function AdminGroupPage() {
             ))}
           </div>
         </div>
+      </GlassCard>
 
-        {/* 에러 메시지 */}
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700">
-            {error}
-          </div>
-        )}
+      {/* 에러 메시지 */}
+      {error && (
+        <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400">
+          {error}
+        </div>
+      )}
 
-        {/* 그룹 목록 */}
-        {isLoadingGroups ? (
-          <div className="py-20 text-center text-gray-500">불러오는 중...</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* 그룹 목록 */}
+      {isLoadingGroups ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
+        </div>
+      ) : (
+        <GlassCard className="overflow-hidden">
+          <ul className="divide-y divide-white/10">
             {groups.map((group: any) => (
-              <div 
+              <li 
                 key={group.id} 
-                className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                className="px-4 py-4 hover:bg-white/10 cursor-pointer border-b border-white/10 last:border-b-0"
                 onClick={() => handleGroupClick(group.id)}
               >
-                <div className="flex items-start justify-between mb-3">
-                  <span className={`px-2 py-1 text-xs rounded-full border ${getCategoryColor(group.category)}`}>
-                    {getCategoryLabel(group.category)}
-                  </span>
-                  <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200">
-                    소유자: {group.owner_id}
-                  </span>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <h3 className="text-lg font-semibold text-white">{group.name}</h3>
+                      <span className={`px-2 py-1 text-xs rounded-full border ${getCategoryColor(group.category)}`}>
+                        {getCategoryLabel(group.category)}
+                      </span>
+                      <span className="px-2 py-1 text-xs rounded-full bg-yellow-500/20 text-yellow-300">
+                        소유자: {group.owner_id}
+                      </span>
+                    </div>
+                    {group.description && (
+                      <p className="text-gray-300 text-sm mb-2 line-clamp-2">
+                        {group.description}
+                      </p>
+                    )}
+                    <div className="flex items-center space-x-4 text-sm text-gray-300">
+                      <span className="flex items-center">
+                        <FontAwesomeIcon icon={faUsers} className="mr-1" />
+                        멤버: {group.member_count || 0}명
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2 ml-4">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleGroupClick(group.id);
+                      }}
+                      className="text-blue-400 hover:text-blue-300 text-sm px-2 py-1 rounded hover:bg-blue-500/20 transition-colors"
+                    >
+                      <FontAwesomeIcon icon={faEye} className="mr-1" />
+                      상세보기
+                    </button>
+                  </div>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {group.name}
-                </h3>
-                {group.description && (
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                    {group.description}
-                  </p>
-                )}
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500">
-                    멤버: {group.member_count || 0}명
-                  </span>
-                </div>
-              </div>
+              </li>
             ))}
-          </div>
-        )}
+          </ul>
+        </GlassCard>
+      )}
 
-        {!isLoadingGroups && groups.length === 0 && (
-          <div className="py-20 text-center text-gray-500">
-            그룹이 없습니다.
+      {!isLoadingGroups && groups.length === 0 && (
+        <div className="px-4 py-5 sm:p-6">
+          <div className="text-center">
+            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <h3 className="mt-2 text-sm font-medium text-white">그룹이 없습니다.</h3>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* 그룹 상세 모달 */}
-        {showGroupDetail && selectedGroup && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-900">{selectedGroup.name}</h2>
-                <button
-                  onClick={handleCloseDetail}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  ✕
-                </button>
-              </div>
-              
+      {/* 그룹 상세 모달 */}
+      {showGroupDetail && selectedGroup && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <GlassCard className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-white">{selectedGroup.name}</h2>
+              <button
+                onClick={handleCloseDetail}
+                className="text-white/70 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <span className={`px-2 py-1 text-xs rounded-full border ${getCategoryColor(selectedGroup.category)}`}>
+                {getCategoryLabel(selectedGroup.category)}
+              </span>
+            </div>
+            
+            {selectedGroup.description && (
               <div className="mb-4">
-                <span className={`px-2 py-1 text-xs rounded-full border ${getCategoryColor(selectedGroup.category)}`}>
-                  {getCategoryLabel(selectedGroup.category)}
-                </span>
+                <h3 className="font-semibold mb-2 text-white">설명</h3>
+                <p className="text-gray-300">{selectedGroup.description}</p>
               </div>
-              
-              {selectedGroup.description && (
-                <div className="mb-4">
-                  <h3 className="font-semibold mb-2">설명</h3>
-                  <p className="text-gray-600">{selectedGroup.description}</p>
+            )}
+            
+            <div className="mb-4">
+              <h3 className="font-semibold mb-2 text-white">멤버 ({members.length}명)</h3>
+              {isLoadingMembers ? (
+                <div className="flex justify-center items-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600" />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {members.map((member) => (
+                    <div key={member.member_id} className="flex items-center justify-between p-2 bg-white/10 rounded">
+                      <span className="text-white">{member.member_id}</span>
+                      <span className={`px-2 py-1 text-xs rounded ${
+                        member.role === 'owner' 
+                          ? 'bg-yellow-500/20 text-yellow-300' 
+                          : 'bg-blue-500/20 text-blue-300'
+                      }`}>
+                        {member.role === 'owner' ? '소유자' : '멤버'}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               )}
-              
-              <div className="mb-4">
-                <h3 className="font-semibold mb-2">멤버 ({members.length}명)</h3>
-                {isLoadingMembers ? (
-                  <div className="text-gray-500">불러오는 중...</div>
-                ) : (
-                  <div className="space-y-2">
-                    {members.map((member) => (
-                      <div key={member.member_id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                        <span>{member.member_id}</span>
-                        <span className={`px-2 py-1 text-xs rounded ${
-                          member.role === 'owner' 
-                            ? 'bg-yellow-100 text-yellow-800' 
-                            : 'bg-blue-100 text-blue-800'
-                        }`}>
-                          {member.role === 'owner' ? '소유자' : '멤버'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              
-              {/* 가입 요청 관리 */}
-              <div className="mb-4">
-                <h3 className="font-semibold mb-2">가입 요청 ({joinRequests.length}개)</h3>
-                {isLoadingJoinRequests ? (
-                  <div className="text-gray-500">불러오는 중...</div>
-                ) : joinRequests.length === 0 ? (
-                  <div className="text-gray-500">가입 요청이 없습니다.</div>
-                ) : (
-                  <div className="space-y-2">
-                    {joinRequests.map((request) => (
-                      <div key={request.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                        <span>{request.member_id}</span>
-                        <div className="space-x-2">
-                          <button
-                            onClick={() => handleApproveMember(request.member_id)}
-                            className="px-3 py-1 text-xs rounded bg-green-600 text-white hover:bg-green-700"
-                          >
-                            승인
-                          </button>
-                          <button
-                            onClick={() => handleRejectMember(request.member_id)}
-                            className="px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700"
-                          >
-                            거절
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
             </div>
-          </div>
-        )}
-      </div>
+            
+            {/* 가입 요청 관리 */}
+            <div className="mb-4">
+              <h3 className="font-semibold mb-2 text-white">가입 요청 ({joinRequests.length}개)</h3>
+              {isLoadingJoinRequests ? (
+                <div className="flex justify-center items-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600" />
+                </div>
+              ) : joinRequests.length === 0 ? (
+                <div className="text-gray-300">가입 요청이 없습니다.</div>
+              ) : (
+                <div className="space-y-2">
+                  {joinRequests.map((request) => (
+                    <div key={request.id} className="flex items-center justify-between p-2 bg-white/10 rounded">
+                      <span className="text-white">{request.member_id}</span>
+                      <div className="space-x-2">
+                        <button
+                          onClick={() => handleApproveMember(request.member_id)}
+                          className="px-3 py-1 text-xs rounded bg-green-600 text-white hover:bg-green-700 transition-colors"
+                        >
+                          <FontAwesomeIcon icon={faCheck} className="mr-1" />
+                          승인
+                        </button>
+                        <button
+                          onClick={() => handleRejectMember(request.member_id)}
+                          className="px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition-colors"
+                        >
+                          <FontAwesomeIcon icon={faTimes} className="mr-1" />
+                          거절
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </GlassCard>
+        </div>
+      )}
     </div>
   );
 }

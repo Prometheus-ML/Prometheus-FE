@@ -120,23 +120,25 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* 헤더 */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-bold text-gray-900">게시글 상세</h2>
+        <div className="flex items-center justify-between p-6 border-b border-white/20">
+          <h2 className="text-xl font-bold text-white">게시글 상세</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl"
+            className="text-white/70 hover:text-white text-2xl"
           >
-            ×
+            ✕
           </button>
         </div>
 
         {/* 내용 */}
         <div className="flex-1 overflow-y-auto p-6">
           {isLoadingPost ? (
-            <div className="py-20 text-center text-gray-500">불러오는 중...</div>
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
+            </div>
           ) : selectedPost ? (
             <>
               {/* 게시글 정보 */}
@@ -145,36 +147,36 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                   <span className={`px-3 py-1 text-sm rounded-full border ${getCategoryColor(selectedPost.category)}`}>
                     {getCategoryLabel(selectedPost.category)}
                   </span>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-gray-300">
                     작성자: {selectedPost.author_id}
                   </span>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-gray-300">
                     {new Date(selectedPost.created_at).toLocaleString('ko-KR')}
                   </span>
                   {user && user.id === selectedPost.author_id && (
                     <button
                       onClick={handleDeletePost}
-                      className="text-red-600 hover:text-red-800 text-sm ml-auto"
+                      className="text-red-400 hover:text-red-300 text-sm ml-auto"
                     >
                       게시글 삭제
                     </button>
                   )}
                 </div>
 
-                <h1 className="text-2xl font-bold text-gray-900 mb-4">
+                <h1 className="text-2xl font-bold text-white mb-4">
                   {selectedPost.title}
                 </h1>
 
                 <div className="prose max-w-none">
-                  <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+                  <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
                     {selectedPost.content}
                   </p>
                 </div>
               </div>
 
               {/* 댓글 섹션 */}
-              <div className="border-t pt-6">
-                <h3 className="text-lg font-semibold mb-4">
+              <div className="border-t border-white/20 pt-6">
+                <h3 className="text-lg font-semibold mb-4 text-white">
                   댓글 ({comments.length})
                 </h3>
 
@@ -188,17 +190,17 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                           onChange={(e) => setNewComment({ content: e.target.value })}
                           placeholder="댓글을 입력하세요..."
                           rows={3}
-                          className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                          className="w-full bg-white/20 text-black border border-white/30 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
                         />
                       </div>
                       <div className="flex items-center justify-between">
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-300">
                           {user.id}로 댓글 작성
                         </div>
                         <button
                           type="submit"
                           disabled={isCreatingComment || !newComment.content.trim()}
-                          className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                           {isCreatingComment ? '작성 중...' : '댓글 작성'}
                         </button>
@@ -209,7 +211,7 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
 
                 {/* 에러 메시지 */}
                 {error && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+                  <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400 text-sm">
                     {error}
                   </div>
                 )}
@@ -217,7 +219,7 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                 {/* 댓글 목록 */}
                 <div className="space-y-4">
                   {comments.length === 0 ? (
-                    <div className="text-center text-gray-500 py-8">
+                    <div className="text-center text-gray-300 py-8">
                       아직 댓글이 없습니다.
                       {!user && (
                         <p className="mt-2 text-sm">
@@ -227,25 +229,25 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                     </div>
                   ) : (
                     comments.map((comment) => (
-                      <div key={comment.id} className="bg-gray-50 rounded-lg p-4">
+                      <div key={comment.id} className="bg-white/10 rounded-lg p-4">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center space-x-2 mb-2">
-                              <span className="text-sm font-medium text-gray-900">
+                              <span className="text-sm font-medium text-white">
                                 {comment.author_id}
                               </span>
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-gray-300">
                                 {new Date(comment.created_at).toLocaleString('ko-KR')}
                               </span>
                             </div>
-                            <p className="text-gray-700 whitespace-pre-wrap">
+                            <p className="text-gray-300 whitespace-pre-wrap">
                               {comment.content}
                             </p>
                           </div>
                           {user && user.id === comment.author_id && (
                             <button
                               onClick={() => handleDeleteComment(comment.id)}
-                              className="text-red-600 hover:text-red-800 text-sm ml-4"
+                              className="text-red-400 hover:text-red-300 text-sm ml-4"
                             >
                               삭제
                             </button>
@@ -258,7 +260,7 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
               </div>
             </>
           ) : (
-            <div className="py-20 text-center text-gray-500">
+            <div className="py-20 text-center text-gray-300">
               게시글을 찾을 수 없습니다.
             </div>
           )}

@@ -32,7 +32,6 @@ import {
 export default function MemberPage() {
   const { isAuthenticated } = useAuthStore();
   const { getPublicMembers, getPrivateMembers, getMemberDetail, isLoadingMembers, isLoadingMember } = useMember();
-  const { createRequest } = useCoffeeChat();
   const { getThumbnailUrl } = useImage();
 
   // 상태 관리
@@ -226,7 +225,7 @@ export default function MemberPage() {
   );
 
   // Loading state
-  if (isLoading) {
+  if (isLoading && !searchTerm && selectedGen === 'all' && selectedStatus === 'all') {
   return (
       <div className="min-h-screen font-pretendard">
         {/* Header */}
@@ -245,8 +244,6 @@ export default function MemberPage() {
         </header>
 
         <div className="px-4 py-6">
-
-
           {/* Member Cards Skeleton */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, index) => (
@@ -255,8 +252,8 @@ export default function MemberPage() {
               </GlassCard>
             ))}
           </div>
-              </div>
-            </div>
+        </div>
+      </div>
     );
   }
 
@@ -337,8 +334,12 @@ export default function MemberPage() {
 
         {/* 로딩 상태 */}
         {isLoading ? (
-          <div className="flex justify-center items-center py-16">
-            <div className="animate-spin h-8 w-8 border-4 border-[#c2402a] border-t-[#ffa282] rounded-full"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <GlassCard key={index} className="animate-pulse">
+                <SkeletonCard />
+              </GlassCard>
+            ))}
           </div>
         ) : (
           /* 멤버 카드 그리드 */
@@ -383,7 +384,7 @@ export default function MemberPage() {
                           : 'bg-gray-500/20 text-gray-300'
                       }`}>
                         {'status' in member && member.status === 'active' && (
-                          <FontAwesomeIcon icon={faCircle} className="w-2 h-2" />
+                          <FontAwesomeIcon icon={faCircle} className="w-1 h-1" />
                         )}
                         {member.gen}기
                       </span>

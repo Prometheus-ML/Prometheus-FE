@@ -77,7 +77,7 @@ export default function GoogleCallbackPage() {
             {isLoading ? (
               <>
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>
-                <span className="font-pretendard">로그인중...</span>
+                <span className="font-pretendard">로그인 중...</span>
               </>
             ) : (
               <>

@@ -6,6 +6,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useProject, useImage, useMember } from '@prometheus-fe/hooks';
 import AddMemberModal from '../../../src/components/AddMemberModal';
+import GlassCard from '../../../src/components/GlassCard';
+import RedButton from '../../../src/components/RedButton';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit, faTrash, faExternalLinkAlt, faUsers, faCalendarAlt, faUserGraduate } from '@fortawesome/free-solid-svg-icons';
+import { faGithub } from '@fortawesome/free-brands-svg-icons';
 
 interface Project {
   id: number;
@@ -46,27 +51,24 @@ function ConfirmModal({ show, title, message, confirmText, onConfirm, onCancel }
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md bg-white rounded-lg p-6">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <GlassCard className="w-full max-w-md p-6">
         <div className="mb-4">
-          <h2 className="text-lg font-semibold">{title}</h2>
-          <p className="text-gray-600 mt-2">{message}</p>
+          <h2 className="text-lg font-semibold text-white">{title}</h2>
+          <p className="text-gray-300 mt-2">{message}</p>
         </div>
         <div className="flex justify-end space-x-2">
           <button
             onClick={onCancel}
-            className="px-4 py-2 rounded-md border hover:bg-gray-50"
+            className="px-4 py-2 rounded-md bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-colors"
           >
             취소
           </button>
-          <button
-            onClick={onConfirm}
-            className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700"
-          >
+          <RedButton onClick={onConfirm}>
             {confirmText}
-          </button>
+          </RedButton>
         </div>
-      </div>
+      </GlassCard>
     </div>
   );
 }
@@ -248,30 +250,34 @@ export default function ProjectDetailPage() {
 
   if (isLoadingProject) {
     return (
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="py-20 text-center text-gray-500">불러오는 중...</div>
+      <div className="py-6">
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="py-8 text-center text-red-600">{error}</div>
+      <div className="py-6">
+        <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400 text-center">
+          {error}
+        </div>
       </div>
     );
   }
 
   if (!selectedProject) {
     return (
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="py-8 text-center text-gray-500">프로젝트가 없습니다.</div>
+      <div className="py-6">
+        <div className="text-center text-gray-300">프로젝트가 없습니다.</div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="py-6">
       {/* 프로젝트 이미지 섹션 - 제목보다 위에 배치 */}
       {(isValidUrl(selectedProject.thumbnail_url) || isValidUrl(selectedProject.panel_url)) && (
         <div className="mb-8">
@@ -314,91 +320,113 @@ export default function ProjectDetailPage() {
 
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{selectedProject.title}</h1>
-          <div className="mt-2 text-sm text-gray-500 space-x-2 flex items-center">
-            <span>{selectedProject.gen}기</span>
-            <span className="px-2 py-0.5 rounded-full border bg-gray-50">
+          <h1 className="text-2xl font-bold text-white">{selectedProject.title}</h1>
+          <div className="mt-2 text-sm text-gray-300 space-x-2 flex items-center">
+            <span className="flex items-center">
+              <FontAwesomeIcon icon={faUserGraduate} className="mr-1" />
+              {selectedProject.gen}기
+            </span>
+            <span className="px-2 py-0.5 rounded-full border bg-white/10">
               {getStatusText(selectedProject.status)}
             </span>
-            <span>시작: {formatDate(selectedProject.start_date)}</span>
-            {selectedProject.end_date && <span>종료: {formatDate(selectedProject.end_date)}</span>}
+            <span className="flex items-center">
+              <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" />
+              시작: {formatDate(selectedProject.start_date)}
+            </span>
+            {selectedProject.end_date && (
+              <span className="flex items-center">
+                <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" />
+                종료: {formatDate(selectedProject.end_date)}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex items-center space-x-2">
           {canEdit && (
             <Link
               href={`/project/${projectId}/edit`}
-              className="px-3 py-1.5 rounded border hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center px-3 py-1.5 rounded bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-colors"
             >
+              <FontAwesomeIcon icon={faEdit} className="mr-1 h-3 w-3" />
               수정
             </Link>
           )}
           {canManage && (
-            <button
-              className="px-3 py-1.5 rounded bg-red-600 text-white hover:bg-red-700 transition-colors"
+            <RedButton
               onClick={() => setConfirmDelete(true)}
+              className="inline-flex items-center px-3 py-1.5"
             >
+              <FontAwesomeIcon icon={faTrash} className="mr-1 h-3 w-3" />
               삭제
-            </button>
+            </RedButton>
           )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <div className="prose max-w-none">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">프로젝트 소개</h2>
-            <p className="text-gray-700 whitespace-pre-line leading-relaxed">{selectedProject.description}</p>
+          <GlassCard className="p-6">
+            <h2 className="text-xl font-semibold text-white mb-4">프로젝트 소개</h2>
+            <p className="text-gray-300 whitespace-pre-line leading-relaxed">{selectedProject.description}</p>
             
             <div className="mt-6 space-y-3">
               {isValidUrl(selectedProject.github_url) && (
                 <div className="flex items-center space-x-2">
-                  <span className="text-gray-600 font-medium">GitHub:</span>
+                  <span className="text-gray-300 font-medium">GitHub:</span>
                   <a
                     href={selectedProject.github_url!}
-                    className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                    className="text-blue-400 hover:text-blue-300 hover:underline transition-colors inline-flex items-center"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
+                    <FontAwesomeIcon icon={faGithub} className="mr-1" />
                     {selectedProject.github_url}
+                    <FontAwesomeIcon icon={faExternalLinkAlt} className="ml-1 h-2 w-2" />
                   </a>
                 </div>
               )}
               {isValidUrl(selectedProject.demo_url) && (
                 <div className="flex items-center space-x-2">
-                  <span className="text-gray-600 font-medium">Demo:</span>
+                  <span className="text-gray-300 font-medium">Demo:</span>
                   <a
                     href={selectedProject.demo_url!}
-                    className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                    className="text-blue-400 hover:text-blue-300 hover:underline transition-colors inline-flex items-center"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
+                    <FontAwesomeIcon icon={faExternalLinkAlt} className="mr-1" />
                     {selectedProject.demo_url}
+                    <FontAwesomeIcon icon={faExternalLinkAlt} className="ml-1 h-2 w-2" />
                   </a>
                 </div>
               )}
             </div>
-          </div>
+          </GlassCard>
         </div>
 
         <div className="lg:col-span-1">
-          <div className="bg-gray-50 rounded-lg p-6 sticky top-8">
-            <h2 className="text-lg font-semibold mb-4 text-gray-900">팀원</h2>
+          <GlassCard className="p-6 sticky top-8">
+            <h2 className="text-lg font-semibold mb-4 text-white flex items-center">
+              <FontAwesomeIcon icon={faUsers} className="mr-2" />
+              팀원
+            </h2>
             {isLoadingMembers ? (
-              <div className="text-sm text-gray-500">멤버 불러오는 중...</div>
+              <div className="flex justify-center items-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600" />
+              </div>
             ) : (
               <div className="space-y-3">
                 {membersWithDetails.map((m) => (
                   <div
                     key={m.id}
-                    className="bg-white border rounded-lg p-3 shadow-sm"
+                    className="bg-white/10 border border-white/20 rounded-lg p-3"
                   >
                     <div className="flex-1 min-w-0">
                       <div className="font-medium flex items-center">
-                        <span className="truncate text-gray-900">{m.name || '알 수 없음'}</span>
-                        <span className="text-xs text-gray-500 ml-2 flex-shrink-0">/ {m.role || '팀원'}</span>
+                        <span className="truncate text-white">{m.name || '알 수 없음'}</span>
+                        <span className="text-xs text-gray-300 ml-2 flex-shrink-0">/ {m.role || '팀원'}</span>
                       </div>
-                      <div className="text-xs text-gray-500 mt-1 break-words">
+                      <div className="text-xs text-gray-300 mt-1 break-words">
                         {m.email && (
                           <div className="truncate">{m.email}</div>
                         )}
@@ -438,7 +466,7 @@ export default function ProjectDetailPage() {
                 )}
               </div>
             )}
-          </div>
+          </GlassCard>
         </div>
       </div>
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useImage, useCoffeeChat } from '@prometheus-fe/hooks';
+import RedButton from './RedButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faCoffee,
@@ -152,7 +153,7 @@ export default function ProfileModal({
                     {member.coffee_chat_enabled && (
                       <div className="relative">
                         <div 
-                          className={`w-8 h-8 bg-[#FF4500] rounded-full flex items-center justify-center hover:bg-[#c2402a] transition-all duration-300 cursor-pointer ${
+                          className={`w-8 h-8 bg-[#00654D] rounded-full flex items-center justify-center hover:bg-[#004d3a] transition-all duration-300 cursor-pointer ${
                             showCoffeeChat ? 'rotate-180' : ''
                           }`}
                           onClick={handleCoffeeChatToggle}
@@ -161,14 +162,14 @@ export default function ProfileModal({
                         </div>
                         
                         {/* 커피챗 메시지 입력 영역 */}
-                        <div className={`absolute top-full left-0 mt-2 w-80 bg-black/90 backdrop-blur-lg rounded-lg border border-white/20 shadow-xl transition-all duration-300 z-20 ${
+                        <div className={`absolute top-full left-0 mt-2 w-80 bg-[#1A1A1A] backdrop-blur-lg rounded-lg border border-[#404040] shadow-xl transition-all duration-300 z-20 ${
                           showCoffeeChat 
                             ? 'opacity-100 scale-100 translate-y-0' 
                             : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
                         }`}>
                           <div className="p-4">
                             <div className="flex items-center gap-2 mb-3">
-                              <FontAwesomeIcon icon={faCoffee} className="w-4 h-4 text-[#FF4500]" />
+                              <FontAwesomeIcon icon={faCoffee} className="w-4 h-4 text-[#00654D]" />
                               <span className="text-sm font-medium text-white">커피챗 요청</span>
                             </div>
                             
@@ -178,17 +179,17 @@ export default function ProfileModal({
                               placeholder="커피챗 요청 메시지를 작성해주세요..."
                               rows={3}
                               maxLength={300}
-                              className="w-full bg-white/10 border border-white/20 rounded-md px-3 py-2 text-white placeholder-gray-400 focus:border-[#FF4500] focus:outline-none resize-none"
+                              className="w-full bg-[#1A1A1A] border border-[#404040] rounded-md px-3 py-2 text-white placeholder-[#e0e0e0] focus:border-[#c2402a] focus:outline-none resize-none"
                             />
                             
                             <div className="flex items-center justify-between mt-3">
-                              <span className="text-xs text-gray-400">
+                              <span className="text-xs text-[#e0e0e0]">
                                 {coffeeChatMessage.length}/300
                               </span>
-                              <button
+                              <RedButton
                                 onClick={handleSendCoffeeChat}
                                 disabled={!coffeeChatMessage.trim() || isRequesting}
-                                className="flex items-center gap-2 bg-[#FF4500] text-white px-3 py-1.5 rounded-md hover:bg-[#c2402a] disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                                className="inline-flex items-center gap-2 text-sm"
                               >
                                 {isRequesting ? (
                                   <>
@@ -201,7 +202,7 @@ export default function ProfileModal({
                                     <span>전송</span>
                                   </>
                                 )}
-                              </button>
+                              </RedButton>
                             </div>
                           </div>
                         </div>
