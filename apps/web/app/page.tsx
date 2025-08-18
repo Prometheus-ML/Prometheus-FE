@@ -177,7 +177,7 @@ export default function Page() {
             {/* Routing Cards - Custom Grid Layout */}
             <div className="grid grid-cols-5 gap-4 h-2/3">
               {/* 출석하기 - 2/5 columns */}
-              <GlassCard href="/attendance" className="p-4 flex flex-col justify-center items-center col-span-2 row-span-2">
+              <GlassCard href="/event" className="p-4 flex flex-col justify-center items-center col-span-2 row-span-2">
                 <div className="flex flex-col items-center text-center">
                   <div className="w-16 h-16 bg-[#8B0000]/20 rounded-full flex items-center justify-center mb-4 border border-[#c2402a]/30">
                     <FontAwesomeIcon icon={faCheck} className="w-8 h-8 text-[#ffa282]" />

@@ -1,98 +1,214 @@
-// Event 관련 타입 정의
+/**
+ * 이벤트 도메인 타입 정의
+ * 
+ * 백엔드 Event 모델과 대응되는 프론트엔드 도메인 타입
+ */
 
+/**
+ * 이벤트 타입 열거형
+ */
+export type EventType = 
+  | '회의'
+  | '데모데이'
+  | '홈커밍데이'
+  | '스터디'
+  | '워크샵'
+  | '세미나'
+  | '네트워킹'
+  | '기타';
+
+/**
+ * 출석 상태 열거형
+ */
+export type AttendanceStatus = 
+  | 'present'    // 출석
+  | 'absent'     // 결석
+  | 'late'       // 지각
+  | 'excused'    // 사유 있는 결석
+  | 'unknown';   // 미확인
+
+/**
+ * 이벤트 도메인 타입
+ */
 export interface Event {
+  /** 이벤트 ID */
   id: number;
+  
+  /** 이벤트 제목 */
   title: string;
-  description: string;
-  event_type: string;
-  current_gen: number;  // gen → current_gen으로 수정
-  start_time: string;   // start_date → start_time으로 수정
-  end_time: string;     // end_date → end_time으로 수정
-  location: string;
-  is_attendance_required: boolean;  // 출석 필수 여부 필드 추가
-  meta?: any;           // 백엔드에 있는 meta 필드 추가
-  created_at: string;
-  updated_at: string;
+  
+  /** 이벤트 설명 */
+  description?: string;
+  
+  /** 시작 시간 */
+  startTime: Date;
+  
+  /** 종료 시간 */
+  endTime: Date;
+  
+  /** 장소 */
+  location?: string;
+  
+  /** 이벤트 타입 */
+  eventType: EventType;
+  
+  /** 출석 필수 여부 */
+  isAttendanceRequired: boolean;
+  
+  /** 현재 기수 */
+  currentGen: number;
+  
+  /** 출석 인정 시작 시간 */
+  attendanceStartTime?: Date;
+  
+  /** 출석 인정 종료 시간 */
+  attendanceEndTime?: Date;
+  
+  /** 지각 허용 시간(분) */
+  lateThresholdMinutes: number;
+  
+  /** 추가 메타데이터 */
+  meta?: Record<string, any>;
 }
 
-export interface EventSummary {
-  id: number;
-  title: string;
-  event_type: string;
-  current_gen: number;  // gen → current_gen으로 수정
-  start_time: string;   // start_date → start_time으로 수정
-  end_time: string;     // end_date → end_time으로 수정
-  location: string;
-  is_attendance_required: boolean;  // 출석 필수 여부 필드 추가
-  meta?: any;           // meta 필드 추가
-}
-
-export interface EventFilters {
-  current_gen?: number;  // gen → current_gen으로 수정
-  event_type?: string;
-  is_attendance_required?: boolean;  // 출석 필수 여부 필터 추가
-  start_date?: string;   // 필터용으로 유지 (YYYY-MM-DD 형식)
-  end_date?: string;     // 필터용으로 유지 (YYYY-MM-DD 형식)
-}
-
-export interface EventListParams {
-  page?: number;
-  size?: number;
-  current_gen?: number;  // gen → current_gen으로 수정
-  event_type?: string;
-  is_attendance_required?: boolean | string;  // 출석 필수 여부 필터 추가 (string도 허용하여 폼 상태와 호환)
-  start_date?: string;   // 필터용으로 유지
-  end_date?: string;     // 필터용으로 유지
-}
-
-export interface EventListResponse {
-  events: EventSummary[];
-  total: number;
-}
-
-// Attendance 관련 타입
+/**
+ * 출석 정보 도메인 타입
+ */
 export interface Attendance {
+  /** 출석 ID */
   id: number;
-  event_id: number;
-  member_id: string;     // number → string으로 수정 (백엔드와 일치)
-  member_name: string;
-  status: 'present' | 'absent' | 'late' | 'excused';
-  checked_in_at?: string;  // check_in_time → checked_in_at으로 수정
-  reason?: string;          // notes → reason으로 수정
-  created_at: string;
-  updated_at: string;
+  
+  /** 이벤트 ID */
+  eventId: number;
+  
+  /** 멤버 ID */
+  memberId: string;
+  
+  /** 멤버 이름 */
+  memberName?: string;
+  
+  /** 출석 상태 */
+  status: AttendanceStatus;
+  
+  /** 결석 사유 */
+  reason?: string;
+  
+  /** 출석 체크 시간 */
+  checkedInAt?: Date;
 }
 
-export interface AttendanceFilters {
-  status_filter?: string;
-  member_id_filter?: string;
+/**
+ * 출석 통계 도메인 타입
+ */
+export interface AttendanceStats {
+  /** 전체 멤버 수 */
+  totalMembers: number;
+  
+  /** 출석자 수 */
+  present: number;
+  
+  /** 결석자 수 */
+  absent: number;
+  
+  /** 지각자 수 */
+  late: number;
+  
+  /** 사유 있는 결석자 수 */
+  excused: number;
+  
+  /** 출석률 (0-1) */
+  attendanceRate: number;
 }
 
-export interface AttendanceListResponse {
-  attendances: Attendance[];
+/**
+ * 이벤트 필터 조건 타입
+ */
+export interface EventFilter {
+  /** 기수 필터 */
+  gen?: number;
+  
+  /** 이벤트 타입 필터 */
+  eventType?: EventType;
+  
+  /** 출석 필수 여부 필터 */
+  isAttendanceRequired?: boolean;
+  
+  /** 시작 날짜 필터 (YYYY-MM-DD) */
+  startDate?: string;
+  
+  /** 종료 날짜 필터 (YYYY-MM-DD) */
+  endDate?: string;
+}
+
+/**
+ * 페이지네이션 정보 타입
+ */
+export interface EventPagination {
+  /** 현재 페이지 */
+  page: number;
+  
+  /** 페이지 크기 */
+  size: number;
+  
+  /** 전체 항목 수 */
   total: number;
 }
 
-// Event 타입 옵션
-export const EVENT_TYPES = [
-  'meeting',
-  'study',
-  'project',
-  'workshop',
-  'seminar',
-  'conference',
-  'social',
-  'other'
-] as const;
+/**
+ * 이벤트 목록 응답 타입
+ */
+export interface EventList {
+  /** 이벤트 목록 */
+  events: Event[];
+  
+  /** 페이지네이션 정보 */
+  pagination: EventPagination;
+}
 
-export type EventType = typeof EVENT_TYPES[number];
+/**
+ * 출석 목록 응답 타입
+ */
+export interface AttendanceList {
+  /** 출석 목록 */
+  attendances: Attendance[];
+  
+  /** 전체 출석 기록 수 */
+  total: number;
+}
 
-// Attendance 상태 옵션
-export const ATTENDANCE_STATUSES = [
-  'present',
-  'absent',
-  'late',
-  'excused'
-] as const;
+/**
+ * 이벤트 생성 폼 데이터 타입
+ */
+export interface EventFormData {
+  title: string;
+  description?: string;
+  startTime: Date;
+  endTime: Date;
+  location?: string;
+  eventType: EventType;
+  isAttendanceRequired: boolean;
+  currentGen: number;
+  attendanceStartTime?: Date;
+  attendanceEndTime?: Date;
+  lateThresholdMinutes: number;
+  meta?: Record<string, any>;
+}
 
-export type AttendanceStatus = typeof ATTENDANCE_STATUSES[number];
+/**
+ * 출석 체크 폼 데이터 타입
+ */
+export interface AttendanceFormData {
+  memberId: string;
+  status: AttendanceStatus;
+  reason?: string;
+}
+
+/**
+ * 대량 출석 체크 결과 타입
+ */
+export interface BulkAttendanceResult {
+  message: string;
+  created: number;
+  updated: number;
+  errors: string[];
+}
