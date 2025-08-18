@@ -191,11 +191,22 @@ export function useEventManagement() {
       setIsDeleting(true);
       setError(null);
 
+      console.log(`🗑️ [EventManagement] 이벤트 삭제 시작: ID ${eventId}`);
       await event.deleteEvent(eventId);
+      console.log(`✅ [EventManagement] 이벤트 삭제 성공: ID ${eventId}`);
     } catch (err: any) {
       const errorMessage = err?.message || '이벤트 삭제에 실패했습니다.';
       setError(errorMessage);
-      console.error('이벤트 삭제 실패:', err);
+      
+      // 에러 상세 정보 로깅
+      console.error(`❌ [EventManagement] 이벤트 삭제 실패: ID ${eventId}`, {
+        message: err?.message,
+        status: err?.status,
+        data: err?.data,
+        detail: err?.detail,
+        stack: err?.stack
+      });
+      
       throw err;
     } finally {
       setIsDeleting(false);
