@@ -44,7 +44,34 @@ export default function ProjectPage() {
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const [likeLoading, setLikeLoading] = useState<Record<string, boolean>>({});
 
-  const totalProjects = projects.length;
+  // 필터링된 프로젝트 목록
+  const filteredProjects = useMemo(() => {
+    let filtered = projects;
+    
+    if (appliedFilters.search) {
+      const searchLower = appliedFilters.search.toLowerCase();
+      filtered = filtered.filter(project => 
+        project.title.toLowerCase().includes(searchLower) ||
+        (project.description && project.description.toLowerCase().includes(searchLower)) ||
+        (project.keywords && project.keywords.some(keyword => 
+          keyword.toLowerCase().includes(searchLower)
+        ))
+      );
+    }
+    
+    if (appliedFilters.status_filter) {
+      filtered = filtered.filter(project => project.status === appliedFilters.status_filter);
+    }
+    
+    if (appliedFilters.gen_filter) {
+      const genNum = parseInt(appliedFilters.gen_filter);
+      filtered = filtered.filter(project => project.gen === genNum);
+    }
+    
+    return filtered;
+  }, [projects, appliedFilters]);
+
+  const totalProjects = filteredProjects.length;
   const pages = useMemo(() => Math.max(1, Math.ceil(totalProjects / size)), [totalProjects, size]);
 
   // 프로젝트 목록 로드
@@ -220,9 +247,9 @@ export default function ProjectPage() {
         </div>
 
         {/* 검색 결과 수 */}
-        {appliedFilters.search && (
+        {(appliedFilters.search || appliedFilters.status_filter || appliedFilters.gen_filter) && (
           <div className="mb-4 text-sm text-[#e0e0e0]">
-            검색 결과: {searchResultCount}개
+            검색 결과: {totalProjects}개
           </div>
         )}
 
@@ -240,7 +267,7 @@ export default function ProjectPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project: Project) => (
+            {filteredProjects.map((project: Project) => (
               <GlassCard key={project.id} className="overflow-hidden hover:bg-white/20 transition-colors border border-white/20">
                 <div className="p-4">
                   {/* 프로젝트 이미지 */}
@@ -342,13 +369,13 @@ export default function ProjectPage() {
         )}
 
         {/* 빈 상태 */}
-        {!isLoadingProjects && projects.length === 0 && (
+        {!isLoadingProjects && filteredProjects.length === 0 && (
           <div className="px-4 py-5 sm:p-6">
             <div className="text-center">
               <FontAwesomeIcon icon={faFolder} className="mx-auto h-12 w-12 text-gray-400 mb-4" />
               <h3 className="mt-2 text-sm font-medium text-white">프로젝트가 없습니다.</h3>
               <p className="mt-1 text-sm text-gray-300">
-                {appliedFilters.search ? '검색 결과가 없습니다.' : '아직 등록된 프로젝트가 없습니다.'}
+                {(appliedFilters.search || appliedFilters.status_filter || appliedFilters.gen_filter) ? '검색 결과가 없습니다.' : '아직 등록된 프로젝트가 없습니다.'}
               </p>
             </div>
           </div>

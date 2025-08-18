@@ -30,6 +30,8 @@ interface Member {
   member_id: string;
   role?: string | null;
   contribution?: string | null;
+  member_name?: string | null;
+  member_gen?: number | null;
 }
 
 interface MemberWithDetails extends Member {
@@ -101,7 +103,7 @@ export default function ProjectDetailPage() {
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [memberModalMode, setMemberModalMode] = useState<'add' | 'edit'>('add');
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
-  const [membersWithDetails, setMembersWithDetails] = useState<MemberWithDetails[]>([]);
+
 
   // TODO: Replace with actual auth logic
   const canManage = true; // Manager 이상
@@ -171,36 +173,7 @@ export default function ProjectDetailPage() {
     }
   };
 
-  // 멤버 상세 정보 로드
-  const loadMemberDetails = async () => {
-    if (!projectMembers.length) return;
-    
-    try {
-      const membersWithDetails = await Promise.all(
-        projectMembers.map(async (member) => {
-          try {
-            const memberDetail = await getMember(member.member_id);
-            return {
-              ...member,
-              name: memberDetail.name,
-              email: memberDetail.email
-            };
-          } catch (error) {
-            console.error(`멤버 ${member.member_id} 정보 로드 실패:`, error);
-            return {
-              ...member,
-              name: '알 수 없음',
-              email: '알 수 없음'
-            };
-          }
-        })
-      );
-      
-      setMembersWithDetails(membersWithDetails);
-    } catch (error) {
-      console.error('멤버 상세 정보 로드 실패:', error);
-    }
-  };
+
 
   const handleDeleteProject = async () => {
     try {
@@ -263,12 +236,7 @@ export default function ProjectDetailPage() {
     }
   }, [projectId]);
 
-  // 멤버 목록이 변경될 때마다 상세 정보 로드
-  useEffect(() => {
-    if (projectMembers.length > 0) {
-      loadMemberDetails();
-    }
-  }, [projectMembers]);
+
 
   if (isLoadingProject) {
     return (
@@ -445,20 +413,22 @@ export default function ProjectDetailPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {membersWithDetails.map((m) => (
+                {projectMembers.map((m) => (
                   <div
                     key={m.id}
                     className="bg-white/10 border border-white/20 rounded-lg p-3"
                   >
                     <div className="flex-1 min-w-0">
                       <div className="font-medium flex items-center">
-                        <span className="truncate text-white">{m.name || '알 수 없음'}</span>
+                        <span className="truncate text-white">{m.member_name || '알 수 없음'}</span>
                         <span className="text-xs text-gray-300 ml-2 flex-shrink-0">/ {m.role || '팀원'}</span>
+                        {m.member_gen !== null && m.member_gen !== undefined && (
+                          <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded ml-2 flex-shrink-0">
+                            {m.member_gen}기
+                          </span>
+                        )}
                       </div>
                       <div className="text-xs text-gray-300 mt-1 break-words">
-                        {m.email && (
-                          <div className="truncate">{m.email}</div>
-                        )}
                         {m.contribution && (
                           <div className="truncate">{m.contribution}</div>
                         )}

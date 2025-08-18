@@ -21,6 +21,8 @@ export type ProjectMember = {
   member_id: string;
   role?: string | null;
   contribution?: string | null;
+  member_name?: string | null;
+  member_gen?: number | null;
 };
 
 export type ProjectWithMembers = {
