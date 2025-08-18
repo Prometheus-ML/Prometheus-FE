@@ -8,7 +8,7 @@ import { Project } from '@prometheus-fe/types';
 import GlassCard from '../../src/components/GlassCard';
 import RedButton from '../../src/components/RedButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faUndo, faFolder, faEye, faCalendarAlt, faTags, faUsers, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faUndo, faFolder, faEye, faCalendarAlt, faTags, faUsers, faArrowLeft, faHeart, faHeartBroken } from '@fortawesome/free-solid-svg-icons';
 import Image from 'next/image';
 
 interface ProjectFilters {
@@ -22,6 +22,8 @@ export default function ProjectPage() {
     projects,
     isLoadingProjects,
     fetchProjects,
+    addProjectLike,
+    removeProjectLike,
   } = useProject();
 
   const { getThumbnailUrl, getDefaultImageUrl } = useImage();
@@ -40,6 +42,7 @@ export default function ProjectPage() {
   });
   const [error, setError] = useState<string>('');
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+  const [likeLoading, setLikeLoading] = useState<Record<string, boolean>>({});
 
   const totalProjects = projects.length;
   const pages = useMemo(() => Math.max(1, Math.ceil(totalProjects / size)), [totalProjects, size]);
@@ -76,6 +79,26 @@ export default function ProjectPage() {
     setFilters(emptyFilters);
     setAppliedFilters(emptyFilters);
     setPage(1);
+  };
+
+  // 좋아요 토글 처리
+  const handleLikeToggle = async (project: Project) => {
+    if (likeLoading[project.id]) return;
+    
+    try {
+      setLikeLoading(prev => ({ ...prev, [project.id]: true }));
+      
+      if (project.is_liked) {
+        await removeProjectLike(project.id);
+      } else {
+        await addProjectLike(project.id);
+      }
+    } catch (error: any) {
+      console.error('좋아요 처리 실패:', error);
+      alert('좋아요 처리에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
+    } finally {
+      setLikeLoading(prev => ({ ...prev, [project.id]: false }));
+    }
   };
 
   // 상태별 색상 반환
@@ -284,8 +307,25 @@ export default function ProjectPage() {
                       </div>
                     )}
 
-                    {/* 상세보기 버튼 */}
+                    {/* 좋아요 및 상세보기 버튼 */}
                     <div className="flex items-center justify-between pt-2">
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleLikeToggle(project)}
+                          disabled={likeLoading[project.id]}
+                          className={`inline-flex items-center px-3 py-1 text-sm rounded transition-colors ${
+                            project.is_liked
+                              ? 'bg-red-500/20 border border-red-500/30 text-red-300 hover:bg-red-500/30'
+                              : 'bg-white/20 border border-white/30 text-white hover:bg-white/30'
+                          } ${likeLoading[project.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          <FontAwesomeIcon 
+                            icon={project.is_liked ? faHeart : faHeartBroken} 
+                            className="mr-1 h-3 w-3" 
+                          />
+                          {project.like_count || 0}
+                        </button>
+                      </div>
                       <a
                         href={`/project/${project.id}`}
                         className="inline-flex items-center px-3 py-1 text-sm bg-red-500/20 border border-red-500/30 rounded text-red-300 hover:bg-red-500/30 transition-colors"

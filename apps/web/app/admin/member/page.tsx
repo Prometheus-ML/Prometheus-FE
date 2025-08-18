@@ -200,7 +200,7 @@ export default function AdminMemberPage() {
     try {
       if ('id' in data) {
         // 수정
-        await updateMember(data.id, data);
+        await updateMember(data.id as string, data);
         alert('멤버가 수정되었습니다.');
       } else {
         // 추가

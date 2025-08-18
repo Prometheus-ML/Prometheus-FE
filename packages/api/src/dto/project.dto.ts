@@ -2,7 +2,8 @@ import {
   Project,
   ProjectMember,
   ProjectWithMembers,
-  MemberProjectHistory
+  MemberProjectHistory,
+  ProjectLike
 } from '@prometheus-fe/types';
 
 // 공통 응답 인터페이스
@@ -124,3 +125,21 @@ export interface GetMemberProjectHistoryDto extends MemberProjectHistory {}
 
 // 프로젝트 검색 관련 인터페이스들은 백엔드에서 지원하지 않아 제거됨
 // 필요시 GetprojectRequest의 search 파라미터 사용 (단, 백엔드에서 실제 검색 기능 구현 필요)
+
+// 프로젝트 좋아요 추가
+export interface AddProjectLikeRequest {
+  project_id: number;
+}
+
+export interface AddProjectLikeDto extends BaseResponse {
+  message: string;
+  like_count: number;
+  is_liked: boolean;
+}
+
+// 프로젝트 좋아요 제거
+export interface RemoveProjectLikeDto extends BaseResponse {
+  message: string;
+  like_count: number;
+  is_liked: boolean;
+}

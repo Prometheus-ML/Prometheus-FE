@@ -16,7 +16,10 @@ import {
   UpdateProjectMemberDto,
   RemoveProjectMemberDto,
   GetMemberProjectHistoryRequest,
-  GetMemberProjectHistoryDto
+  GetMemberProjectHistoryDto,
+  AddProjectLikeRequest,
+  AddProjectLikeDto,
+  RemoveProjectLikeDto
 } from './dto/project.dto';
 
 export class ProjectApi {
@@ -182,6 +185,28 @@ export class ProjectApi {
     } catch (error: any) {
       console.error('Error fetching projects for admin:', error);
       throw new Error(error.message || 'Failed to fetch projects for admin');
+    }
+  }
+
+  // 프로젝트 좋아요 추가
+  async addLike(projectId: number | string): Promise<AddProjectLikeDto> {
+    try {
+      const response = await this.apiClient.post<AddProjectLikeDto>(`/projects/${projectId}/like`, {});
+      return response;
+    } catch (error: any) {
+      console.error(`Error adding like to project ${projectId}:`, error);
+      throw new Error(error.message || 'Failed to add like');
+    }
+  }
+
+  // 프로젝트 좋아요 제거
+  async removeLike(projectId: number | string): Promise<RemoveProjectLikeDto> {
+    try {
+      const response = await this.apiClient.delete<RemoveProjectLikeDto>(`/projects/${projectId}/like`);
+      return response;
+    } catch (error: any) {
+      console.error(`Error removing like from project ${projectId}:`, error);
+      throw new Error(error.message || 'Failed to remove like');
     }
   }
 

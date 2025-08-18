@@ -8,7 +8,7 @@ import { useAuthStore } from '@prometheus-fe/stores';
 import GlassCard from '../../../src/components/GlassCard';
 import RedButton from '../../../src/components/RedButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faUndo } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faUndo, faHeart } from '@fortawesome/free-solid-svg-icons';
 
 export default function AdminProjectPage() {
   const { 
@@ -300,15 +300,21 @@ export default function AdminProjectPage() {
                           searchTerm={searchQuery} 
                         />
                       </p>
-                      <p className="text-sm text-gray-300">
-                        {project.gen}기
+                      <div className="flex items-center space-x-2 text-sm text-gray-300">
+                        <span>{project.gen}기</span>
+                        {project.like_count !== undefined && (
+                          <span className="flex items-center text-pink-400">
+                            <FontAwesomeIcon icon={faHeart} className="mr-1 h-3 w-3" />
+                            {project.like_count}
+                          </span>
+                        )}
                         {project.keywords && project.keywords.length > 0 && (
-                          <span className="ml-2">
+                          <span>
                             · 키워드: {project.keywords.slice(0, 3).join(', ')}
                             {project.keywords.length > 3 && ` +${project.keywords.length - 3}개`}
                           </span>
                         )}
-                      </p>
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">

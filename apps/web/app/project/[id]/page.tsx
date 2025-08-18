@@ -9,8 +9,7 @@ import AddMemberModal from '../../../src/components/AddMemberModal';
 import GlassCard from '../../../src/components/GlassCard';
 import RedButton from '../../../src/components/RedButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faExternalLinkAlt, faUsers, faCalendarAlt, faUserGraduate } from '@fortawesome/free-solid-svg-icons';
-import { faGithub } from '@fortawesome/free-brands-svg-icons';
+import { faEdit, faTrash, faExternalLinkAlt, faUsers, faCalendarAlt, faUserGraduate, faHeart, faHeartBroken } from '@fortawesome/free-solid-svg-icons';
 
 interface Project {
   id: number;
@@ -22,6 +21,8 @@ interface Project {
   demo_url?: string;
   panel_url?: string;
   thumbnail_url?: string;
+  like_count?: number;
+  is_liked?: boolean;
 }
 
 interface Member {
@@ -53,7 +54,7 @@ function ConfirmModal({ show, title, message, confirmText, onConfirm, onCancel }
       <GlassCard className="w-full max-w-md p-6">
         <div className="mb-4">
           <h2 className="text-lg font-semibold text-white">{title}</h2>
-          <p className="text-gray-300 mt-2">{message}</p>
+          <p className="gray-300 mt-2">{message}</p>
         </div>
         <div className="flex justify-end space-x-2">
           <button
@@ -87,12 +88,15 @@ export default function ProjectDetailPage() {
     addProjectMember,
     updateProjectMember,
     removeProjectMember,
+    addProjectLike,
+    removeProjectLike,
   } = useProject();
 
   const { getMember } = useMember();
 
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [likeLoading, setLikeLoading] = useState(false);
 
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [memberModalMode, setMemberModalMode] = useState<'add' | 'edit'>('add');
@@ -126,6 +130,26 @@ export default function ProjectDetailPage() {
       return true;
     } catch {
       return false;
+    }
+  };
+
+  // 좋아요 토글 처리
+  const handleLikeToggle = async () => {
+    if (!selectedProject || likeLoading) return;
+    
+    try {
+      setLikeLoading(true);
+      
+      if (selectedProject.is_liked) {
+        await removeProjectLike(selectedProject.id);
+      } else {
+        await addProjectLike(selectedProject.id);
+      }
+    } catch (error: any) {
+      console.error('좋아요 처리 실패:', error);
+      alert('좋아요 처리에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
+    } finally {
+      setLikeLoading(false);
     }
   };
 
@@ -330,6 +354,23 @@ export default function ProjectDetailPage() {
           </div>
         </div>
         <div className="flex items-center space-x-2">
+          {/* 좋아요 버튼 */}
+          <button
+            onClick={handleLikeToggle}
+            disabled={likeLoading}
+            className={`inline-flex items-center px-3 py-1.5 rounded transition-colors ${
+              selectedProject.is_liked
+                ? 'bg-red-500/20 border border-red-500/30 text-red-300 hover:bg-red-500/30'
+                : 'bg-white/10 border border-white/20 text-white hover:bg-white/20'
+            } ${likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <FontAwesomeIcon 
+              icon={selectedProject.is_liked ? faHeart : faHeartBroken} 
+              className="mr-1 h-3 w-3" 
+            />
+            {selectedProject.like_count || 0}
+          </button>
+          
           {canEdit && (
             <Link
               href={`/project/${projectId}/edit`}
@@ -367,7 +408,7 @@ export default function ProjectDetailPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <FontAwesomeIcon icon={faGithub} className="mr-1" />
+                    <span className="mr-1">📁</span>
                     {selectedProject.github_url}
                     <FontAwesomeIcon icon={faExternalLinkAlt} className="ml-1 h-2 w-2" />
                   </a>

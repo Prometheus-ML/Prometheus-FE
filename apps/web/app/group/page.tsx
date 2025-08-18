@@ -143,9 +143,12 @@ export default function GroupPage() {
 
   const handleApproveMember = async (requestId: number) => {
     try {
-      await approveMember(requestId);
-      await fetchJoinRequests(selectedGroupId!);
-      await fetchGroupMembers(selectedGroupId!);
+      const request = joinRequests.find(r => r.id === requestId);
+      if (!request || !selectedGroupId) return;
+      
+      await approveMember(selectedGroupId, request.member_id);
+      await fetchJoinRequests(selectedGroupId);
+      await fetchGroupMembers(selectedGroupId);
     } catch (err) {
       console.error('멤버 승인 실패:', err);
       setError('멤버 승인에 실패했습니다.');
@@ -154,8 +157,11 @@ export default function GroupPage() {
 
   const handleRejectMember = async (requestId: number) => {
     try {
-      await rejectMember(requestId);
-      await fetchJoinRequests(selectedGroupId!);
+      const request = joinRequests.find(r => r.id === requestId);
+      if (!request || !selectedGroupId) return;
+      
+      await rejectMember(selectedGroupId, request.member_id);
+      await fetchJoinRequests(selectedGroupId);
     } catch (err) {
       console.error('멤버 거절 실패:', err);
       setError('멤버 거절에 실패했습니다.');
@@ -386,7 +392,7 @@ export default function GroupPage() {
                     <div className="flex items-center space-x-4 text-sm text-gray-300">
                       <span className="flex items-center">
                         <FontAwesomeIcon icon={faUsers} className="mr-1" />
-                        멤버: {group.member_count || 0}명
+                        멤버 수는 상세보기에서 확인 가능
                       </span>
                     </div>
                   </div>
@@ -461,7 +467,7 @@ export default function GroupPage() {
               
               <div className="text-sm text-gray-300">
                 <p>소유자: {selectedGroup.owner_id}</p>
-                <p>멤버 수: {selectedGroup.member_count || 0}명</p>
+                <p>멤버 수: {members.length}명</p>
                 {selectedGroup.max_members && (
                   <p>최대 인원: {selectedGroup.max_members}명</p>
                 )}
@@ -478,9 +484,9 @@ export default function GroupPage() {
                 <h3 className="text-lg font-semibold text-white mb-3">멤버 목록</h3>
                 <div className="space-y-2">
                   {members.map((member: any) => (
-                    <div key={member.id} className="flex items-center justify-between p-2 bg-white/10 rounded">
-                      <span className="text-white">{member.name}</span>
-                      <span className="text-gray-300 text-sm">{member.email}</span>
+                    <div key={member.member_id} className="flex items-center justify-between p-2 bg-white/10 rounded">
+                      <span className="text-white">ID: {member.member_id}</span>
+                      <span className="text-gray-300 text-sm">역할: {member.role}</span>
                     </div>
                   ))}
                 </div>
@@ -500,7 +506,7 @@ export default function GroupPage() {
                     <div className="space-y-2">
                       {joinRequests.map((request: any) => (
                         <div key={request.id} className="flex items-center justify-between p-2 bg-white/10 rounded">
-                          <span className="text-white">{request.member_name}</span>
+                          <span className="text-white">ID: {request.member_id}</span>
                           <div className="flex space-x-2">
                             <button
                               onClick={() => handleApproveMember(request.id)}

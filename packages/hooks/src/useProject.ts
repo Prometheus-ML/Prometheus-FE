@@ -208,6 +208,58 @@ export function useProject() {
     }
   }, [project, fetchProjectMembers]);
 
+  // 프로젝트 좋아요 추가
+  const addProjectLike = useCallback(async (projectId: number | string) => {
+    if (!project) {
+      throw new Error('project is not available');
+    }
+    try {
+      const response = await project.addLike(projectId);
+      
+      // 로컬 상태 업데이트
+      setAllProjects(prev => prev.map(p => 
+        p.id === projectId 
+          ? { ...p, like_count: response.like_count, is_liked: response.is_liked }
+          : p
+      ));
+      
+      if (selectedProject?.id === projectId) {
+        setSelectedProject(prev => prev ? { ...prev, like_count: response.like_count, is_liked: response.is_liked } : null);
+      }
+      
+      return response;
+    } catch (error) {
+      console.error(`프로젝트 ${projectId} 좋아요 추가 실패:`, error);
+      throw error;
+    }
+  }, [project, selectedProject]);
+
+  // 프로젝트 좋아요 제거
+  const removeProjectLike = useCallback(async (projectId: number | string) => {
+    if (!project) {
+      throw new Error('project is not available');
+    }
+    try {
+      const response = await project.removeLike(projectId);
+      
+      // 로컬 상태 업데이트
+      setAllProjects(prev => prev.map(p => 
+        p.id === projectId 
+          ? { ...p, like_count: response.like_count, is_liked: response.is_liked }
+          : p
+      ));
+      
+      if (selectedProject?.id === projectId) {
+        setSelectedProject(prev => prev ? { ...prev, like_count: response.like_count, is_liked: response.is_liked } : null);
+      }
+      
+      return response;
+    } catch (error) {
+      console.error(`프로젝트 ${projectId} 좋아요 제거 실패:`, error);
+      throw error;
+    }
+  }, [project, selectedProject]);
+
   // 프로젝트 선택 핸들러
   const handleProjectSelect = (project: Project) => {
     setSelectedProject(project);
@@ -288,6 +340,8 @@ export function useProject() {
     addProjectMember,
     updateProjectMember,
     removeProjectMember,
+    addProjectLike,
+    removeProjectLike,
     
     // 핸들러들
     handleProjectSelect,

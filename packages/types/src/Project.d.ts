@@ -11,6 +11,8 @@ export type Project = {
   thumbnail_url?: string | null;
   gen: number;
   meta?: Record<string, any> | null;
+  like_count?: number;
+  is_liked?: boolean;
 };
 
 export type ProjectMember = {
@@ -32,4 +34,11 @@ export type MemberProjectHistory = {
   active_project: number;
   completed_project: number;
   items: ProjectWithMembers[];
+};
+
+export type ProjectLike = {
+  id: number;
+  project_id: number;
+  member_id: string;
+  created_at: string;
 };
