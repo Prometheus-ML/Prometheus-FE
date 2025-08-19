@@ -18,15 +18,24 @@ import {
   faCalendarAlt, 
   faProjectDiagram, 
   faCog, 
-  faLightbulb 
+  faLightbulb,
+  faSignOutAlt
 } from '@fortawesome/free-solid-svg-icons';
 
 export default function Page() {
   const isAuthenticated = useAuthStore((s: any) => s.isAuthenticated);
   const canAccessManager = useAuthStore((s: any) => s.canAccessManager);
+  const logout = useAuthStore((s: any) => s.logout);
   const [daysCount, setDaysCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const { myProfile, getMyProfile, isLoadingProfile } = useMember();
+
+  // 로그아웃 핸들러 추가
+  const handleLogout = () => {
+    logout();
+    // 로그아웃 후 페이지 새로고침하여 상태 업데이트
+    window.location.reload();
+  };
 
   useEffect(() => {
     // Add a small delay to show skeleton UI
@@ -153,6 +162,15 @@ export default function Page() {
             <Link href="/my" className="text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
               <FontAwesomeIcon icon={faUser} className="w-5 h-5" />
             </Link>
+            {isAuthenticated() && (
+              <button 
+                onClick={handleLogout}
+                className="text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
+                title="로그아웃"
+              >
+                <FontAwesomeIcon icon={faSignOutAlt} className="w-5 h-5" />
+              </button>
+            )}
           </div>
         </div>
       </header>

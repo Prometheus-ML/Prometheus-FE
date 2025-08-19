@@ -221,10 +221,11 @@ export const useAuthStore = create<AuthState>()(
 
           try {
             set({ isLoading: true });
-            const tokens = await authApiInstance.refresh(refreshToken);
+            const tokens = await authApiInstance.refresh();
             
-            // 새로운 토큰 저장
-            get().setTokens(tokens.access_token, tokens.refresh_token);
+            // 새로운 토큰 저장 (리프레시 토큰이 새로 발급된 경우 업데이트)
+            const newRefreshToken = tokens.refresh_token || refreshToken;
+            get().setTokens(tokens.access_token, newRefreshToken);
             
             set({ isLoading: false });
             console.log('Access token refreshed successfully');

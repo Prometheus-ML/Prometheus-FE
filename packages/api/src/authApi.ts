@@ -21,12 +21,14 @@ export class AuthApi {
     return this.api.post<TokenResponse>('/auth/google/login', { id_token });
   }
 
-  refresh(refresh_token: string) {
-    return this.api.post<TokenResponse>('/auth/refresh', { refresh_token });
+  refresh() {
+    // 백엔드에서 쿠키에서 refresh_token을 읽으므로 body 없이 요청
+    return this.api.post<TokenResponse>('/auth/refresh-access-token', {});
   }
 
   verify() {
-    return this.api.get<UserInfo>('/auth/verify');
+    // 백엔드 엔드포인트와 일치
+    return this.api.get<UserInfo>('/auth/verify-access-token');
   }
 }
 
