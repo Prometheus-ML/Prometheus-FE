@@ -67,7 +67,7 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
       onForbidden: () => {
         console.log('403 Forbidden - Access denied, redirecting to main page');
         // 메인 페이지로 이동 (새로고침을 통해 확실하게 이동)
-        window.location.href = '/';
+        //window.location.href = '/';
       },
       getAccessToken: () => useAuthStore.getState().getAccessToken() ?? undefined,
       getRefreshToken: () => useAuthStore.getState().getRefreshToken() ?? undefined,

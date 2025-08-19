@@ -45,6 +45,7 @@ export default function GroupPage() {
     toggleGroupLike,
     fetchGroupLikes,
     checkUserLikedGroup,
+    canViewJoinRequests,
   } = useGroup();
 
   const { user } = useAuthStore();
@@ -156,13 +157,18 @@ export default function GroupPage() {
 
   const handleGroupClick = async (groupId: number) => {
     try {
+      // 기본적으로 모든 사용자가 볼 수 있는 정보들
       await Promise.all([
         fetchGroup(groupId),
         fetchGroupMembers(groupId),
-        fetchJoinRequests(groupId).catch(() => {}),
         fetchGroupLikes(groupId).catch(() => {}),
         checkUserLikedGroup(groupId).catch(() => {})
       ]);
+
+      // 권한이 있는 경우에만 가입 요청 목록 조회
+      // fetchJoinRequests 내부에서 권한 체크를 수행함
+      fetchJoinRequests(groupId).catch(() => {});
+
       setSelectedGroupId(groupId);
       setShowGroupDetail(true);
     } catch (err) {
@@ -645,7 +651,7 @@ export default function GroupPage() {
             )}
 
             {/* 가입 신청 목록 */}
-            {user && user.id === selectedGroup.owner_id && (
+            {canViewJoinRequests(selectedGroup) && (
               <>
                 {isLoadingJoinRequests ? (
                   <div className="mt-6 flex justify-center">

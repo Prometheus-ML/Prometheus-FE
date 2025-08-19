@@ -1,4 +1,5 @@
 import { useApi } from '@prometheus-fe/context';
+import { useAuthStore } from '@prometheus-fe/stores';
 import { 
   Group,
   GroupMember,
@@ -10,6 +11,7 @@ import { useState, useCallback } from 'react';
 
 export function useGroup() {
   const { group } = useApi();
+  const { user } = useAuthStore();
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
@@ -23,6 +25,19 @@ export function useGroup() {
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
   const [isCreatingNote, setIsCreatingNote] = useState(false);
   const [isTogglingLike, setIsTogglingLike] = useState(false);
+
+  // 사용자가 가입 요청을 볼 수 있는 권한이 있는지 확인
+  const canViewJoinRequests = useCallback((group?: Group | null) => {
+    if (!user) return false;
+    
+    const targetGroup = group || selectedGroup;
+    if (!targetGroup) return false;
+
+    const isOwner = user.id === targetGroup.owner_id;
+    const isSuperUser = user.grant === 'Super';
+
+    return isOwner || isSuperUser;
+  }, [user, selectedGroup]);
 
   // 그룹 목록 조회
   const fetchGroups = useCallback(async (params?: any) => {
@@ -118,12 +133,32 @@ export function useGroup() {
     }
   }, [group]);
 
-  // 가입 요청 목록 조회
-  const fetchJoinRequests = useCallback(async (groupId: number | string) => {
+  // 가입 요청 목록 조회 (권한 체크 포함)
+  const fetchJoinRequests = useCallback(async (groupId: number | string, skipPermissionCheck = false) => {
     if (!group) {
       console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
       return;
     }
+
+    // 권한 체크를 건너뛰지 않는 경우, 사용자 권한 확인
+    if (!skipPermissionCheck) {
+      if (!user) {
+        console.warn('User not authenticated. Cannot fetch join requests.');
+        setJoinRequests([]);
+        return;
+      }
+
+      // 그룹 오너인지 확인하기 위해 selectedGroup 사용
+      const isOwner = selectedGroup && user.id === selectedGroup.owner_id;
+      const isSuperUser = user.grant === 'Super';
+
+      if (!isOwner && !isSuperUser) {
+        console.warn('User does not have permission to view join requests.');
+        setJoinRequests([]);
+        return;
+      }
+    }
+
     try {
       setIsLoadingJoinRequests(true);
       const data = await group.listJoinRequests(groupId);
@@ -134,7 +169,7 @@ export function useGroup() {
     } finally {
       setIsLoadingJoinRequests(false);
     }
-  }, [group]);
+  }, [group, user, selectedGroup]);
 
   // 멤버 승인
   const approveMember = useCallback(async (groupId: number | string, memberId: string) => {
@@ -357,5 +392,6 @@ export function useGroup() {
     clearSelectedGroup,
     clearMembers,
     clearJoinRequests,
+    canViewJoinRequests,
   };
 }

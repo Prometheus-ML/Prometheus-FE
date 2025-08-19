@@ -42,7 +42,7 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
     toggleLike,
   } = useCommunity();
 
-  const { user } = useAuthStore();
+  const { user, canAccessManager } = useAuthStore();
   const [newComment, setNewComment] = useState<any>({ content: '' });
   const [error, setError] = useState('');
   const [authorInfo, setAuthorInfo] = useState<any>(null);
@@ -323,7 +323,6 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="text-sm text-gray-300">
-                            {getAuthorDisplayName(user.id, authorInfo)}(으)로 댓글 작성
                           </div>
                           <button
                             type="submit"
@@ -375,7 +374,7 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                                     {comment.content || '내용 없음'}
                                   </p>
                                 </div>
-                                {user && user.id === comment.author_id && (
+                                {user && (user.id === comment.author_id || canAccessManager()) && (
                                   <button
                                     onClick={() => handleDeleteComment(comment.id)}
                                     className="text-red-400 hover:text-red-300 text-sm ml-4"

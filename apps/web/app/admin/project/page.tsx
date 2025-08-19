@@ -24,7 +24,7 @@ export default function AdminProjectPage() {
   } = useProject();
   const [error, setError] = useState('');
   const [isLocalLoading, setIsLocalLoading] = useState(false);
-  const canAccessManager = useAuthStore((s) => s.canAccessManager);
+  const canAccessAdministrator = useAuthStore((s) => s.canAccessAdministrator);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   
   // Hydration 완료 상태 관리
@@ -51,12 +51,12 @@ export default function AdminProjectPage() {
       return;
     }
 
-    if (!canAccessManager()) {
+    if (!canAccessAdministrator()) {
       alert('관리자가 아닙니다.');
       window.location.href = '/';
       return;
     }
-  }, [isMounted, isAuthenticated, canAccessManager]);
+  }, [isMounted, isAuthenticated, canAccessAdministrator]);
 
   const loadProjects = async () => {
     // 이미 로딩 중이면 중복 요청 방지
@@ -94,11 +94,11 @@ export default function AdminProjectPage() {
   };
 
   useEffect(() => {
-    if (isMounted && isAuthenticated() && canAccessManager()) {
+    if (isMounted && isAuthenticated() && canAccessAdministrator()) {
       console.log('AdminProjectPage: 초기 로드 useEffect 실행');
       loadProjects();
     }
-  }, [isMounted, isAuthenticated, canAccessManager]);
+  }, [isMounted, isAuthenticated, canAccessAdministrator]);
 
   // 검색 핸들러
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -191,7 +191,7 @@ export default function AdminProjectPage() {
   }, [projects, searchQuery, statusFilter, genFilter]);
 
   // Hydration이 완료되지 않았거나 권한이 없는 경우
-  if (!isMounted || !isAuthenticated() || !canAccessManager()) {
+      if (!isMounted || !isAuthenticated() || !canAccessAdministrator()) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-lg text-gray-600">

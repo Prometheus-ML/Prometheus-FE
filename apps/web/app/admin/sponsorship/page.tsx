@@ -297,7 +297,6 @@ function SponsorModal({ isOpen, sponsor, onClose, onSubmit }: SponsorModalProps)
 }
 
 export default function AdminSponsorshipPage() {
-  const canAccessManager = useAuthStore((s) => s.canAccessManager);
   const canAccessAdministrator = useAuthStore((s) => s.canAccessAdministrator);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   
@@ -340,12 +339,12 @@ export default function AdminSponsorshipPage() {
       return;
     }
 
-    if (!canAccessManager()) {
+    if (!canAccessAdministrator()) {
       alert('관리자가 아닙니다.');
       window.location.href = '/';
       return;
     }
-  }, [isMounted, isAuthenticated, canAccessManager]);
+  }, [isMounted, isAuthenticated, canAccessAdministrator]);
 
   // 데이터 로드
   const loadData = useCallback(async (): Promise<void> => {
@@ -363,15 +362,15 @@ export default function AdminSponsorshipPage() {
   }, [activeTab, getAdminSponsors, getAdminHonorHall]);
 
   useEffect(() => {
-    if (!isMounted || !isAuthenticated() || !canAccessManager()) return;
+    if (!isMounted || !isAuthenticated() || !canAccessAdministrator()) return;
     loadData();
-  }, [isMounted, loadData, isAuthenticated, canAccessManager]);
+  }, [isMounted, loadData, isAuthenticated, canAccessAdministrator]);
 
   // 탭 변경 시 데이터 로드
   useEffect(() => {
-    if (!isMounted || !isAuthenticated() || !canAccessManager()) return;
+    if (!isMounted || !isAuthenticated() || !canAccessAdministrator()) return;
     loadData();
-  }, [activeTab, loadData, isAuthenticated, canAccessManager]);
+  }, [activeTab, loadData, isAuthenticated, canAccessAdministrator]);
 
   const handleCreateSponsor = async (data: SponsorCreateRequest) => {
     try {

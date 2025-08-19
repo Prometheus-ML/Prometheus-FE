@@ -13,8 +13,8 @@ export default function NewProjectPage() {
   const { createProject } = useProject();
 
   // TODO: Replace with actual auth logic
-  const canCreate = true; // Manager 이상만 생성 가능
-  const weights = { Root: 0, Super: 1, Administrator: 2, Manager: 3, Member: 4 };
+  const canCreate = true; // Administrator 이상만 생성 가능
+  const weights = { Root: 0, Super: 1, Administrator: 2, Member: 3 };
 
   const handleSubmit = async (formData: any) => {
     try {

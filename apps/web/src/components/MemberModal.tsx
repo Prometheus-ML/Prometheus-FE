@@ -41,7 +41,7 @@ interface MemberForm {
   history: string[];
 }
 
-type GrantLevel = 'Member' | 'Manager' | 'Administrator' | 'Super' | 'Root';
+type GrantLevel = 'Member' | 'Administrator' | 'Super' | 'Root';
 
 interface GrantHierarchy {
   readonly [key: string]: number;
@@ -131,10 +131,9 @@ export default function MemberModal({ isOpen, member, onClose, onSubmit, onDelet
   // 권한 레벨 매핑
   const grantHierarchy: GrantHierarchy = {
     'Member': 1,
-    'Manager': 2,
-    'Administrator': 3,
-    'Super': 4,
-    'Root': 5
+    'Administrator': 2,
+    'Super': 3,
+    'Root': 4
   } as const;
 
   // 현재 사용자가 권한을 수정할 수 있는지 확인
@@ -150,7 +149,7 @@ export default function MemberModal({ isOpen, member, onClose, onSubmit, onDelet
   const canDeleteMember = useCallback((): boolean => {
     const currentUserGrant = authStore.user?.grant as GrantLevel || 'Member';
     const currentLevel = grantHierarchy[currentUserGrant] || 0;
-    const requiredLevel = grantHierarchy['Super'] || 4;
+    const requiredLevel = grantHierarchy['Super'] || 3;
     
     return currentLevel >= requiredLevel;
   }, [authStore.user?.grant, grantHierarchy]);
@@ -170,7 +169,6 @@ export default function MemberModal({ isOpen, member, onClose, onSubmit, onDelet
     
     if (currentLevel >= grantHierarchy['Super']) return 'Super';
     if (currentLevel >= grantHierarchy['Administrator']) return 'Administrator';
-    if (currentLevel >= grantHierarchy['Manager']) return 'Manager';
     return 'Member';
   }, [authStore.user?.grant, grantHierarchy]);
 
@@ -863,7 +861,7 @@ export default function MemberModal({ isOpen, member, onClose, onSubmit, onDelet
                             <option value="Root" disabled={!canAssignGrant('Root')}>Root</option>
                             <option value="Super" disabled={!canAssignGrant('Super')}>Super</option>
                             <option value="Administrator" disabled={!canAssignGrant('Administrator')}>Administrator</option>
-                            <option value="Manager" disabled={!canAssignGrant('Manager')}>Manager</option>
+
                             <option value="Member" disabled={!canAssignGrant('Member')}>Member</option>
                           </select>
                           {isEdit && !canModifyEntireMember() && (

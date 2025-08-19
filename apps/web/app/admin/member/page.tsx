@@ -20,7 +20,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUndo, faSearch, faUsers, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons';
 
 export default function AdminMemberPage() {
-  const canAccessManager = useAuthStore((s) => s.canAccessManager);
+  const canAccessAdministrator = useAuthStore((s) => s.canAccessAdministrator);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   
   // Hydration 완료 상태 관리
@@ -86,12 +86,12 @@ export default function AdminMemberPage() {
       return;
     }
 
-    if (!canAccessManager()) {
+    if (!canAccessAdministrator()) {
       alert('관리자가 아닙니다.');
       window.location.href = '/';
       return;
     }
-  }, [isMounted, isAuthenticated, canAccessManager]);
+  }, [isMounted, isAuthenticated, canAccessAdministrator]);
 
   // 멤버 목록 로드
   const loadMembers = useCallback(async (): Promise<void> => {
@@ -115,9 +115,9 @@ export default function AdminMemberPage() {
 
   // 페이지 변경 시 데이터 로드
   useEffect(() => {
-    if (!isMounted || !isAuthenticated() || !canAccessManager()) return;
+    if (!isMounted || !isAuthenticated() || !canAccessAdministrator()) return;
     loadMembers();
-  }, [isMounted, loadMembers, isAuthenticated, canAccessManager]);
+  }, [isMounted, loadMembers, isAuthenticated, canAccessAdministrator]);
 
   // 검색 및 필터 적용
   const applyFilters = useCallback(() => {
@@ -423,7 +423,7 @@ export default function AdminMemberPage() {
               <option value="Root" className="bg-gray-800 text-white">Root</option>
               <option value="Super" className="bg-gray-800 text-white">Super</option>
               <option value="Administrator" className="bg-gray-800 text-white">Administrator</option>
-              <option value="Manager" className="bg-gray-800 text-white">Manager</option>
+
               <option value="Member" className="bg-gray-800 text-white">Member</option>
             </select>
           </div>

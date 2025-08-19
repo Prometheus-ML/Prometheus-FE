@@ -19,7 +19,7 @@ interface GroupFilters {
 }
 
 export default function AdminGroupPage() {
-  const canAccessManager = useAuthStore((s) => s.canAccessManager);
+  const canAccessAdministrator = useAuthStore((s) => s.canAccessAdministrator);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   
   const {
@@ -78,19 +78,19 @@ export default function AdminGroupPage() {
       return;
     }
 
-    if (!canAccessManager()) {
+    if (!canAccessAdministrator()) {
       alert('관리자가 아닙니다.');
       window.location.href = '/';
       return;
     }
-  }, [isMounted, isAuthenticated, canAccessManager]);
+  }, [isMounted, isAuthenticated, canAccessAdministrator]);
 
   // 초기 그룹 목록 로드
   useEffect(() => {
-    if (isMounted && isAuthenticated() && canAccessManager()) {
+    if (isMounted && isAuthenticated() && canAccessAdministrator()) {
       loadGroups();
     }
-  }, [isMounted, isAuthenticated, canAccessManager]);
+  }, [isMounted, isAuthenticated, canAccessAdministrator]);
 
   const loadGroups = async () => {
     try {
@@ -240,7 +240,7 @@ export default function AdminGroupPage() {
   };
 
   // Hydration이 완료되지 않았거나 권한이 없는 경우
-  if (!isMounted || !isAuthenticated() || !canAccessManager()) {
+      if (!isMounted || !isAuthenticated() || !canAccessAdministrator()) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-lg text-gray-600">

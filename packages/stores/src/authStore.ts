@@ -74,10 +74,9 @@ export const useAuthStore = create<AuthState>()(
   getUserGrantWeight: () => {
           const grant = get().getUserGrant();
     const grantWeights = {
-            Root: 5,
-            Super: 4,
-            Administrator: 3,
-            Manager: 2,
+            Root: 4,
+            Super: 3,
+            Administrator: 2,
             Member: 1,
           } as const;
           return grantWeights[grant as keyof typeof grantWeights] || 0;
@@ -88,19 +87,19 @@ export const useAuthStore = create<AuthState>()(
   },
 
   canAccessManager: () => {
-          return get().getUserGrantWeight() >= 2; // Manager 이상
+          return get().getUserGrantWeight() >= 2; // Administrator 이상 (Manager 역할 제거)
   },
 
   canAccessAdministrator: () => {
-          return get().getUserGrantWeight() >= 3; // Administrator 이상
+          return get().getUserGrantWeight() >= 2; // Administrator 이상
   },
 
   canAccessSuper: () => {
-          return get().getUserGrantWeight() >= 4; // Super 이상
+          return get().getUserGrantWeight() >= 3; // Super 이상
   },
 
   canAccessRoot: () => {
-          return get().getUserGrantWeight() >= 5; // Root만
+          return get().getUserGrantWeight() >= 4; // Root만
         },
 
         // Token management

@@ -22,19 +22,19 @@ const navbarItems = [
     name: '멤버',
     href: '/admin/member',
     icon: faUsers,
-    requiredGrant: 'Manager'
+    requiredGrant: 'Administrator'
   },
   {
     name: '프로젝트',
     href: '/admin/project',
     icon: faFolder,
-    requiredGrant: 'Manager'
+    requiredGrant: 'Administrator'
   },
   {
     name: '게시글',
     href: '/admin/post',
     icon: faFileAlt,
-    requiredGrant: 'Manager'
+    requiredGrant: 'Administrator'
   },
   {
     name: '블랙리스트',
@@ -46,19 +46,19 @@ const navbarItems = [
     name: '스폰서',
     href: '/admin/sponsorship',
     icon: faHandshake,
-    requiredGrant: 'Manager'
+    requiredGrant: 'Administrator'
   },
   {
     name: '이벤트',
     href: '/admin/event',
     icon: faCalendarAlt,
-    requiredGrant: 'Manager'
+    requiredGrant: 'Administrator'
   },
   {
     name: '모임',
     href: '/admin/group',
     icon: faUsersCog,
-    requiredGrant: 'Manager'
+    requiredGrant: 'Administrator'
   }
 ];
 
@@ -90,14 +90,14 @@ export default function AdminLayout({
       return;
     }
 
-    if (!canAccessManager()) {
+    if (!canAccessAdministrator()) {
       alert('관리자가 아닙니다.');
       router.push('/');
       return;
     }
 
     setIsAuthorized(true);
-  }, [isMounted, isAuthenticated, canAccessManager, router]);
+  }, [isMounted, isAuthenticated, canAccessAdministrator, router]);
 
   // Hydration이 완료되지 않았거나 권한이 없는 경우 로딩 표시
   if (!isMounted || !isAuthorized) {
@@ -114,7 +114,7 @@ export default function AdminLayout({
   const hasAccess = (requiredGrant: string) => {
     switch (requiredGrant) {
       case 'Manager':
-        return canAccessManager();
+        return canAccessAdministrator(); // Manager 역할 제거, Administrator로 대체
       case 'Administrator':
         return canAccessAdministrator();
       default:

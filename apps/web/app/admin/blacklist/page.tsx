@@ -17,10 +17,9 @@ import {
 // 권한 레벨 매핑
 const GRANT_HIERARCHY = {
   'Member': 1,
-  'Manager': 2,
-  'Administrator': 3,
-  'Super': 4,
-  'Root': 5,
+  'Administrator': 2,
+  'Super': 3,
+  'Root': 4,
 } as const;
 
 // 블랙리스트 추가 모달 컴포넌트
