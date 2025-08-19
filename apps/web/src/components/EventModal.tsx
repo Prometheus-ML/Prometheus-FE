@@ -5,7 +5,7 @@ import { useEvent, useEventDetail, useAttendance, useAttendanceManagement } from
 import type { Event, EventFormData, AttendanceFormData, EventType, AttendanceStatus, AttendanceCode } from '@prometheus-fe/types';
 import GlassCard from './GlassCard';
 import RedButton from './RedButton';
-// Removed circular import
+import Portal from './Portal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faPlus, 
@@ -21,7 +21,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 // 이벤트 폼 모달 컴포넌트
-export function EventFormModal({ 
+function EventFormModal({ 
   isOpen, 
   onClose, 
   event, 
@@ -408,25 +408,6 @@ export default function EventModal({
           </div>
         </div>
       </div>
-
-      {/* 이벤트 상세 모달 */}
-      <EventFormModal
-        isOpen={showEventModal}
-        onClose={() => setShowEventModal(false)}
-        event={selectedEvent}
-        onSubmit={handleUpdateEvent}
-      />
-
-      {/* 이벤트 폼 모달 */}
-      <EventFormModal
-        isOpen={showEventForm}
-        onClose={() => {
-          setShowEventForm(false);
-          setEditingEvent(null);
-        }}
-        event={editingEvent}
-        onSubmit={editingEvent ? handleUpdateEvent : handleCreateEvent}
-      />
-    </div>
+    </Portal>
   );
 }
