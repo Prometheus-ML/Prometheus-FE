@@ -1,5 +1,5 @@
 import { useApi } from '@prometheus-fe/context';
-import { Post, Comment } from '@prometheus-fe/types';
+import { Post, Comment, LikeStatus } from '@prometheus-fe/types';
 import { useState, useCallback } from 'react';
 
 export function useCommunity() {
@@ -14,6 +14,7 @@ export function useCommunity() {
   const [isCreatingPost, setIsCreatingPost] = useState(false);
   const [isCreatingComment, setIsCreatingComment] = useState(false);
   const [memberCache, setMemberCache] = useState<Record<string, any>>({});
+  const [isTogglingLike, setIsTogglingLike] = useState(false);
 
   // 멤버 정보 가져오기 (캐시 활용)
   const getMemberInfo = useCallback(async (memberId: string) => {
@@ -198,6 +199,56 @@ export function useCommunity() {
     setComments([]);
   };
 
+  // 좋아요 토글
+  const toggleLike = useCallback(async (postId: number | string) => {
+    if (!community) {
+      console.warn('community is not available. Ensure useCommunity is used within ApiProvider.');
+      return null;
+    }
+    try {
+      setIsTogglingLike(true);
+      const likeStatus = await community.toggleLike(postId);
+      
+      // 게시글 목록에서 해당 게시글의 좋아요 정보 업데이트
+      setPosts(prev => prev.map(post => 
+        post.id === Number(postId) 
+          ? { ...post, like_count: likeStatus.like_count, is_liked: likeStatus.is_liked }
+          : post
+      ));
+      
+      // 현재 선택된 게시글이 해당 게시글이면 업데이트
+      if (selectedPost && selectedPost.id === Number(postId)) {
+        setSelectedPost(prev => prev ? {
+          ...prev,
+          like_count: likeStatus.like_count,
+          is_liked: likeStatus.is_liked
+        } : null);
+      }
+      
+      return likeStatus;
+    } catch (error) {
+      console.error(`좋아요 토글 실패:`, error);
+      throw error;
+    } finally {
+      setIsTogglingLike(false);
+    }
+  }, [community, selectedPost]);
+
+  // 좋아요 상태 조회
+  const getLikeStatus = useCallback(async (postId: number | string) => {
+    if (!community) {
+      console.warn('community is not available. Ensure useCommunity is used within ApiProvider.');
+      return null;
+    }
+    try {
+      const likeStatus = await community.getLikeStatus(postId);
+      return likeStatus;
+    } catch (error) {
+      console.error(`좋아요 상태 조회 실패:`, error);
+      throw error;
+    }
+  }, [community]);
+
   return {
     // 상태
     posts,
@@ -209,6 +260,7 @@ export function useCommunity() {
     isLoadingComments,
     isCreatingPost,
     isCreatingComment,
+    isTogglingLike,
     memberCache,
     
     // API 함수들
@@ -220,6 +272,8 @@ export function useCommunity() {
     deleteComment,
     filterPostsByCategory,
     getMemberInfo,
+    toggleLike,
+    getLikeStatus,
     
     // 핸들러들
     handlePostSelect,

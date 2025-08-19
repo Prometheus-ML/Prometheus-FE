@@ -9,7 +9,7 @@ import PostForm from '../../src/components/PostForm';
 import RedButton from '../../src/components/RedButton';
 import GlassCard from '../../src/components/GlassCard';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faTrash, faUser, faCalendarAlt, faComments, faSearch, faUndo, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faTrash, faUser, faCalendarAlt, faComments, faSearch, faUndo, faArrowLeft, faHeart } from '@fortawesome/free-solid-svg-icons';
 
 const CATEGORIES = [
   { value: 'free', label: '자유게시판' },
@@ -179,6 +179,8 @@ export default function CommunityPage() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedPostId(null);
+    // 모달이 닫힐 때 게시글 목록 새로고침 (다른 사용자의 활동 반영)
+    loadPosts();
   };
 
   // Skeleton UI Component
@@ -334,6 +336,10 @@ export default function CommunityPage() {
                     <span className="flex items-center">
                       <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" />
                       {new Date(post.created_at).toLocaleDateString('ko-KR')}
+                    </span>
+                    <span className="flex items-center">
+                      <FontAwesomeIcon icon={faHeart} className="mr-1 text-red-400" />
+                      {post.like_count || 0}
                     </span>
                     {user && user.id === post.author_id && (
                       <button

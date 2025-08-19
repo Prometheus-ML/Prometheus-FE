@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useCommunity } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 
 interface PostModalProps {
   postId: number | null;
@@ -27,6 +30,7 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
     isLoadingPost,
     isLoadingComments,
     isCreatingComment,
+    isTogglingLike,
     fetchPost,
     createComment,
     deleteComment,
@@ -34,6 +38,7 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
     clearSelectedPost,
     clearComments,
     getMemberInfo,
+    toggleLike,
   } = useCommunity();
 
   const { user } = useAuthStore();
@@ -169,6 +174,21 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
     }
   };
 
+  const handleToggleLike = async () => {
+    if (!postId || !user) {
+      setError('로그인이 필요합니다.');
+      return;
+    }
+
+    try {
+      setError('');
+      await toggleLike(postId);
+    } catch (err) {
+      console.error('좋아요 토글 실패:', err);
+      setError('좋아요 처리에 실패했습니다.');
+    }
+  };
+
   const getCategoryLabel = (category: string) => {
     return CATEGORIES.find(c => c.value === category)?.label || category;
   };
@@ -235,6 +255,35 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                 <h1 className="text-2xl font-bold text-white mb-4">
                   {selectedPost.title}
                 </h1>
+
+                {/* 좋아요 섹션 */}
+                <div className="flex items-center space-x-4 mb-4">
+                  {user && (
+                    <button
+                      onClick={handleToggleLike}
+                      disabled={isTogglingLike}
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+                        selectedPost.is_liked
+                          ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                          : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-red-400'
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      <FontAwesomeIcon 
+                        icon={selectedPost.is_liked ? faHeart : faHeartRegular} 
+                        className={`w-4 h-4 ${isTogglingLike ? 'animate-pulse' : ''}`} 
+                      />
+                      <span className="text-sm font-medium">
+                        {selectedPost.is_liked ? '좋아요 취소' : '좋아요'}
+                      </span>
+                    </button>
+                  )}
+                  <div className="flex items-center space-x-1 text-gray-300">
+                    <FontAwesomeIcon icon={faHeart} className="w-4 h-4" />
+                    <span className="text-sm">
+                      {selectedPost.like_count || 0}명이 좋아합니다
+                    </span>
+                  </div>
+                </div>
 
                 <div className="prose max-w-none">
                   <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">

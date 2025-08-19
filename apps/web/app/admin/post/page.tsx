@@ -8,7 +8,7 @@ import GlassCard from '../../../src/components/GlassCard';
 import RedButton from '../../../src/components/RedButton';
 import TabBar from '../../../src/components/TabBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faTrash, faHeart } from '@fortawesome/free-solid-svg-icons';
 
 const CATEGORIES = [
   { value: 'free', label: '자유게시판' },
@@ -270,6 +270,10 @@ export default function AdminPostPage() {
                       </span>
                       <span className="text-xs text-gray-300">
                         {new Date(post.created_at).toLocaleDateString('ko-KR')}
+                      </span>
+                      <span className="text-xs text-gray-300 flex items-center">
+                        <FontAwesomeIcon icon={faHeart} className="mr-1 text-red-400" />
+                        {post.like_count || 0}
                       </span>
                     </div>
                     <h3 className="text-lg font-semibold text-white mb-2">

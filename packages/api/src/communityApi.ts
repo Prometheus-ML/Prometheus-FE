@@ -6,6 +6,7 @@ import {
   GetPostsResponse,
   CreateCommentRequest,
   CreateCommentResponse,
+  LikeStatusResponse,
 } from './dto/community.dto';
 import type {
   Post,
@@ -93,6 +94,27 @@ export class CommunityApi {
     } catch (error: any) {
       console.error(`Error fetching comments for post ${postId}:`, error);
       throw new Error(error.message || 'Failed to fetch comments');
+    }
+  }
+
+  // Likes API
+  async toggleLike(postId: number | string): Promise<LikeStatusResponse> {
+    try {
+      const response = await this.api.post<LikeStatusResponse>(`${this.postsBase}/${postId}/like`, {});
+      return response;
+    } catch (error: any) {
+      console.error(`Error toggling like for post ${postId}:`, error);
+      throw new Error(error.message || 'Failed to toggle like');
+    }
+  }
+
+  async getLikeStatus(postId: number | string): Promise<LikeStatusResponse> {
+    try {
+      const response = await this.api.get<LikeStatusResponse>(`${this.postsBase}/${postId}/like`);
+      return response;
+    } catch (error: any) {
+      console.error(`Error fetching like status for post ${postId}:`, error);
+      throw new Error(error.message || 'Failed to fetch like status');
     }
   }
 }
