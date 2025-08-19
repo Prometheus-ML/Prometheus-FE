@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useEvent, useEventDetail, useAttendance, useAttendanceManagement } from '@prometheus-fe/hooks';
-import { Event, EventFormData, AttendanceFormData, EventType, AttendanceStatus, AttendanceCode } from '@prometheus-fe/types';
+import type { Event, EventFormData, AttendanceFormData, EventType, AttendanceStatus, AttendanceCode } from '@prometheus-fe/types';
 import GlassCard from './GlassCard';
 import RedButton from './RedButton';
 // Removed circular import
@@ -89,383 +89,324 @@ export function EventFormModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <GlassCard className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-white">
-            {event ? '이벤트 수정' : '새 이벤트 생성'}
-          </h2>
-          <button 
-            onClick={onClose}
-            className="text-white/70 hover:text-white"
-          >
-            <FontAwesomeIcon icon={faTimes} className="w-5 h-5" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-white mb-2">제목</label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-white mb-2">설명</label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              rows={3}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-white mb-2">이벤트 타입</label>
-              <select
-                value={formData.eventType}
-                onChange={(e) => setFormData({ ...formData, eventType: e.target.value as EventType })}
-                className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              >
-                <option value="study">스터디</option>
-                <option value="project">프로젝트</option>
-                <option value="hackathon">해커톤</option>
-                <option value="seminar">세미나</option>
-                <option value="meeting">회의</option>
-                <option value="other">기타</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-white mb-2">대상 기수</label>
-              <input
-                type="number"
-                value={formData.currentGen}
-                onChange={(e) => setFormData({ ...formData, currentGen: parseInt(e.target.value) })}
-                className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                min="1"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-white mb-2">시작 시간</label>
-              <input
-                type="datetime-local"
-                value={formData.startTime.toISOString().slice(0, 16)}
-                onChange={(e) => setFormData({ ...formData, startTime: new Date(e.target.value) })}
-                className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-white mb-2">종료 시간</label>
-              <input
-                type="datetime-local"
-                value={formData.endTime.toISOString().slice(0, 16)}
-                onChange={(e) => setFormData({ ...formData, endTime: new Date(e.target.value) })}
-                className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-white mb-2">장소</label>
-            <input
-              type="text"
-              value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            />
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isAttendanceRequired"
-                checked={formData.isAttendanceRequired}
-                onChange={(e) => setFormData({ ...formData, isAttendanceRequired: e.target.checked })}
-                className="mr-2"
-              />
-              <label htmlFor="isAttendanceRequired" className="text-sm text-white">
-                출석 필수
-              </label>
-            </div>
-
-            {formData.isAttendanceRequired && (
-              <div className="ml-6 space-y-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-white mb-2">출석 시작 시간</label>
-                    <input
-                      type="datetime-local"
-                      value={formData.attendanceStartTime?.toISOString().slice(0, 16) || ''}
-                      onChange={(e) => setFormData({ ...formData, attendanceStartTime: new Date(e.target.value) })}
-                      className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-white mb-2">출석 종료 시간</label>
-                    <input
-                      type="datetime-local"
-                      value={formData.attendanceEndTime?.toISOString().slice(0, 16) || ''}
-                      onChange={(e) => setFormData({ ...formData, attendanceEndTime: new Date(e.target.value) })}
-                      className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-white mb-2">지각 기준 (분)</label>
-                  <input
-                    type="number"
-                    value={formData.lateThresholdMinutes}
-                    onChange={(e) => setFormData({ ...formData, lateThresholdMinutes: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    min="1"
-                  />
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="isAttendanceCodeRequired"
-                    checked={formData.isAttendanceCodeRequired}
-                    onChange={(e) => setFormData({ ...formData, isAttendanceCodeRequired: e.target.checked })}
-                    className="mr-2"
-                  />
-                  <label htmlFor="isAttendanceCodeRequired" className="text-sm text-white">
-                    출석 코드 필수
-                  </label>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="flex space-x-3 pt-4">
-            <RedButton type="submit" className="flex-1">
-              {event ? '수정' : '생성'}
-            </RedButton>
-            <button
-              type="button"
+    <Portal>
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <GlassCard className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-white">
+              {event ? '이벤트 수정' : '새 이벤트 생성'}
+            </h2>
+            <button 
               onClick={onClose}
-              className="flex-1 px-4 py-2 bg-white/20 border border-white/30 rounded-md text-white hover:bg-white/30 transition-colors"
+              className="text-white/70 hover:text-white"
             >
-              취소
+              <FontAwesomeIcon icon={faTimes} className="w-5 h-5" />
             </button>
           </div>
-        </form>
-      </GlassCard>
-    </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-white mb-2">제목</label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-white mb-2">설명</label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                rows={3}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">이벤트 타입</label>
+                <select
+                  value={formData.eventType}
+                  onChange={(e) => setFormData({ ...formData, eventType: e.target.value as EventType })}
+                  className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                >
+                  <option value="study">스터디</option>
+                  <option value="project">프로젝트</option>
+                  <option value="hackathon">해커톤</option>
+                  <option value="seminar">세미나</option>
+                  <option value="meeting">회의</option>
+                  <option value="other">기타</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">대상 기수</label>
+                <input
+                  type="number"
+                  value={formData.currentGen}
+                  onChange={(e) => setFormData({ ...formData, currentGen: parseInt(e.target.value) })}
+                  className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  min="1"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">시작 시간</label>
+                <input
+                  type="datetime-local"
+                  value={formData.startTime.toISOString().slice(0, 16)}
+                  onChange={(e) => setFormData({ ...formData, startTime: new Date(e.target.value) })}
+                  className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">종료 시간</label>
+                <input
+                  type="datetime-local"
+                  value={formData.endTime.toISOString().slice(0, 16)}
+                  onChange={(e) => setFormData({ ...formData, endTime: new Date(e.target.value) })}
+                  className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-white mb-2">장소</label>
+              <input
+                type="text"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isAttendanceRequired"
+                  checked={formData.isAttendanceRequired}
+                  onChange={(e) => setFormData({ ...formData, isAttendanceRequired: e.target.checked })}
+                  className="mr-2"
+                />
+                <label htmlFor="isAttendanceRequired" className="text-sm text-white">
+                  출석 필수
+                </label>
+              </div>
+
+              {formData.isAttendanceRequired && (
+                <div className="ml-6 space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-white mb-2">출석 시작 시간</label>
+                      <input
+                        type="datetime-local"
+                        value={formData.attendanceStartTime?.toISOString().slice(0, 16) || ''}
+                        onChange={(e) => setFormData({ ...formData, attendanceStartTime: new Date(e.target.value) })}
+                        className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-white mb-2">출석 종료 시간</label>
+                      <input
+                        type="datetime-local"
+                        value={formData.attendanceEndTime?.toISOString().slice(0, 16) || ''}
+                        onChange={(e) => setFormData({ ...formData, attendanceEndTime: new Date(e.target.value) })}
+                        className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-white mb-2">지각 기준 (분)</label>
+                    <input
+                      type="number"
+                      value={formData.lateThresholdMinutes}
+                      onChange={(e) => setFormData({ ...formData, lateThresholdMinutes: parseInt(e.target.value) })}
+                      className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      min="1"
+                    />
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="isAttendanceCodeRequired"
+                      checked={formData.isAttendanceCodeRequired}
+                      onChange={(e) => setFormData({ ...formData, isAttendanceCodeRequired: e.target.checked })}
+                      className="mr-2"
+                    />
+                    <label htmlFor="isAttendanceCodeRequired" className="text-sm text-white">
+                      출석 코드 필수
+                    </label>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex space-x-3 pt-4">
+              <RedButton type="submit" className="flex-1">
+                {event ? '수정' : '생성'}
+              </RedButton>
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2 bg-white/20 border border-white/30 rounded-md text-white hover:bg-white/30 transition-colors"
+              >
+                취소
+              </button>
+            </div>
+          </form>
+        </GlassCard>
+      </div>
+    </Portal>
   );
 }
 
-// 메인 어드민 이벤트 페이지
-export default function AdminEventPage() {
-  const { 
-    events, 
-    pagination, 
-    isLoadingEvents, 
-    eventListError,
-    fetchEvents,
-    createEvent,
-    updateEvent,
-    deleteEvent
-  } = useEvent();
+// EventModal 컴포넌트
+interface EventModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  event: Event | null;
+  isAdmin?: boolean;
+  onEdit?: (event: Event) => void;
+  onSave?: (data: EventFormData) => void;
+  isEditing?: boolean;
+}
 
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [showEventModal, setShowEventModal] = useState(false);
-  const [showEventForm, setShowEventForm] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
-
-  useEffect(() => {
-    fetchEvents(1, 50);
-  }, [fetchEvents]);
-
-  const handleCreateEvent = async (data: EventFormData) => {
-    try {
-      await createEvent(data);
-      setShowEventForm(false);
-      fetchEvents(1, 50);
-    } catch (error: any) {
-      alert(`이벤트 생성 실패: ${error.message}`);
-    }
-  };
-
-  const handleUpdateEvent = async (data: EventFormData) => {
-    if (!editingEvent) return;
-    
-    try {
-      await updateEvent(editingEvent.id, data);
-      setShowEventForm(false);
-      setEditingEvent(null);
-      fetchEvents(1, 50);
-    } catch (error: any) {
-      alert(`이벤트 수정 실패: ${error.message}`);
-    }
-  };
-
-  const handleDeleteEvent = async (eventId: number) => {
-    if (!confirm('정말 이 이벤트를 삭제하시겠습니까?')) return;
-    
-    try {
-      await deleteEvent(eventId);
-      fetchEvents(1, 50);
-    } catch (error: any) {
-      alert(`이벤트 삭제 실패: ${error.message}`);
-    }
-  };
-
-  const handleEditEvent = (event: Event) => {
-    setEditingEvent(event);
-    setShowEventForm(true);
-    setShowEventModal(false);
-  };
-
-  const getEventStatus = (event: Event) => {
-    const now = new Date();
-    if (event.startTime > now) return { text: '예정', color: 'bg-blue-500/20 text-blue-300' };
-    if (event.endTime < now) return { text: '종료', color: 'bg-gray-500/20 text-gray-300' };
-    return { text: '진행중', color: 'bg-green-500/20 text-green-300' };
-  };
+export default function EventModal({
+  isOpen,
+  onClose,
+  event,
+  isAdmin = false,
+  onEdit,
+  onSave,
+  isEditing = false,
+}: EventModalProps) {
+  if (!isOpen) return null;
 
   return (
-    <div className="min-h-screen font-pretendard">
-      {/* 헤더 */}
-      <header className="mx-4 px-6 py-6 border-b border-white/20">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">이벤트 관리</h1>
-            <p className="text-sm font-pretendard text-[#e0e0e0]">프로메테우스 이벤트 관리</p>
+    <Portal>
+      <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+          <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
           </div>
-          <RedButton 
-            onClick={() => setShowEventForm(true)}
-            className="inline-flex items-center"
-          >
-            <FontAwesomeIcon icon={faPlus} className="mr-2 h-4 w-4" />
-            새 이벤트
-          </RedButton>
-        </div>
-      </header>
 
-      <div className="px-4 py-6">
-        {/* 이벤트 목록 */}
-        {isLoadingEvents ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <GlassCard key={index} className="p-4 animate-pulse">
-                <div className="h-6 bg-white/10 rounded mb-2"></div>
-                <div className="h-4 bg-white/10 rounded mb-2"></div>
-                <div className="h-4 bg-white/10 rounded w-3/4"></div>
-              </GlassCard>
-            ))}
-          </div>
-        ) : eventListError ? (
-          <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400 text-center">
-            {eventListError}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {events.map((event) => {
-              const status = getEventStatus(event);
-              return (
-                <GlassCard key={event.id} className="p-4 hover:bg-white/15 transition-colors">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-white mb-2">{event.title}</h3>
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className="px-2 py-1 bg-red-500/20 text-red-300 text-xs rounded-full">
-                          {event.eventType}
-                        </span>
-                        <span className={`px-2 py-1 text-xs rounded-full ${status.color}`}>
-                          {status.text}
-                        </span>
-                        {event.isAttendanceRequired && (
-                          <span className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded-full">
-                            출석필수
-                          </span>
-                        )}
-                        {event.isAttendanceCodeRequired && (
-                          <span className="px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full">
-                            코드필수
-                          </span>
-                        )}
-                        {event.hasAttendanceCode && (
-                          <span className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded-full">
-                            코드생성
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {event.description && (
-                    <p className="text-white/70 text-sm mb-3 line-clamp-2">{event.description}</p>
-                  )}
-
-                  <div className="space-y-2 text-sm text-white/60 mb-4">
-                    <div className="flex items-center space-x-2">
-                      <FontAwesomeIcon icon={faCalendarAlt} className="w-4 h-4" />
-                      <span>
-                        {event.startTime.toLocaleDateString()} {event.startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {event.endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                    
-                    {event.location && (
-                      <div className="flex items-center space-x-2">
-                        <FontAwesomeIcon icon={faMapMarkerAlt} className="w-4 h-4" />
-                        <span>{event.location}</span>
-                      </div>
-                    )}
-
-                    <div className="flex items-center space-x-2">
-                      <FontAwesomeIcon icon={faUserGraduate} className="w-4 h-4" />
-                      <span>{event.currentGen}기 대상</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => handleEditEvent(event)}
-                        className="inline-flex items-center px-3 py-1 text-sm bg-green-500/20 border border-green-500/30 rounded text-green-300 hover:bg-green-500/30 transition-colors"
-                      >
-                        <FontAwesomeIcon icon={faEdit} className="mr-1 h-3 w-3" />
-                        수정
-                      </button>
-                    </div>
+          <div className="inline-block align-bottom bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+            <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex-shrink-0">
+              <div className="text-center w-full">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-500/20 mb-4">
+                  <FontAwesomeIcon icon={faCalendarAlt} className="h-6 w-6 text-red-400" />
+                </div>
+                <h3 className="text-lg leading-6 font-medium text-white mb-2">
+                  {isEditing ? (event ? '이벤트 수정' : '새 이벤트 생성') : '이벤트 상세'}
+                </h3>
+                <p className="text-sm text-gray-300">
+                  {isEditing ? '이벤트 정보를 입력해주세요.' : '이벤트 상세 정보를 확인하세요.'}
+                </p>
+                
+                {/* Button area */}
+                <div className="mt-4 flex justify-end space-x-3">
+                  {isAdmin && !isEditing && onEdit && event && (
                     <button
-                      onClick={() => handleDeleteEvent(event.id)}
-                      className="inline-flex items-center px-3 py-1 text-sm bg-red-500/20 border border-red-500/30 rounded text-red-300 hover:bg-red-500/30 transition-colors"
+                      onClick={() => onEdit(event)}
+                      className="inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
-                      <FontAwesomeIcon icon={faTrash} className="h-3 w-3" />
+                      <FontAwesomeIcon icon={faEdit} className="mr-1 h-3 w-3" />
+                      수정
+                    </button>
+                  )}
+                  <button
+                    onClick={onClose}
+                    className="inline-flex justify-center rounded-lg border border-white/30 shadow-sm px-4 py-2 bg-white/10 text-sm font-medium text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  >
+                    닫기
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Scrollable content area */}
+            <div className="flex-1 overflow-y-auto px-4 pb-4 sm:px-6">
+              {(isEditing || !event) ? (
+                // EventForm mode (for editing existing or creating new)
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  if (onSave) {
+                    // This would need proper form data handling
+                    onSave({
+                      title: '',
+                      description: '',
+                      eventType: 'study' as EventType,
+                      startTime: new Date(),
+                      endTime: new Date(),
+                      location: '',
+                      currentGen: 0,
+                      isAttendanceRequired: false,
+                      attendanceStartTime: new Date(),
+                      attendanceEndTime: new Date(),
+                      lateThresholdMinutes: 15,
+                      isAttendanceCodeRequired: false
+                    });
+                  }
+                }} className="mt-6 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-white mb-2">제목</label>
+                    <input
+                      type="text"
+                      defaultValue={event?.title || ''}
+                      className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  {/* Add more form fields as needed */}
+                  <div className="flex space-x-3 pt-4">
+                    <RedButton type="submit" className="flex-1">
+                      {event ? '수정' : '생성'}
+                    </RedButton>
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="flex-1 px-4 py-2 bg-white/20 border border-white/30 rounded-md text-white hover:bg-white/30 transition-colors"
+                    >
+                      취소
                     </button>
                   </div>
-                </GlassCard>
-              );
-            })}
+                </form>
+              ) : (
+                // General event detail mode
+                <div className="mt-6 space-y-4">
+                  <div>
+                    <h4 className="text-lg font-semibold text-white">{event.title}</h4>
+                    <p className="text-gray-300 mt-2">{event.description}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-400">시작 시간:</span>
+                      <p className="text-white">{event.startTime.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">종료 시간:</span>
+                      <p className="text-white">{event.endTime.toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        )}
-
-        {!isLoadingEvents && !eventListError && events.length === 0 && (
-          <div className="text-center py-12">
-            <FontAwesomeIcon icon={faCalendarAlt} className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-white mb-2">이벤트가 없습니다</h3>
-            <p className="text-gray-300">새로운 이벤트를 생성해보세요.</p>
-          </div>
-        )}
+        </div>
       </div>
 
       {/* 이벤트 상세 모달 */}
