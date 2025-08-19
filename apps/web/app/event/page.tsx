@@ -7,7 +7,7 @@ import { Event, EventFilter, AttendanceStatus, Attendance } from '@prometheus-fe
 import { useAuthStore } from '@prometheus-fe/stores';
 import GlassCard from '../../src/components/GlassCard';
 import RedButton from '../../src/components/RedButton';
-import { EventFormModal } from '../../src/components/EventModal';
+import EventModal  from '../../src/components/EventModal';
 import AttendanceModal from '../../src/components/AttendanceModal';
 import EventCard from '../../src/components/EventCard';
 import EventCardSkeleton from '../../src/components/EventCardSkeleton';
@@ -178,11 +178,10 @@ export default function EventPage() {
         )}
 
         {/* 이벤트 상세 모달 */}
-        <EventFormModal
+        <EventModal
           isOpen={showEventModal}
           onClose={() => setShowEventModal(false)}
           event={selectedEvent}
-          onSubmit={() => {}}
         />
 
         {/* 내 출석 목록 모달 */}
