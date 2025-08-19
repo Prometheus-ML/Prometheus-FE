@@ -16,7 +16,9 @@ import {
   AttendanceFormData,
   BulkAttendanceResult,
   EventFilter,
-  AttendanceStatus
+  AttendanceStatus,
+  AttendanceCode,
+  CheckInAttendanceData
 } from '@prometheus-fe/types';
 
 /**
@@ -221,6 +223,86 @@ export function useEventManagement() {
     createEvent,
     updateEvent,
     deleteEvent
+  };
+}
+
+/**
+ * 출석 코드 관리 훅 (관리자용)
+ */
+export function useAttendanceCodeManagement() {
+  const { event } = useApi();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const generateAttendanceCode = useCallback(async (eventId: number): Promise<AttendanceCode> => {
+    try {
+      setIsGenerating(true);
+      setError(null);
+
+      console.log(`🔐 [AttendanceCodeManagement] 출석 코드 생성 시작: 이벤트 ID ${eventId}`);
+      const result = await event.generateAttendanceCode(eventId);
+      console.log(`✅ [AttendanceCodeManagement] 출석 코드 생성 성공:`, result);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err?.message || '출석 코드 생성에 실패했습니다.';
+      setError(errorMessage);
+      console.error('출석 코드 생성 실패:', err);
+      throw err;
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [event]);
+
+  const getAttendanceCode = useCallback(async (eventId: number): Promise<AttendanceCode> => {
+    try {
+      const result = await event.getAttendanceCode(eventId);
+      return result;
+    } catch (err: any) {
+      console.error('출석 코드 조회 실패:', err);
+      throw err;
+    }
+  }, [event]);
+
+  const deleteAttendanceCode = useCallback(async (eventId: number): Promise<void> => {
+    try {
+      setIsDeleting(true);
+      setError(null);
+
+      console.log(`🗑️ [AttendanceCodeManagement] 출석 코드 삭제 시작: 이벤트 ID ${eventId}`);
+      await event.deleteAttendanceCode(eventId);
+      console.log(`✅ [AttendanceCodeManagement] 출석 코드 삭제 성공: 이벤트 ID ${eventId}`);
+    } catch (err: any) {
+      const errorMessage = err?.message || '출석 코드 삭제에 실패했습니다.';
+      setError(errorMessage);
+      console.error('출석 코드 삭제 실패:', err);
+      throw err;
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [event]);
+
+  const checkAttendanceCode = useCallback(async (
+    eventId: number, 
+    attendanceCode: string
+  ): Promise<{ isValid: boolean; message: string }> => {
+    try {
+      const result = await event.checkAttendanceCode(eventId, attendanceCode);
+      return result;
+    } catch (err: any) {
+      console.error('출석 코드 확인 실패:', err);
+      throw err;
+    }
+  }, [event]);
+
+  return {
+    isGenerating,
+    isDeleting,
+    error,
+    generateAttendanceCode,
+    getAttendanceCode,
+    deleteAttendanceCode,
+    checkAttendanceCode
   };
 }
 
@@ -452,13 +534,14 @@ export function useMyAttendance() {
   }, [event]);
 
   const checkInAttendance = useCallback(async (
-    eventId: number
+    eventId: number,
+    data?: CheckInAttendanceData
   ): Promise<Attendance> => {
     try {
       setIsLoading(true);
       setError(null);
       
-      const result = await event.checkInAttendance(eventId);
+      const result = await event.checkInAttendance(eventId, data);
       
       // 출석 체크 성공 후 해당 이벤트의 출석 정보 업데이트
       const updatedAttendance = await event.getMyAttendanceForEvent(eventId);
@@ -497,6 +580,7 @@ export function useMyAttendance() {
 export function useEvent() {
   const eventList = useEventList();
   const eventManagement = useEventManagement();
+  const attendanceCodeManagement = useAttendanceCodeManagement();
   const attendanceManagement = useAttendanceManagement();
   const myAttendance = useMyAttendance();
 
@@ -517,6 +601,15 @@ export function useEvent() {
     createEvent: eventManagement.createEvent,
     updateEvent: eventManagement.updateEvent,
     deleteEvent: eventManagement.deleteEvent,
+
+    // 출석 코드 관리 관련
+    isGeneratingAttendanceCode: attendanceCodeManagement.isGenerating,
+    isDeletingAttendanceCode: attendanceCodeManagement.isDeleting,
+    attendanceCodeError: attendanceCodeManagement.error,
+    generateAttendanceCode: attendanceCodeManagement.generateAttendanceCode,
+    getAttendanceCode: attendanceCodeManagement.getAttendanceCode,
+    deleteAttendanceCode: attendanceCodeManagement.deleteAttendanceCode,
+    checkAttendanceCode: attendanceCodeManagement.checkAttendanceCode,
 
     // 출석 관리 관련
     isCreatingAttendance: attendanceManagement.isCreating,

@@ -19,6 +19,7 @@ export interface CreateEventRequest {
   attendance_start_time?: string; // ISO 8601 형식
   attendance_end_time?: string;   // ISO 8601 형식
   late_threshold_minutes: number;
+  is_attendance_code_required: boolean;
   meta?: Record<string, any>;
 }
 
@@ -37,6 +38,7 @@ export interface UpdateEventRequest {
   attendance_start_time?: string; // ISO 8601 형식
   attendance_end_time?: string;   // ISO 8601 형식
   late_threshold_minutes?: number;
+  is_attendance_code_required?: boolean;
   meta?: Record<string, any>;
 }
 
@@ -56,6 +58,8 @@ export interface EventResponseDto {
   attendance_start_time?: string; // ISO 8601 형식
   attendance_end_time?: string;   // ISO 8601 형식
   late_threshold_minutes: number;
+  is_attendance_code_required: boolean;
+  has_attendance_code: boolean;
   meta?: Record<string, any>;
 }
 
@@ -67,6 +71,13 @@ export interface EventListResponseDto {
   total: number;
   page: number;
   size: number;
+}
+
+/**
+ * 출석 체크 요청 DTO
+ */
+export interface CheckInAttendanceRequest {
+  attendance_code?: string;
 }
 
 /**
@@ -134,6 +145,38 @@ export interface AttendanceStatsResponseDto {
   late: number;
   excused: number;
   attendance_rate: number;
+}
+
+/**
+ * 출석 코드 생성 요청 DTO
+ */
+export interface GenerateAttendanceCodeRequest {
+  // 빈 객체 (API 명세서에 따름)
+}
+
+/**
+ * 출석 코드 응답 DTO
+ */
+export interface AttendanceCodeResponseDto {
+  event_id: number;
+  attendance_code: string;
+  is_attendance_code_required: boolean;
+  created_at: string; // ISO 8601 형식
+}
+
+/**
+ * 출석 코드 확인 요청 DTO
+ */
+export interface CheckAttendanceCodeRequest {
+  attendance_code: string;
+}
+
+/**
+ * 출석 코드 확인 응답 DTO
+ */
+export interface CheckAttendanceCodeResponseDto {
+  is_valid: boolean;
+  message: string;
 }
 
 /**

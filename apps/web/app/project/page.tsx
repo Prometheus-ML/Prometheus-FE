@@ -121,7 +121,7 @@ export default function ProjectPage() {
   const searchResultCount = projects.length;
 
   return (
-    <div className="min-h-screen font-pretendard">
+    <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
       {/* 헤더 */}
       <header className="mx-4 px-6 py-6 border-b border-white/20">
         <div className="flex items-center justify-between">
@@ -283,23 +283,6 @@ export default function ProjectPage() {
                         )}
                       </div>
                     )}
-
-                    {/* 시작일 */}
-                    <div className="flex items-center text-sm text-gray-300">
-                      <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" />
-                      시작: {new Date(project.start_date).toLocaleDateString()}
-                    </div>
-
-                    {/* 상세보기 버튼 */}
-                    <div className="flex items-center justify-between pt-2">
-                      <a
-                        href={`/project/${project.id}`}
-                        className="inline-flex items-center px-3 py-1 text-sm bg-red-500/20 border border-red-500/30 rounded text-red-300 hover:bg-red-500/30 transition-colors"
-                      >
-                        <FontAwesomeIcon icon={faEye} className="mr-1 h-3 w-3" />
-                        상세보기
-                      </a>
-                    </div>
                   </div>
                 </div>
               </GlassCard>

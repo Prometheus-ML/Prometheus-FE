@@ -227,7 +227,7 @@ export default function MemberPage() {
   // Loading state
   if (isLoading && !searchTerm && selectedGen === 'all' && selectedStatus === 'all') {
   return (
-      <div className="min-h-screen font-pretendard">
+      <div className="md:max-w-4xl max-w-lg mx-auto min-h-screen font-pretendard">
         {/* Header */}
         <header className="mx-4 px-6 py-6 border-b border-white/20">
           <div className="flex items-center justify-between">
@@ -258,7 +258,7 @@ export default function MemberPage() {
   }
 
   return (
-    <div className="min-h-screen font-pretendard">
+    <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
       {/* 헤더 */}
       <header className="mx-4 px-6 py-6 border-b border-white/20">
         <div className="flex items-center justify-between">

@@ -17,7 +17,9 @@ import {
   BulkAttendanceResult,
   EventFilter,
   EventType,
-  AttendanceStatus
+  AttendanceStatus,
+  AttendanceCode,
+  CheckInAttendanceData
 } from '@prometheus-fe/types';
 import {
   CreateEventRequest,
@@ -33,7 +35,12 @@ import {
   AttendanceStatsResponseDto,
   SuccessResponseDto,
   EventQueryParams,
-  AttendanceQueryParams
+  AttendanceQueryParams,
+  CheckInAttendanceRequest,
+  GenerateAttendanceCodeRequest,
+  AttendanceCodeResponseDto,
+  CheckAttendanceCodeRequest,
+  CheckAttendanceCodeResponseDto
 } from './dto/event.dto';
 
 export class EventApi {
@@ -82,7 +89,7 @@ export class EventApi {
     ).toString();
 
     const response = await this.apiClient.get<EventListResponseDto>(
-      `/event/?${queryString}`
+      `/event/list?${queryString}`
     );
 
     return this.transformEventListResponse(response);
@@ -115,13 +122,14 @@ export class EventApi {
       attendance_start_time: formData.attendanceStartTime ? this.formatDateTimeForBackend(formData.attendanceStartTime) : undefined,
       attendance_end_time: formData.attendanceEndTime ? this.formatDateTimeForBackend(formData.attendanceEndTime) : undefined,
       late_threshold_minutes: formData.lateThresholdMinutes,
+      is_attendance_code_required: formData.isAttendanceCodeRequired,
       meta: formData.meta || undefined
     };
 
-    console.log('📡 [EventApi] POST /admin/event/ 요청 데이터:', requestData);
+    console.log('📡 [EventApi] POST /admin/event/create 요청 데이터:', requestData);
     
     const response = await this.apiClient.post<EventResponseDto>(
-      '/admin/event/',
+      '/admin/event/create',
       requestData
     );
 
@@ -168,6 +176,9 @@ export class EventApi {
     if (formData.lateThresholdMinutes !== undefined) {
       requestData.late_threshold_minutes = formData.lateThresholdMinutes;
     }
+    if (formData.isAttendanceCodeRequired !== undefined) {
+      requestData.is_attendance_code_required = formData.isAttendanceCodeRequired;
+    }
     if (formData.meta !== undefined) {
       requestData.meta = formData.meta;
     }
@@ -187,6 +198,63 @@ export class EventApi {
     await this.apiClient.delete<SuccessResponseDto>(
       `/admin/event/${eventId}`
     );
+  }
+
+  /**
+   * 출석 코드 생성 (관리자용)
+   */
+  async generateAttendanceCode(eventId: number): Promise<AttendanceCode> {
+    const response = await this.apiClient.post<AttendanceCodeResponseDto>(
+      `/admin/event/${eventId}/attendance-code/generate`,
+      {}
+    );
+
+    return {
+      eventId: response.event_id,
+      attendanceCode: response.attendance_code,
+      isAttendanceCodeRequired: response.is_attendance_code_required,
+      createdAt: new Date(response.created_at)
+    };
+  }
+
+  /**
+   * 출석 코드 조회 (관리자용)
+   */
+  async getAttendanceCode(eventId: number): Promise<AttendanceCode> {
+    const response = await this.apiClient.get<AttendanceCodeResponseDto>(
+      `/admin/event/${eventId}/attendance-code`
+    );
+
+    return {
+      eventId: response.event_id,
+      attendanceCode: response.attendance_code,
+      isAttendanceCodeRequired: response.is_attendance_code_required,
+      createdAt: new Date(response.created_at)
+    };
+  }
+
+  /**
+   * 출석 코드 삭제 (관리자용)
+   */
+  async deleteAttendanceCode(eventId: number): Promise<void> {
+    await this.apiClient.delete<SuccessResponseDto>(
+      `/admin/event/${eventId}/attendance-code`
+    );
+  }
+
+  /**
+   * 출석 코드 확인 (관리자용)
+   */
+  async checkAttendanceCode(eventId: number, attendanceCode: string): Promise<{ isValid: boolean; message: string }> {
+    const response = await this.apiClient.post<CheckAttendanceCodeResponseDto>(
+      `/admin/event/${eventId}/attendance-code/check`,
+      { attendance_code: attendanceCode }
+    );
+
+    return {
+      isValid: response.is_valid,
+      message: response.message
+    };
   }
 
   /**
@@ -236,10 +304,16 @@ export class EventApi {
   /**
    * 내 출석 체크 (일반 사용자용)
    */
-  async checkInAttendance(eventId: number): Promise<Attendance> {
+  async checkInAttendance(eventId: number, data?: CheckInAttendanceData): Promise<Attendance> {
+    const requestData: CheckInAttendanceRequest = {};
+    
+    if (data?.attendanceCode) {
+      requestData.attendance_code = data.attendanceCode;
+    }
+
     const response = await this.apiClient.post<AttendanceResponseDto>(
       `/event/${eventId}/attendance/check-in`,
-      {}
+      requestData
     );
 
     return this.transformAttendanceResponse(response);
@@ -385,6 +459,8 @@ export class EventApi {
       attendanceStartTime: dto.attendance_start_time ? new Date(dto.attendance_start_time) : undefined,
       attendanceEndTime: dto.attendance_end_time ? new Date(dto.attendance_end_time) : undefined,
       lateThresholdMinutes: dto.late_threshold_minutes,
+      isAttendanceCodeRequired: dto.is_attendance_code_required,
+      hasAttendanceCode: dto.has_attendance_code,
       meta: dto.meta
     };
   }

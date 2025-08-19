@@ -67,6 +67,12 @@ export interface Event {
   /** 지각 허용 시간(분) */
   lateThresholdMinutes: number;
   
+  /** 출석 코드 필수 여부 */
+  isAttendanceCodeRequired: boolean;
+  
+  /** 출석 코드 존재 여부 */
+  hasAttendanceCode: boolean;
+  
   /** 추가 메타데이터 */
   meta?: Record<string, any>;
 }
@@ -118,6 +124,23 @@ export interface AttendanceStats {
   
   /** 출석률 (0-1) */
   attendanceRate: number;
+}
+
+/**
+ * 출석 코드 도메인 타입
+ */
+export interface AttendanceCode {
+  /** 이벤트 ID */
+  eventId: number;
+  
+  /** 출석 코드 (6자리 숫자) */
+  attendanceCode: string;
+  
+  /** 출석 코드 필수 여부 */
+  isAttendanceCodeRequired: boolean;
+  
+  /** 생성 시간 */
+  createdAt: Date;
 }
 
 /**
@@ -191,6 +214,7 @@ export interface EventFormData {
   attendanceStartTime?: Date;
   attendanceEndTime?: Date;
   lateThresholdMinutes: number;
+  isAttendanceCodeRequired: boolean;
   meta?: Record<string, any>;
 }
 
@@ -201,6 +225,13 @@ export interface AttendanceFormData {
   memberId: string;
   status: AttendanceStatus;
   reason?: string;
+}
+
+/**
+ * 출석 체크 요청 데이터 타입
+ */
+export interface CheckInAttendanceData {
+  attendanceCode?: string;
 }
 
 /**
