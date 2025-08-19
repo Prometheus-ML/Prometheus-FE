@@ -341,6 +341,10 @@ export default function CommunityPage() {
                       <FontAwesomeIcon icon={faHeart} className="mr-1 text-red-400" />
                       {post.like_count || 0}
                     </span>
+                    <span className="flex items-center">
+                      <FontAwesomeIcon icon={faComments} className="mr-1 text-blue-400" />
+                      {post.comment_count || 0}
+                    </span>
                     {user && user.id === post.author_id && (
                       <button
                         onClick={(e) => {
