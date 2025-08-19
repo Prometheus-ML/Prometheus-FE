@@ -6,7 +6,7 @@ import { useAuthStore } from '@prometheus-fe/stores';
 import GlassCard from '../../src/components/GlassCard';
 import RedButton from '../../src/components/RedButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faUsers, faEye, faUserPlus, faCheck, faTimes, faSearch, faUndo } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faUsers, faEye, faUserPlus, faCheck, faTimes, faSearch, faUndo, faHeart, faHeartBroken } from '@fortawesome/free-solid-svg-icons';
 
 const CATEGORIES = [
   { value: 'STUDY', label: '스터디 그룹' },
@@ -24,11 +24,14 @@ export default function GroupPage() {
     selectedGroup,
     members,
     joinRequests,
+    groupLikes,
+    userLikedGroups,
     isLoadingGroups,
     isLoadingGroup,
     isLoadingMembers,
     isLoadingJoinRequests,
     isCreatingGroup,
+    isTogglingLike,
     fetchGroups,
     fetchGroup,
     createGroup,
@@ -39,6 +42,9 @@ export default function GroupPage() {
     rejectMember,
     removeMember,
     filterGroupsByCategory,
+    toggleGroupLike,
+    fetchGroupLikes,
+    checkUserLikedGroup,
   } = useGroup();
 
   const { user } = useAuthStore();
@@ -77,6 +83,17 @@ export default function GroupPage() {
       setError('그룹 목록을 불러오지 못했습니다.');
     }
   };
+
+  // 그룹 목록이 로드된 후 사용자의 좋아요 상태 확인
+  useEffect(() => {
+    if (groups.length > 0 && user) {
+      const checkAllGroupLikes = async () => {
+        const likeChecks = groups.map(group => checkUserLikedGroup(group.id).catch(() => false));
+        await Promise.all(likeChecks);
+      };
+      checkAllGroupLikes();
+    }
+  }, [groups, user, checkUserLikedGroup]);
 
   // 검색 및 필터 적용
   const applyFilters = () => {
@@ -126,13 +143,28 @@ export default function GroupPage() {
       await Promise.all([
         fetchGroup(groupId),
         fetchGroupMembers(groupId),
-        fetchJoinRequests(groupId).catch(() => {})
+        fetchJoinRequests(groupId).catch(() => {}),
+        fetchGroupLikes(groupId).catch(() => {}),
+        checkUserLikedGroup(groupId).catch(() => {})
       ]);
       setSelectedGroupId(groupId);
       setShowGroupDetail(true);
     } catch (err) {
       console.error('그룹 상세 정보 로드 실패:', err);
       setError('그룹 상세 정보를 불러오지 못했습니다.');
+    }
+  };
+
+  const handleLikeToggle = async (groupId: number, e?: React.MouseEvent) => {
+    // 이벤트가 있을 때만 stopPropagation 호출 (그룹 목록에서만)
+    if (e) {
+      e.stopPropagation();
+    }
+    try {
+      await toggleGroupLike(groupId);
+    } catch (err) {
+      console.error('좋아요 토글 실패:', err);
+      setError('좋아요 처리에 실패했습니다.');
     }
   };
 
@@ -415,9 +447,30 @@ export default function GroupPage() {
                         <FontAwesomeIcon icon={faUsers} className="mr-1" />
                         멤버 수는 상세보기에서 확인 가능
                       </span>
+                      <span className="flex items-center">
+                        <FontAwesomeIcon icon={faHeart} className="mr-1" />
+                        {group.like_count || 0}개
+                      </span>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2 ml-4">
+                    {/* 좋아요 버튼 */}
+                    <button
+                      onClick={(e) => handleLikeToggle(group.id, e)}
+                      disabled={isTogglingLike}
+                      className={`flex items-center space-x-1 px-2 py-1 rounded text-sm transition-colors ${
+                        userLikedGroups[group.id]
+                          ? 'text-red-400 hover:text-red-300 bg-red-500/20'
+                          : 'text-gray-400 hover:text-gray-300 bg-white/10 hover:bg-white/20'
+                      }`}
+                    >
+                      <FontAwesomeIcon 
+                        icon={userLikedGroups[group.id] ? faHeart : faHeartBroken} 
+                        className="mr-1" 
+                      />
+                      {userLikedGroups[group.id] ? '좋아요' : '좋아요'}
+                    </button>
+                    
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -492,7 +545,47 @@ export default function GroupPage() {
                 {selectedGroup.max_members && (
                   <p>최대 인원: {selectedGroup.max_members}명</p>
                 )}
+                <p>좋아요: {selectedGroup.like_count || 0}개</p>
               </div>
+
+              {/* 좋아요 버튼 */}
+              <div className="mt-4">
+                <button
+                  onClick={(e) => handleLikeToggle(selectedGroup.id, e)}
+                  disabled={isTogglingLike}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                    userLikedGroups[selectedGroup.id]
+                      ? 'bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30'
+                      : 'bg-white/10 text-white border border-white/30 hover:bg-white/20'
+                  }`}
+                >
+                  <FontAwesomeIcon 
+                    icon={userLikedGroups[selectedGroup.id] ? faHeart : faHeartBroken} 
+                    className="mr-2" 
+                  />
+                  <span>
+                    {userLikedGroups[selectedGroup.id] ? '좋아요 취소' : '좋아요'}
+                  </span>
+                </button>
+              </div>
+
+              {/* 좋아요한 멤버 목록 */}
+              {groupLikes[selectedGroup.id] && groupLikes[selectedGroup.id].recent_likers.length > 0 && (
+                <div className="mt-4">
+                  <h3 className="text-lg font-semibold text-white mb-3">최근 좋아요한 멤버</h3>
+                  <div className="space-y-2">
+                    {groupLikes[selectedGroup.id].recent_likers.slice(0, 5).map((liker, index) => (
+                      <div key={index} className="flex items-center space-x-2 p-2 bg-white/10 rounded">
+                        <span className="text-white font-medium">{liker.name}</span>
+                        <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded">
+                          {liker.gen}기
+                        </span>
+                        <span className="text-gray-300 text-sm">({liker.member_id})</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 멤버 목록 */}

@@ -6,7 +6,7 @@ import { useGroup } from '@prometheus-fe/hooks';
 import GlassCard from '../../../src/components/GlassCard';
 import RedButton from '../../../src/components/RedButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faUsers, faUserGraduate, faCheck, faTimes, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faUsers, faUserGraduate, faCheck, faTimes, faEye, faHeart } from '@fortawesome/free-solid-svg-icons';
 
 const CATEGORIES = [
   { value: 'STUDY', label: '스터디 그룹' },
@@ -22,6 +22,7 @@ export default function AdminGroupPage() {
     selectedGroup,
     members,
     joinRequests,
+    groupLikes,
     isLoadingGroups,
     isLoadingGroup,
     isLoadingMembers,
@@ -36,6 +37,7 @@ export default function AdminGroupPage() {
     rejectMember,
     removeMember,
     filterGroupsByCategory,
+    fetchGroupLikes,
   } = useGroup();
 
   // Hydration 완료 상태 관리
@@ -134,7 +136,8 @@ export default function AdminGroupPage() {
       await Promise.all([
         fetchGroup(groupId),
         fetchGroupMembers(groupId),
-        fetchJoinRequests(groupId).catch(() => {})
+        fetchJoinRequests(groupId).catch(() => {}),
+        fetchGroupLikes(groupId).catch(() => {})
       ]);
     } catch (err) {
       console.error('그룹 상세 정보 로드 실패:', err);
@@ -391,6 +394,10 @@ export default function AdminGroupPage() {
                         <FontAwesomeIcon icon={faUsers} className="mr-1" />
                         멤버: {group.member_count || 0}명
                       </span>
+                      <span className="flex items-center">
+                        <FontAwesomeIcon icon={faHeart} className="mr-1" />
+                        좋아요: {group.like_count || 0}개
+                      </span>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2 ml-4">
@@ -491,6 +498,29 @@ export default function AdminGroupPage() {
                 </div>
               )}
             </div>
+
+            {/* 좋아요 정보 */}
+            {groupLikes[selectedGroup.id] && (
+              <div className="mb-4">
+                <h3 className="font-semibold mb-2 text-white">
+                  좋아요 ({groupLikes[selectedGroup.id].like_count}개)
+                </h3>
+                <div className="space-y-2">
+                  {groupLikes[selectedGroup.id].recent_likers.slice(0, 5).map((liker, index) => (
+                    <div key={index} className="flex items-center space-x-2 p-2 bg-white/10 rounded">
+                      <span className="text-white font-medium">{liker.name}</span>
+                      <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded">
+                        {liker.gen}기
+                      </span>
+                      <span className="text-gray-300 text-sm">({liker.member_id})</span>
+                      <span className="text-xs text-gray-400 ml-auto">
+                        {new Date(liker.liked_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             
             {/* 가입 요청 관리 */}
             <div className="mb-4">
