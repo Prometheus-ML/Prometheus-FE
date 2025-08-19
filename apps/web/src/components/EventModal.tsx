@@ -85,7 +85,7 @@ export default function EventModal({
     try {
       setIsLoadingAttendanceCode(true);
       const code = await getAttendanceCode(event.id);
-      setCurrentAttendanceCode(code);
+      setCurrentAttendanceCode(code.attendanceCode);
     } catch (error: any) {
       console.error('출석 코드 조회 실패:', error);
       // 404 에러는 코드가 없는 것이므로 null로 설정
