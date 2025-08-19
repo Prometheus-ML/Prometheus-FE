@@ -53,10 +53,6 @@ export default function GroupPage() {
     search: '',
     category_filter: ''
   });
-  const [appliedFilters, setAppliedFilters] = useState<GroupFilters>({
-    search: '',
-    category_filter: ''
-  });
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
   const [showGroupDetail, setShowGroupDetail] = useState(false);
@@ -76,8 +72,7 @@ export default function GroupPage() {
   const loadGroups = async () => {
     try {
       setError('');
-      const params = { page: 1, size: 20, ...appliedFilters };
-      await fetchGroups(params);
+      await fetchGroups({ page: 1, size: 50 });
     } catch (err) {
       console.error('그룹 목록 로드 실패:', err);
       setError('그룹 목록을 불러오지 못했습니다.');
@@ -95,10 +90,33 @@ export default function GroupPage() {
     }
   }, [groups, user, checkUserLikedGroup]);
 
+  // 클라이언트 사이드 필터링
+  const filteredGroups = useMemo(() => {
+    return groups.filter((group: any) => {
+      // 검색어 필터링
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        const matchesSearch = 
+          group.name.toLowerCase().includes(searchLower) ||
+          (group.description && group.description.toLowerCase().includes(searchLower)) ||
+          group.owner_name.toLowerCase().includes(searchLower);
+        
+        if (!matchesSearch) return false;
+      }
+
+      // 카테고리 필터링
+      if (filters.category_filter && group.category !== filters.category_filter) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [groups, filters]);
+
   // 검색 및 필터 적용
   const applyFilters = () => {
-    setAppliedFilters(filters);
-    loadGroups();
+    // 클라이언트 사이드에서만 필터링하므로 별도 API 호출 불필요
+    // filters 상태는 이미 filteredGroups에 반영됨
   };
 
   // 필터 초기화
@@ -108,8 +126,6 @@ export default function GroupPage() {
       category_filter: ''
     };
     setFilters(emptyFilters);
-    setAppliedFilters(emptyFilters);
-    loadGroups();
   };
 
   const handleCreateGroup = async (e: React.FormEvent) => {
@@ -233,8 +249,7 @@ export default function GroupPage() {
     return colors[category] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
   };
 
-  // 검색 결과 수 계산
-  const searchResultCount = groups.length;
+
 
   return (
     <div className="py-6">
@@ -306,9 +321,9 @@ export default function GroupPage() {
       </GlassCard>
 
       {/* 검색 결과 수 */}
-      {appliedFilters.search && (
-        <div className="mb-4 text-sm text-gray-300">
-          검색 결과: {searchResultCount}개
+      {filters.search && (
+        <div className="mb-4 text-sm text-sm text-gray-300">
+          검색 결과: {filteredGroups.length}개
         </div>
       )}
 
@@ -420,7 +435,7 @@ export default function GroupPage() {
       ) : (
         <GlassCard className="overflow-hidden">
           <ul className="divide-y divide-white/10">
-            {groups.map((group: any) => (
+            {filteredGroups.map((group: any) => (
               <li 
                 key={group.id} 
                 className="px-4 py-4 hover:bg-white/10 cursor-pointer border-b border-white/10 last:border-b-0"
@@ -502,13 +517,13 @@ export default function GroupPage() {
       )}
 
       {/* 빈 상태 */}
-      {!isLoadingGroups && groups.length === 0 && (
+      {!isLoadingGroups && filteredGroups.length === 0 && (
         <div className="px-4 py-5 sm:p-6">
           <div className="text-center">
             <FontAwesomeIcon icon={faUsers} className="mx-auto h-12 w-12 text-gray-400 mb-4" />
             <h3 className="mt-2 text-sm font-medium text-white">그룹이 없습니다.</h3>
             <p className="mt-1 text-sm text-gray-300">
-              {appliedFilters.search ? '검색 결과가 없습니다.' : '아직 등록된 그룹이 없습니다.'}
+              {filters.search ? '검색 결과가 없습니다.' : '아직 등록된 그룹이 없습니다.'}
             </p>
           </div>
         </div>

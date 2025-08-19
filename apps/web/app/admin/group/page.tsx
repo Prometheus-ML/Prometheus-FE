@@ -1,17 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useGroup } from '@prometheus-fe/hooks';
 import GlassCard from '../../../src/components/GlassCard';
 import RedButton from '../../../src/components/RedButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faUsers, faUserGraduate, faCheck, faTimes, faEye, faHeart } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faUsers, faUserGraduate, faCheck, faTimes, faEye, faHeart, faSearch, faUndo } from '@fortawesome/free-solid-svg-icons';
 
 const CATEGORIES = [
   { value: 'STUDY', label: '스터디 그룹' },
   { value: 'CASUAL', label: '취미 그룹' },
 ] as const;
+
+interface GroupFilters {
+  search: string;
+  category_filter: string;
+}
 
 export default function AdminGroupPage() {
   const canAccessManager = useAuthStore((s) => s.canAccessManager);
@@ -43,7 +48,10 @@ export default function AdminGroupPage() {
   // Hydration 완료 상태 관리
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const [error, setError] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [filters, setFilters] = useState<GroupFilters>({
+    search: '',
+    category_filter: ''
+  });
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
   const [showGroupDetail, setShowGroupDetail] = useState(false);
@@ -94,13 +102,46 @@ export default function AdminGroupPage() {
     }
   };
 
+  // 클라이언트 사이드 필터링
+  const filteredGroups = useMemo(() => {
+    return groups.filter((group: any) => {
+      // 검색어 필터링
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        const matchesSearch = 
+          group.name.toLowerCase().includes(searchLower) ||
+          (group.description && group.description.toLowerCase().includes(searchLower)) ||
+          group.owner_name.toLowerCase().includes(searchLower);
+        
+        if (!matchesSearch) return false;
+      }
+
+      // 카테고리 필터링
+      if (filters.category_filter && group.category !== filters.category_filter) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [groups, filters]);
+
   const handleCategoryFilter = (category: string) => {
-    setSelectedCategory(category);
-    if (category) {
-      filterGroupsByCategory(category as 'STUDY' | 'CASUAL');
-    } else {
-      loadGroups();
-    }
+    setFilters(prev => ({ ...prev, category_filter: category }));
+  };
+
+  // 검색 및 필터 적용
+  const applyFilters = () => {
+    // 클라이언트 사이드에서만 필터링하므로 별도 API 호출 불필요
+    // filters 상태는 이미 filteredGroups에 반영됨
+  };
+
+  // 필터 초기화
+  const clearFilters = () => {
+    const emptyFilters: GroupFilters = {
+      search: '',
+      category_filter: ''
+    };
+    setFilters(emptyFilters);
   };
 
   const handleCreateGroup = async (e: React.FormEvent) => {
@@ -216,7 +257,7 @@ export default function AdminGroupPage() {
         <h1 className="text-2xl font-bold text-white">그룹 관리</h1>
         <div className="flex items-center space-x-4">
           <div className="text-sm text-gray-300">
-            총 {groups.length}개의 그룹
+            총 {filteredGroups.length}개의 그룹
           </div>
           <RedButton
             onClick={() => setShowCreateForm(!showCreateForm)}
@@ -321,36 +362,62 @@ export default function AdminGroupPage() {
         </GlassCard>
       )}
 
-      {/* 카테고리 필터 */}
+      {/* 검색 및 필터 */}
       <GlassCard className="mb-6">
-        <div className="p-4">
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => handleCategoryFilter('')}
-              className={`px-3 py-1 text-sm rounded-full transition-colors ${
-                selectedCategory === '' 
-                  ? 'bg-red-600 text-white' 
-                  : 'bg-white/10 text-white hover:bg-white/20'
-              }`}
-            >
-              전체
-            </button>
-            {CATEGORIES.map(category => (
-              <button
-                key={category.value}
-                onClick={() => handleCategoryFilter(category.value)}
-                className={`px-3 py-1 text-sm rounded-full transition-colors ${
-                  selectedCategory === category.value 
-                    ? 'bg-red-600 text-white' 
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
+        <div className="p-6">
+          <div className="flex gap-4 items-end">
+            {/* 검색 */}
+            <div className="flex-1">
+              <input
+                id="search"
+                value={filters.search}
+                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                type="text"
+                placeholder="그룹명, 설명, 소유자명을 검색해보세요!"
+                className="block w-full px-3 py-2 text-sm text-black placeholder-gray-300 focus:outline-none bg-white/20 border border-white/30 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* 카테고리 필터 */}
+            <div className="flex-1">
+              <select
+                id="category"
+                value={filters.category_filter}
+                onChange={(e) => setFilters(prev => ({ ...prev, category_filter: e.target.value }))}
+                className="block w-full px-3 py-2 text-sm bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
               >
-                {category.label}
-              </button>
-            ))}
+                <option value="" className="bg-gray-800 text-white">카테고리</option>
+                {CATEGORIES.map(category => (
+                  <option key={category.value} value={category.value} className="bg-gray-800 text-white">
+                    {category.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 필터 초기화 버튼 */}
+            <RedButton onClick={clearFilters} className="inline-flex items-center">
+              <FontAwesomeIcon icon={faUndo} className="mr-2 h-4 w-4" />
+              초기화
+            </RedButton>
+
+            {/* 검색 버튼 */}
+            <RedButton onClick={applyFilters} className="inline-flex items-center">
+              <FontAwesomeIcon icon={faSearch} className="mr-2 h-4 w-4" />
+              검색
+            </RedButton>
           </div>
         </div>
       </GlassCard>
+
+
+
+      {/* 검색 결과 수 */}
+      {filters.search && (
+        <div className="mb-4 text-sm text-gray-300">
+          검색 결과: {filteredGroups.length}개
+        </div>
+      )}
 
       {/* 에러 메시지 */}
       {error && (
@@ -367,7 +434,7 @@ export default function AdminGroupPage() {
       ) : (
         <GlassCard className="overflow-hidden">
           <ul className="divide-y divide-white/10">
-            {groups.map((group: any) => (
+            {filteredGroups.map((group: any) => (
               <li 
                 key={group.id} 
                 className="px-4 py-4 hover:bg-white/10 cursor-pointer border-b border-white/10 last:border-b-0"
@@ -419,13 +486,16 @@ export default function AdminGroupPage() {
         </GlassCard>
       )}
 
-      {!isLoadingGroups && groups.length === 0 && (
+      {!isLoadingGroups && filteredGroups.length === 0 && (
         <div className="px-4 py-5 sm:p-6">
           <div className="text-center">
             <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
             <h3 className="mt-2 text-sm font-medium text-white">그룹이 없습니다.</h3>
+            <p className="mt-1 text-sm text-gray-300">
+              {filters.search ? '검색 결과가 없습니다.' : '아직 등록된 그룹이 없습니다.'}
+            </p>
           </div>
         </div>
       )}
