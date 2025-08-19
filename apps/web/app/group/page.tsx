@@ -381,7 +381,7 @@ export default function GroupPage() {
                         {getCategoryLabel(group.category)}
                       </span>
                       <span className="px-2 py-1 text-xs rounded-full bg-yellow-500/20 text-yellow-300">
-                        소유자: {group.owner_id}
+                        {group.owner_gen}기 {group.owner_name}
                       </span>
                     </div>
                     {group.description && (
@@ -466,7 +466,7 @@ export default function GroupPage() {
               )}
               
               <div className="text-sm text-gray-300">
-                <p>소유자: {selectedGroup.owner_id}</p>
+                <p>소유자: {selectedGroup.owner_name} ({selectedGroup.owner_gen}기)</p>
                 <p>멤버 수: {members.length}명</p>
                 {selectedGroup.max_members && (
                   <p>최대 인원: {selectedGroup.max_members}명</p>
@@ -485,7 +485,13 @@ export default function GroupPage() {
                 <div className="space-y-2">
                   {members.map((member: any) => (
                     <div key={member.member_id} className="flex items-center justify-between p-2 bg-white/10 rounded">
-                      <span className="text-white">ID: {member.member_id}</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-white font-medium">{member.name}</span>
+                        <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded">
+                          {member.gen}기
+                        </span>
+                        <span className="text-gray-300 text-sm">({member.member_id})</span>
+                      </div>
                       <span className="text-gray-300 text-sm">역할: {member.role}</span>
                     </div>
                   ))}
@@ -506,7 +512,13 @@ export default function GroupPage() {
                     <div className="space-y-2">
                       {joinRequests.map((request: any) => (
                         <div key={request.id} className="flex items-center justify-between p-2 bg-white/10 rounded">
-                          <span className="text-white">ID: {request.member_id}</span>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-white font-medium">{request.name}</span>
+                            <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded">
+                              {request.gen}기
+                            </span>
+                            <span className="text-gray-300 text-sm">({request.member_id})</span>
+                          </div>
                           <div className="flex space-x-2">
                             <button
                               onClick={() => handleApproveMember(request.id)}

@@ -6,16 +6,22 @@ export interface Group {
   max_members?: number;
   thumbnail_url?: string;
   owner_id: string;
+  owner_name: string;
+  owner_gen: number;
 }
 
 export interface GroupMember {
   member_id: string;
   role: string;
+  name: string;
+  gen: number;
 }
 
 export interface GroupJoinRequest {
   member_id: string;
   id: number;
+  name: string;
+  gen: number;
 }
 
 export interface GroupNote {
