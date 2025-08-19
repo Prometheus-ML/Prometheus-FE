@@ -8,7 +8,7 @@ import GlassCard from '../../../src/components/GlassCard';
 import RedButton from '../../../src/components/RedButton';
 import TabBar from '../../../src/components/TabBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faTrash, faHeart } from '@fortawesome/free-solid-svg-icons';
 
 const CATEGORIES = [
   { value: 'free', label: '자유게시판' },
@@ -31,6 +31,7 @@ export default function AdminPostPage() {
     createPost,
     deletePost,
     filterPostsByCategory,
+    getMemberInfo,
   } = useCommunity();
 
   // Hydration 완료 상태 관리
@@ -40,6 +41,7 @@ export default function AdminPostPage() {
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [authorCache, setAuthorCache] = useState<Record<string, any>>({});
 
   // Hydration 완료 감지
   useEffect(() => {
@@ -78,6 +80,46 @@ export default function AdminPostPage() {
       console.error('게시글 목록 로드 실패:', err);
       setError('게시글 목록을 불러오지 못했습니다.');
     }
+  };
+
+  // 게시글 작성자 정보 로드
+  useEffect(() => {
+    if (posts.length > 0) {
+      loadAuthorInfos();
+    }
+  }, [posts]);
+
+  const loadAuthorInfos = async () => {
+    const uniqueAuthorIds = [...new Set(posts.map(post => post.author_id))];
+    const authors: Record<string, any> = {};
+    
+    for (const authorId of uniqueAuthorIds) {
+      if (!authorCache[authorId]) {
+        try {
+          const memberData = await getMemberInfo(authorId);
+          if (memberData) {
+            authors[authorId] = memberData;
+          }
+        } catch (error) {
+          console.error(`작성자 ${authorId} 정보 로드 실패:`, error);
+        }
+      }
+    }
+    
+    if (Object.keys(authors).length > 0) {
+      setAuthorCache(prev => ({
+        ...prev,
+        ...authors
+      }));
+    }
+  };
+
+  const getAuthorDisplayName = (authorId: string) => {
+    const memberData = authorCache[authorId];
+    if (memberData) {
+      return `${memberData.gen}기 ${memberData.name}`;
+    }
+    return authorId; // 멤버 정보가 없으면 ID로 표시
   };
 
   const handleCategoryFilter = (category: string) => {
@@ -224,10 +266,14 @@ export default function AdminPostPage() {
                         {getCategoryLabel(post.category)}
                       </span>
                       <span className="text-xs text-gray-300">
-                        작성자: {post.author_id}
+                        작성자: {getAuthorDisplayName(post.author_id)}
                       </span>
                       <span className="text-xs text-gray-300">
                         {new Date(post.created_at).toLocaleDateString('ko-KR')}
+                      </span>
+                      <span className="text-xs text-gray-300 flex items-center">
+                        <FontAwesomeIcon icon={faHeart} className="mr-1 text-red-400" />
+                        {post.like_count || 0}
                       </span>
                     </div>
                     <h3 className="text-lg font-semibold text-white mb-2">

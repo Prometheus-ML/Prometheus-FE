@@ -150,7 +150,14 @@ export const SearchMemberBar: React.FC<SearchMemberBarProps> = ({
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-medium text-gray-900">{member.name}</div>
+                    <div className="flex items-center gap-2">
+                      <div className="font-medium text-gray-900">{member.name}</div>
+                      {member.gen !== null && member.gen !== undefined && (
+                        <span className="text-xs bg-blue-500/20 text-blue-600 border border-blue-500/30 px-1.5 py-0.5 rounded">
+                          {member.gen}기
+                        </span>
+                      )}
+                    </div>
                     <div className="text-sm text-gray-500">
                       {member.email && `${member.email}`}
                       {member.school && ` • ${member.school}`}
@@ -175,7 +182,14 @@ export const SearchMemberBar: React.FC<SearchMemberBarProps> = ({
             <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-medium text-blue-900">{selectedMember.name}</div>
+                  <div className="flex items-center gap-2">
+                    <div className="font-medium text-blue-900">{selectedMember.name}</div>
+                    {selectedMember.gen !== null && selectedMember.gen !== undefined && (
+                      <span className="text-xs bg-blue-500/30 text-blue-700 border border-blue-500/40 px-1.5 py-0.5 rounded">
+                        {selectedMember.gen}기
+                      </span>
+                    )}
+                  </div>
                   <div className="text-sm text-blue-600">
                     {selectedMember.email && `${selectedMember.email}`}
                     {selectedMember.school && ` • ${selectedMember.school}`}
@@ -202,12 +216,19 @@ export const SearchMemberBar: React.FC<SearchMemberBarProps> = ({
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-medium text-blue-900">{member.name}</div>
-                                          <div className="text-sm text-blue-600">
-                      {member.email && `${member.email}`}
-                      {member.school && ` • ${member.school}`}
-                      {member.major && ` • ${member.major}`}
-                    </div>
+                      <div className="flex items-center gap-2">
+                        <div className="font-medium text-blue-900">{member.name}</div>
+                        {member.gen !== null && member.gen !== undefined && (
+                          <span className="text-xs bg-blue-500/30 text-blue-700 border border-blue-500/40 px-1.5 py-0.5 rounded">
+                            {member.gen}기
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-sm text-blue-600">
+                        {member.email && `${member.email}`}
+                        {member.school && ` • ${member.school}`}
+                        {member.major && ` • ${member.major}`}
+                      </div>
                     </div>
                     <button
                       onClick={() => removeSelectedMember(member.id)}

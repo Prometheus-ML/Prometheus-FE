@@ -3,6 +3,8 @@ import type {
   GroupMember,
   GroupJoinRequest,
   GroupNote,
+  GroupLikeToggleResponse,
+  GroupLikeInfo,
 } from '@prometheus-fe/types';
 
 // 공통 응답 인터페이스 (내부에서만 사용)
@@ -58,4 +60,19 @@ export interface GroupNoteCreateRequest {
 
 export interface GroupNoteCreateResponse extends BaseResponse {
   note: GroupNote;
+}
+
+// 그룹 좋아요 관련
+export interface GroupLikeToggleRequest {
+  group_id: number;
+}
+
+export type GroupLikeToggleResponseType = GroupLikeToggleResponse;
+
+export interface GetGroupLikesResponse extends BaseResponse {
+  likes: GroupLikeInfo;
+}
+
+export interface CheckUserLikedGroupResponse extends BaseResponse {
+  liked: boolean;
 }

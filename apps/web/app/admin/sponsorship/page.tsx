@@ -34,7 +34,7 @@ function SponsorModal({ isOpen, sponsor, onClose, onSubmit }: SponsorModalProps)
     clearError
   } = useImage({
     onUploadSuccess: (response) => {
-      setForm(prev => ({ ...prev, logo_url: response.url }));
+      setForm(prev => ({ ...prev, logo_url: response.publicCdnUrl || response.webViewLink || `https://lh3.googleusercontent.com/d/${response.id}` }));
       setImageLoading(false);
     },
     onUploadError: (error) => {

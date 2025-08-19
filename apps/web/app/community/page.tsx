@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useCommunity } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
@@ -9,7 +9,7 @@ import PostForm from '../../src/components/PostForm';
 import RedButton from '../../src/components/RedButton';
 import GlassCard from '../../src/components/GlassCard';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faTrash, faUser, faCalendarAlt, faComments, faSearch, faUndo, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faTrash, faUser, faCalendarAlt, faComments, faSearch, faUndo, faArrowLeft, faHeart } from '@fortawesome/free-solid-svg-icons';
 
 const CATEGORIES = [
   { value: 'free', label: '자유게시판' },
@@ -34,6 +34,7 @@ export default function CommunityPage() {
     createPost,
     deletePost,
     filterPostsByCategory,
+    getMemberInfo,
   } = useCommunity();
 
   const { user } = useAuthStore();
@@ -49,11 +50,19 @@ export default function CommunityPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [authorCache, setAuthorCache] = useState<Record<string, any>>({});
 
   // 초기 게시글 목록 로드
   useEffect(() => {
     loadPosts();
   }, []);
+
+  // 게시글 작성자 정보 로드
+  useEffect(() => {
+    if (posts.length > 0) {
+      loadAuthorInfos();
+    }
+  }, [posts]);
 
   const loadPosts = async () => {
     try {
@@ -64,6 +73,39 @@ export default function CommunityPage() {
       console.error('게시글 목록 로드 실패:', err);
       setError('게시글 목록을 불러오지 못했습니다.');
     }
+  };
+
+  const loadAuthorInfos = useCallback(async () => {
+    const uniqueAuthorIds = [...new Set(posts.map(post => post.author_id))];
+    const authors: Record<string, any> = {};
+    
+    for (const authorId of uniqueAuthorIds) {
+      if (!authorCache[authorId]) {
+        try {
+          const memberData = await getMemberInfo(authorId);
+          if (memberData) {
+            authors[authorId] = memberData;
+          }
+        } catch (error) {
+          console.error(`작성자 ${authorId} 정보 로드 실패:`, error);
+        }
+      }
+    }
+    
+    if (Object.keys(authors).length > 0) {
+      setAuthorCache(prev => ({
+        ...prev,
+        ...authors
+      }));
+    }
+  }, [posts, authorCache, getMemberInfo]);
+
+  const getAuthorDisplayName = (authorId: string) => {
+    const memberData = authorCache[authorId];
+    if (memberData) {
+      return `${memberData.gen}기 ${memberData.name}`;
+    }
+    return authorId; // 멤버 정보가 없으면 ID로 표시
   };
 
   // 검색 및 필터 적용
@@ -137,6 +179,8 @@ export default function CommunityPage() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedPostId(null);
+    // 모달이 닫힐 때 게시글 목록 새로고침 (다른 사용자의 활동 반영)
+    loadPosts();
   };
 
   // Skeleton UI Component
@@ -287,11 +331,15 @@ export default function CommunityPage() {
                   <div className="flex items-center space-x-4 text-sm text-gray-300 ml-4">
                     <span className="flex items-center">
                       <FontAwesomeIcon icon={faUser} className="mr-1" />
-                      작성자: {post.author_id}
+                      작성자: {getAuthorDisplayName(post.author_id)}
                     </span>
                     <span className="flex items-center">
                       <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" />
                       {new Date(post.created_at).toLocaleDateString('ko-KR')}
+                    </span>
+                    <span className="flex items-center">
+                      <FontAwesomeIcon icon={faHeart} className="mr-1 text-red-400" />
+                      {post.like_count || 0}
                     </span>
                     {user && user.id === post.author_id && (
                       <button

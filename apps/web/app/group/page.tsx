@@ -6,7 +6,7 @@ import { useAuthStore } from '@prometheus-fe/stores';
 import GlassCard from '../../src/components/GlassCard';
 import RedButton from '../../src/components/RedButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faUsers, faEye, faUserPlus, faCheck, faTimes, faSearch, faUndo } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faUsers, faEye, faUserPlus, faCheck, faTimes, faSearch, faUndo, faHeart, faHeartBroken } from '@fortawesome/free-solid-svg-icons';
 
 const CATEGORIES = [
   { value: 'STUDY', label: '스터디 그룹' },
@@ -24,11 +24,14 @@ export default function GroupPage() {
     selectedGroup,
     members,
     joinRequests,
+    groupLikes,
+    userLikedGroups,
     isLoadingGroups,
     isLoadingGroup,
     isLoadingMembers,
     isLoadingJoinRequests,
     isCreatingGroup,
+    isTogglingLike,
     fetchGroups,
     fetchGroup,
     createGroup,
@@ -37,16 +40,16 @@ export default function GroupPage() {
     fetchJoinRequests,
     approveMember,
     rejectMember,
+    removeMember,
     filterGroupsByCategory,
+    toggleGroupLike,
+    fetchGroupLikes,
+    checkUserLikedGroup,
   } = useGroup();
 
   const { user } = useAuthStore();
   const [error, setError] = useState('');
   const [filters, setFilters] = useState<GroupFilters>({
-    search: '',
-    category_filter: ''
-  });
-  const [appliedFilters, setAppliedFilters] = useState<GroupFilters>({
     search: '',
     category_filter: ''
   });
@@ -69,18 +72,51 @@ export default function GroupPage() {
   const loadGroups = async () => {
     try {
       setError('');
-      const params = { page: 1, size: 20, ...appliedFilters };
-      await fetchGroups(params);
+      await fetchGroups({ page: 1, size: 50 });
     } catch (err) {
       console.error('그룹 목록 로드 실패:', err);
       setError('그룹 목록을 불러오지 못했습니다.');
     }
   };
 
+  // 그룹 목록이 로드된 후 사용자의 좋아요 상태 확인
+  useEffect(() => {
+    if (groups.length > 0 && user) {
+      const checkAllGroupLikes = async () => {
+        const likeChecks = groups.map(group => checkUserLikedGroup(group.id).catch(() => false));
+        await Promise.all(likeChecks);
+      };
+      checkAllGroupLikes();
+    }
+  }, [groups, user, checkUserLikedGroup]);
+
+  // 클라이언트 사이드 필터링
+  const filteredGroups = useMemo(() => {
+    return groups.filter((group: any) => {
+      // 검색어 필터링
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        const matchesSearch = 
+          group.name.toLowerCase().includes(searchLower) ||
+          (group.description && group.description.toLowerCase().includes(searchLower)) ||
+          group.owner_name.toLowerCase().includes(searchLower);
+        
+        if (!matchesSearch) return false;
+      }
+
+      // 카테고리 필터링
+      if (filters.category_filter && group.category !== filters.category_filter) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [groups, filters]);
+
   // 검색 및 필터 적용
   const applyFilters = () => {
-    setAppliedFilters(filters);
-    loadGroups();
+    // 클라이언트 사이드에서만 필터링하므로 별도 API 호출 불필요
+    // filters 상태는 이미 filteredGroups에 반영됨
   };
 
   // 필터 초기화
@@ -90,8 +126,6 @@ export default function GroupPage() {
       category_filter: ''
     };
     setFilters(emptyFilters);
-    setAppliedFilters(emptyFilters);
-    loadGroups();
   };
 
   const handleCreateGroup = async (e: React.FormEvent) => {
@@ -122,12 +156,31 @@ export default function GroupPage() {
 
   const handleGroupClick = async (groupId: number) => {
     try {
-      await fetchGroup(groupId);
+      await Promise.all([
+        fetchGroup(groupId),
+        fetchGroupMembers(groupId),
+        fetchJoinRequests(groupId).catch(() => {}),
+        fetchGroupLikes(groupId).catch(() => {}),
+        checkUserLikedGroup(groupId).catch(() => {})
+      ]);
       setSelectedGroupId(groupId);
       setShowGroupDetail(true);
     } catch (err) {
       console.error('그룹 상세 정보 로드 실패:', err);
       setError('그룹 상세 정보를 불러오지 못했습니다.');
+    }
+  };
+
+  const handleLikeToggle = async (groupId: number, e?: React.MouseEvent) => {
+    // 이벤트가 있을 때만 stopPropagation 호출 (그룹 목록에서만)
+    if (e) {
+      e.stopPropagation();
+    }
+    try {
+      await toggleGroupLike(groupId);
+    } catch (err) {
+      console.error('좋아요 토글 실패:', err);
+      setError('좋아요 처리에 실패했습니다.');
     }
   };
 
@@ -143,9 +196,12 @@ export default function GroupPage() {
 
   const handleApproveMember = async (requestId: number) => {
     try {
-      await approveMember(requestId);
-      await fetchJoinRequests(selectedGroupId!);
-      await fetchGroupMembers(selectedGroupId!);
+      const request = joinRequests.find(r => r.id === requestId);
+      if (!request || !selectedGroupId) return;
+      
+      await approveMember(selectedGroupId, request.member_id);
+      await fetchJoinRequests(selectedGroupId);
+      await fetchGroupMembers(selectedGroupId);
     } catch (err) {
       console.error('멤버 승인 실패:', err);
       setError('멤버 승인에 실패했습니다.');
@@ -154,11 +210,30 @@ export default function GroupPage() {
 
   const handleRejectMember = async (requestId: number) => {
     try {
-      await rejectMember(requestId);
-      await fetchJoinRequests(selectedGroupId!);
+      const request = joinRequests.find(r => r.id === requestId);
+      if (!request || !selectedGroupId) return;
+      
+      await rejectMember(selectedGroupId, request.member_id);
+      await fetchJoinRequests(selectedGroupId);
     } catch (err) {
       console.error('멤버 거절 실패:', err);
       setError('멤버 거절에 실패했습니다.');
+    }
+  };
+
+  const handleRemoveMember = async (memberId: string) => {
+    if (!selectedGroupId) return;
+    
+    if (!confirm('정말 이 멤버를 그룹에서 제거하시겠습니까?')) {
+      return;
+    }
+    
+    try {
+      await removeMember(selectedGroupId, memberId);
+      await fetchGroupMembers(selectedGroupId);
+    } catch (err) {
+      console.error('멤버 제거 실패:', err);
+      setError('멤버 제거에 실패했습니다.');
     }
   };
 
@@ -174,8 +249,7 @@ export default function GroupPage() {
     return colors[category] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
   };
 
-  // 검색 결과 수 계산
-  const searchResultCount = groups.length;
+
 
   return (
     <div className="py-6">
@@ -247,9 +321,9 @@ export default function GroupPage() {
       </GlassCard>
 
       {/* 검색 결과 수 */}
-      {appliedFilters.search && (
-        <div className="mb-4 text-sm text-gray-300">
-          검색 결과: {searchResultCount}개
+      {filters.search && (
+        <div className="mb-4 text-sm text-sm text-gray-300">
+          검색 결과: {filteredGroups.length}개
         </div>
       )}
 
@@ -361,7 +435,7 @@ export default function GroupPage() {
       ) : (
         <GlassCard className="overflow-hidden">
           <ul className="divide-y divide-white/10">
-            {groups.map((group: any) => (
+            {filteredGroups.map((group: any) => (
               <li 
                 key={group.id} 
                 className="px-4 py-4 hover:bg-white/10 cursor-pointer border-b border-white/10 last:border-b-0"
@@ -375,7 +449,7 @@ export default function GroupPage() {
                         {getCategoryLabel(group.category)}
                       </span>
                       <span className="px-2 py-1 text-xs rounded-full bg-yellow-500/20 text-yellow-300">
-                        소유자: {group.owner_id}
+                        {group.owner_gen}기 {group.owner_name}
                       </span>
                     </div>
                     {group.description && (
@@ -386,11 +460,32 @@ export default function GroupPage() {
                     <div className="flex items-center space-x-4 text-sm text-gray-300">
                       <span className="flex items-center">
                         <FontAwesomeIcon icon={faUsers} className="mr-1" />
-                        멤버: {group.member_count || 0}명
+                        멤버 수는 상세보기에서 확인 가능
+                      </span>
+                      <span className="flex items-center">
+                        <FontAwesomeIcon icon={faHeart} className="mr-1" />
+                        {group.like_count || 0}개
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2 ml-4">
+                    {/* 좋아요 버튼 */}
+                    <button
+                      onClick={(e) => handleLikeToggle(group.id, e)}
+                      disabled={isTogglingLike}
+                      className={`flex items-center space-x-1 px-2 py-1 rounded text-sm transition-colors ${
+                        userLikedGroups[group.id]
+                          ? 'text-red-400 hover:text-red-300 bg-red-500/20'
+                          : 'text-gray-400 hover:text-gray-300 bg-white/10 hover:bg-white/20'
+                      }`}
+                    >
+                      <FontAwesomeIcon 
+                        icon={userLikedGroups[group.id] ? faHeart : faHeartBroken} 
+                        className="mr-1" 
+                      />
+                      {userLikedGroups[group.id] ? '좋아요' : '좋아요'}
+                    </button>
+                    
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -422,13 +517,13 @@ export default function GroupPage() {
       )}
 
       {/* 빈 상태 */}
-      {!isLoadingGroups && groups.length === 0 && (
+      {!isLoadingGroups && filteredGroups.length === 0 && (
         <div className="px-4 py-5 sm:p-6">
           <div className="text-center">
             <FontAwesomeIcon icon={faUsers} className="mx-auto h-12 w-12 text-gray-400 mb-4" />
             <h3 className="mt-2 text-sm font-medium text-white">그룹이 없습니다.</h3>
             <p className="mt-1 text-sm text-gray-300">
-              {appliedFilters.search ? '검색 결과가 없습니다.' : '아직 등록된 그룹이 없습니다.'}
+              {filters.search ? '검색 결과가 없습니다.' : '아직 등록된 그룹이 없습니다.'}
             </p>
           </div>
         </div>
@@ -460,12 +555,52 @@ export default function GroupPage() {
               )}
               
               <div className="text-sm text-gray-300">
-                <p>소유자: {selectedGroup.owner_id}</p>
-                <p>멤버 수: {selectedGroup.member_count || 0}명</p>
+                <p>소유자: {selectedGroup.owner_gen}기 {selectedGroup.owner_name}</p>
+                <p>멤버 수: {members.length}명</p>
                 {selectedGroup.max_members && (
                   <p>최대 인원: {selectedGroup.max_members}명</p>
                 )}
+                <p>좋아요: {selectedGroup.like_count || 0}개</p>
               </div>
+
+              {/* 좋아요 버튼 */}
+              <div className="mt-4">
+                <button
+                  onClick={(e) => handleLikeToggle(selectedGroup.id, e)}
+                  disabled={isTogglingLike}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                    userLikedGroups[selectedGroup.id]
+                      ? 'bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30'
+                      : 'bg-white/10 text-white border border-white/30 hover:bg-white/20'
+                  }`}
+                >
+                  <FontAwesomeIcon 
+                    icon={userLikedGroups[selectedGroup.id] ? faHeart : faHeartBroken} 
+                    className="mr-2" 
+                  />
+                  <span>
+                    {userLikedGroups[selectedGroup.id] ? '좋아요 취소' : '좋아요'}
+                  </span>
+                </button>
+              </div>
+
+              {/* 좋아요한 멤버 목록 */}
+              {groupLikes[selectedGroup.id] && groupLikes[selectedGroup.id].recent_likers.length > 0 && (
+                <div className="mt-4">
+                  <h3 className="text-lg font-semibold text-white mb-3">최근 좋아요한 멤버</h3>
+                  <div className="space-y-2">
+                    {groupLikes[selectedGroup.id].recent_likers.slice(0, 5).map((liker, index) => (
+                      <div key={index} className="flex items-center space-x-2 p-2 bg-white/10 rounded">
+                        <span className="text-white font-medium">{liker.name}</span>
+                        <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded">
+                          {liker.gen}기
+                        </span>
+                        <span className="text-gray-300 text-sm">({liker.member_id})</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 멤버 목록 */}
@@ -478,9 +613,31 @@ export default function GroupPage() {
                 <h3 className="text-lg font-semibold text-white mb-3">멤버 목록</h3>
                 <div className="space-y-2">
                   {members.map((member: any) => (
-                    <div key={member.id} className="flex items-center justify-between p-2 bg-white/10 rounded">
-                      <span className="text-white">{member.name}</span>
-                      <span className="text-gray-300 text-sm">{member.email}</span>
+                    <div key={member.member_id} className="flex items-center justify-between p-2 bg-white/10 rounded">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-white font-medium">{member.name}</span>
+                        <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded">
+                          {member.gen}기
+                        </span>
+                        <span className="text-gray-300 text-sm">({member.member_id})</span>
+                        <span className={`px-2 py-1 text-xs rounded ${
+                          member.role === 'owner' 
+                            ? 'bg-yellow-500/20 text-yellow-300' 
+                            : 'bg-blue-500/20 text-blue-300'
+                        }`}>
+                          {member.role === 'owner' ? '소유자' : '멤버'}
+                        </span>
+                      </div>
+                      {/* 소유자가 아닌 멤버만 제거 가능 */}
+                      {user && user.id === selectedGroup.owner_id && member.role !== 'owner' && (
+                        <button
+                          onClick={() => handleRemoveMember(member.member_id)}
+                          className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                        >
+                          <FontAwesomeIcon icon={faTimes} className="mr-1" />
+                          제거
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -500,7 +657,13 @@ export default function GroupPage() {
                     <div className="space-y-2">
                       {joinRequests.map((request: any) => (
                         <div key={request.id} className="flex items-center justify-between p-2 bg-white/10 rounded">
-                          <span className="text-white">{request.member_name}</span>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-white font-medium">{request.name}</span>
+                            <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded">
+                              {request.gen}기
+                            </span>
+                            <span className="text-gray-300 text-sm">({request.member_id})</span>
+                          </div>
                           <div className="flex space-x-2">
                             <button
                               onClick={() => handleApproveMember(request.id)}

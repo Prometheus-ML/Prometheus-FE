@@ -4,8 +4,6 @@ export type Project = {
   title: string;
   keywords?: string[] | null;
   description?: string | null;
-  start_date?: string | null;
-  end_date?: string | null;
   status: string;
   github_url?: string | null;
   demo_url?: string | null;
@@ -13,6 +11,8 @@ export type Project = {
   thumbnail_url?: string | null;
   gen: number;
   meta?: Record<string, any> | null;
+  like_count?: number;
+  is_liked?: boolean;
 };
 
 export type ProjectMember = {
@@ -21,6 +21,8 @@ export type ProjectMember = {
   member_id: string;
   role?: string | null;
   contribution?: string | null;
+  member_name?: string | null;
+  member_gen?: number | null;
 };
 
 export type ProjectWithMembers = {
@@ -34,4 +36,11 @@ export type MemberProjectHistory = {
   active_project: number;
   completed_project: number;
   items: ProjectWithMembers[];
+};
+
+export type ProjectLike = {
+  id: number;
+  project_id: number;
+  member_id: string;
+  created_at: string;
 };

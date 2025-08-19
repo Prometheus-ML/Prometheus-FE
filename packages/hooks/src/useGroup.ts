@@ -4,6 +4,7 @@ import {
   GroupMember,
   GroupJoinRequest,
   GroupNote,
+  GroupLikeInfo,
 } from '@prometheus-fe/types';
 import { useState, useCallback } from 'react';
 
@@ -13,12 +14,15 @@ export function useGroup() {
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [joinRequests, setJoinRequests] = useState<GroupJoinRequest[]>([]);
+  const [groupLikes, setGroupLikes] = useState<Record<number, GroupLikeInfo>>({});
+  const [userLikedGroups, setUserLikedGroups] = useState<Record<number, boolean>>({});
   const [isLoadingGroups, setIsLoadingGroups] = useState(false);
   const [isLoadingGroup, setIsLoadingGroup] = useState(false);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
   const [isLoadingJoinRequests, setIsLoadingJoinRequests] = useState(false);
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
   const [isCreatingNote, setIsCreatingNote] = useState(false);
+  const [isTogglingLike, setIsTogglingLike] = useState(false);
 
   // 그룹 목록 조회
   const fetchGroups = useCallback(async (params?: any) => {
@@ -167,6 +171,22 @@ export function useGroup() {
     }
   }, [group, fetchJoinRequests]);
 
+  // 그룹에서 멤버 제거
+  const removeMember = useCallback(async (groupId: number | string, memberId: string) => {
+    if (!group) {
+      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
+      return;
+    }
+    try {
+      await group.removeMember(groupId, memberId);
+      // 멤버 목록을 다시 불러옴
+      await fetchGroupMembers(groupId);
+    } catch (error) {
+      console.error(`멤버 ${memberId} 제거 실패:`, error);
+      throw error;
+    }
+  }, [group, fetchGroupMembers]);
+
   // 그룹 노트 생성
   const createGroupNote = useCallback(async (groupId: number | string, noteData: any) => {
     if (!group) {
@@ -181,6 +201,79 @@ export function useGroup() {
       throw error;
     } finally {
       setIsCreatingNote(false);
+    }
+  }, [group]);
+
+  // 그룹 좋아요 토글
+  const toggleGroupLike = useCallback(async (groupId: number | string) => {
+    if (!group) {
+      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
+      return null;
+    }
+    try {
+      setIsTogglingLike(true);
+      const result = await group.toggleGroupLike(groupId);
+      
+      // 좋아요 상태 업데이트
+      setUserLikedGroups(prev => ({
+        ...prev,
+        [groupId]: result.liked
+      }));
+
+      // 그룹 목록의 좋아요 개수 업데이트
+      setGroups(prev => prev.map(g => 
+        g.id === groupId 
+          ? { ...g, like_count: result.like_count }
+          : g
+      ));
+
+      // 선택된 그룹의 좋아요 개수 업데이트
+      if (selectedGroup && selectedGroup.id === groupId) {
+        setSelectedGroup(prev => prev ? { ...prev, like_count: result.like_count } : null);
+      }
+
+      return result;
+    } catch (error) {
+      console.error(`그룹 ${groupId} 좋아요 토글 실패:`, error);
+      throw error;
+    } finally {
+      setIsTogglingLike(false);
+    }
+  }, [group, selectedGroup]);
+
+  // 그룹 좋아요 정보 조회
+  const fetchGroupLikes = useCallback(async (groupId: number | string) => {
+    if (!group) {
+      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
+      return;
+    }
+    try {
+      const likes = await group.getGroupLikes(groupId);
+      setGroupLikes(prev => ({
+        ...prev,
+        [groupId]: likes
+      }));
+    } catch (error) {
+      console.error(`그룹 ${groupId} 좋아요 정보 조회 실패:`, error);
+    }
+  }, [group]);
+
+  // 사용자 좋아요 여부 확인
+  const checkUserLikedGroup = useCallback(async (groupId: number | string) => {
+    if (!group) {
+      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
+      return;
+    }
+    try {
+      const liked = await group.checkUserLikedGroup(groupId);
+      setUserLikedGroups(prev => ({
+        ...prev,
+        [groupId]: liked
+      }));
+      return liked;
+    } catch (error) {
+      console.error(`그룹 ${groupId} 사용자 좋아요 상태 확인 실패:`, error);
+      return false;
     }
   }, [group]);
 
@@ -229,12 +322,15 @@ export function useGroup() {
     selectedGroup,
     members,
     joinRequests,
+    groupLikes,
+    userLikedGroups,
     isLoadingGroups,
     isLoadingGroup,
     isLoadingMembers,
     isLoadingJoinRequests,
     isCreatingGroup,
     isCreatingNote,
+    isTogglingLike,
     
     // API 함수들
     fetchGroups,
@@ -245,7 +341,11 @@ export function useGroup() {
     fetchJoinRequests,
     approveMember,
     rejectMember,
+    removeMember,
     createGroupNote,
+    toggleGroupLike,
+    fetchGroupLikes,
+    checkUserLikedGroup,
     filterGroupsByCategory,
     
     // 핸들러들

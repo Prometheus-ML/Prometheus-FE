@@ -8,12 +8,17 @@ import {
   GetGroupsResponse,
   GroupNoteCreateRequest,
   GroupNoteCreateResponse,
+  GroupLikeToggleRequest,
+  GroupLikeToggleResponseType,
+  GetGroupLikesResponse,
+  CheckUserLikedGroupResponse,
 } from './dto/group.dto';
 import type {
   Group,
   GroupMember,
   GroupJoinRequest,
   GroupNote,
+  GroupLikeInfo,
 } from '@prometheus-fe/types';
 
 export class GroupApi {
@@ -110,6 +115,15 @@ export class GroupApi {
     }
   }
 
+  async removeMember(groupId: number | string, memberId: string): Promise<void> {
+    try {
+      await this.api.delete(`${this.base}/${groupId}/members/${memberId}`);
+    } catch (error: any) {
+      console.error(`Error removing member ${memberId} from group ${groupId}:`, error);
+      throw new Error(error.message || 'Failed to remove member');
+    }
+  }
+
   // Group Notes
   async createGroupNote(groupId: number | string, data: GroupNoteCreateRequest): Promise<GroupNoteCreateResponse> {
     try {
@@ -118,6 +132,37 @@ export class GroupApi {
     } catch (error: any) {
       console.error(`Error creating note for group ${groupId}:`, error);
       throw new Error(error.message || 'Failed to create group note');
+    }
+  }
+
+  // Group Likes
+  async toggleGroupLike(groupId: number | string): Promise<GroupLikeToggleResponseType> {
+    try {
+      const response = await this.api.post<GroupLikeToggleResponseType>(`${this.base}/${groupId}/like`, {});
+      return response;
+    } catch (error: any) {
+      console.error(`Error toggling like for group ${groupId}:`, error);
+      throw new Error(error.message || 'Failed to toggle group like');
+    }
+  }
+
+  async getGroupLikes(groupId: number | string): Promise<GroupLikeInfo> {
+    try {
+      const response = await this.api.get<GroupLikeInfo>(`${this.base}/${groupId}/likes`);
+      return response;
+    } catch (error: any) {
+      console.error(`Error fetching likes for group ${groupId}:`, error);
+      throw new Error(error.message || 'Failed to fetch group likes');
+    }
+  }
+
+  async checkUserLikedGroup(groupId: number | string): Promise<boolean> {
+    try {
+      const response = await this.api.get<{ liked: boolean }>(`${this.base}/${groupId}/like/check`);
+      return response.liked;
+    } catch (error: any) {
+      console.error(`Error checking like status for group ${groupId}:`, error);
+      return false;
     }
   }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useProject, useImage } from '@prometheus-fe/hooks';
@@ -8,7 +8,7 @@ import { useAuthStore } from '@prometheus-fe/stores';
 import GlassCard from '../../../src/components/GlassCard';
 import RedButton from '../../../src/components/RedButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faUndo } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faUndo, faHeart } from '@fortawesome/free-solid-svg-icons';
 
 export default function AdminProjectPage() {
   const { 
@@ -29,6 +29,9 @@ export default function AdminProjectPage() {
   
   // Hydration 완료 상태 관리
   const [isMounted, setIsMounted] = useState<boolean>(false);
+  
+  // 기수 필터 상태 추가
+  const [genFilter, setGenFilter] = useState<string>('');
   
   // useImage 훅 사용
   const { getThumbnailUrl, getDefaultImageUrl } = useImage();
@@ -107,9 +110,15 @@ export default function AdminProjectPage() {
     setStatus(e.target.value);
   };
 
+  // 기수 필터 핸들러 추가
+  const handleGenChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setGenFilter(e.target.value);
+  };
+
   // 필터 초기화 핸들러
   const handleClearFilters = () => {
     clearFilters();
+    setGenFilter(''); // 기수 필터도 초기화
   };
 
   // 검색어 하이라이트 컴포넌트
@@ -153,6 +162,33 @@ export default function AdminProjectPage() {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+  // 필터링된 프로젝트 목록
+  const filteredProjects = useMemo(() => {
+    let filtered = projects;
+    
+    if (searchQuery) {
+      const searchLower = searchQuery.toLowerCase();
+      filtered = filtered.filter(project => 
+        project.title.toLowerCase().includes(searchLower) ||
+        (project.description && project.description.toLowerCase().includes(searchLower)) ||
+        (project.keywords && project.keywords.some(keyword => 
+          keyword.toLowerCase().includes(searchLower)
+        ))
+      );
+    }
+    
+    if (statusFilter) {
+      filtered = filtered.filter(project => project.status === statusFilter);
+    }
+    
+    if (genFilter) {
+      const genNum = parseInt(genFilter);
+      filtered = filtered.filter(project => project.gen === genNum);
+    }
+    
+    return filtered;
+  }, [projects, searchQuery, statusFilter, genFilter]);
 
   // Hydration이 완료되지 않았거나 권한이 없는 경우
   if (!isMounted || !isAuthenticated() || !canAccessManager()) {
@@ -206,6 +242,23 @@ export default function AdminProjectPage() {
             </select>
           </div>
 
+          {/* 기수 필터 추가 */}
+          <div className="flex-1">
+            <select
+              value={genFilter}
+              onChange={handleGenChange}
+              className="block w-full px-3 py-2 text-sm bg-white/20 text-white border-white/30 rounded-md focus:outline-none focus:ring-1 focus:ring-white/50"
+            >
+              <option value="" className="bg-gray-100 text-black">기수</option>
+              <option value="0" className="bg-gray-100 text-black">0기</option>
+              {Array.from({ length: 15 }, (_, i) => (
+                <option key={i + 1} value={i + 1} className="bg-gray-100 text-black">
+                  {i + 1}기
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* 필터 초기화 버튼 */}
           <RedButton onClick={handleClearFilters} className="px-4 py-2">
             <FontAwesomeIcon icon={faUndo} className="text-sm" />
@@ -221,10 +274,10 @@ export default function AdminProjectPage() {
       {/* 검색 결과 개수 */}
       <div className="text-center mb-4">
         <span className="text-sm text-white">
-          {searchQuery || statusFilter ? (
-            `검색 결과: ${projects.length}개`
+          {(searchQuery || statusFilter || genFilter) ? (
+            `검색 결과: ${filteredProjects.length}개`
           ) : (
-            `전체: ${projects.length}개`
+            `전체: ${filteredProjects.length}개`
           )}
         </span>
       </div>
@@ -253,7 +306,7 @@ export default function AdminProjectPage() {
       {!isLocalLoading && !isLoadingProjects && !error && (
         <GlassCard className="overflow-hidden">
           <ul className="divide-y divide-gray-200">
-            {projects.map((project) => (
+            {filteredProjects.map((project) => (
               <li key={project.id} className="px-4 py-4 hover:bg-white/10 cursor-pointer border-b border-white/10 last:border-b-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
@@ -300,20 +353,21 @@ export default function AdminProjectPage() {
                           searchTerm={searchQuery} 
                         />
                       </p>
-                      <p className="text-sm text-gray-300">
-                        {project.gen}기
+                      <div className="flex items-center space-x-2 text-sm text-gray-300">
+                        <span>{project.gen}기</span>
+                        {project.like_count !== undefined && (
+                          <span className="flex items-center text-pink-400">
+                            <FontAwesomeIcon icon={faHeart} className="mr-1 h-3 w-3" />
+                            {project.like_count}
+                          </span>
+                        )}
                         {project.keywords && project.keywords.length > 0 && (
-                          <span className="ml-2">
+                          <span>
                             · 키워드: {project.keywords.slice(0, 3).join(', ')}
                             {project.keywords.length > 3 && ` +${project.keywords.length - 3}개`}
                           </span>
                         )}
-                      </p>
-                      {project.start_date && (
-                        <p className="text-sm text-gray-300">
-                          시작일: {new Date(project.start_date).toLocaleDateString('ko-KR')}
-                        </p>
-                      )}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -349,14 +403,14 @@ export default function AdminProjectPage() {
       )}
 
       {/* 빈 상태 */}
-      {!isLocalLoading && !isLoadingProjects && !error && projects.length === 0 && (
+      {!isLocalLoading && !isLoadingProjects && !error && filteredProjects.length === 0 && (
         <div className="px-4 py-5 sm:p-6">
           <div className="text-center">
             <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             <h3 className="mt-2 text-sm font-medium text-white">
-              {searchQuery || statusFilter ? '검색 결과가 없습니다.' : '프로젝트가 없습니다.'}
+              {(searchQuery || statusFilter || genFilter) ? '검색 결과가 없습니다.' : '프로젝트가 없습니다.'}
             </h3>
           </div>
         </div>

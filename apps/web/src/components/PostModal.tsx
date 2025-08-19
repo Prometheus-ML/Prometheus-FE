@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useCommunity } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 
 interface PostModalProps {
   postId: number | null;
@@ -25,18 +28,24 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
     selectedPost,
     comments,
     isLoadingPost,
+    isLoadingComments,
     isCreatingComment,
+    isTogglingLike,
     fetchPost,
     createComment,
     deleteComment,
     deletePost,
     clearSelectedPost,
     clearComments,
+    getMemberInfo,
+    toggleLike,
   } = useCommunity();
 
   const { user } = useAuthStore();
   const [newComment, setNewComment] = useState<any>({ content: '' });
   const [error, setError] = useState('');
+  const [authorInfo, setAuthorInfo] = useState<any>(null);
+  const [commentAuthors, setCommentAuthors] = useState<Record<string, any>>({});
 
   // 모달이 열릴 때 게시글 데이터 로드
   useEffect(() => {
@@ -45,6 +54,20 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
     }
   }, [isOpen, postId, fetchPost]);
 
+  // 게시글 작성자 정보 로드
+  useEffect(() => {
+    if (selectedPost?.author_id) {
+      loadAuthorInfo(selectedPost.author_id);
+    }
+  }, [selectedPost]);
+
+  // 댓글 작성자 정보 로드
+  useEffect(() => {
+    if (comments.length > 0) {
+      loadCommentAuthors();
+    }
+  }, [comments]);
+
   // 모달이 닫힐 때 상태 초기화
   useEffect(() => {
     if (!isOpen) {
@@ -52,8 +75,44 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
       clearComments();
       setNewComment({ content: '' });
       setError('');
+      setAuthorInfo(null);
+      setCommentAuthors({});
     }
   }, [isOpen, clearSelectedPost, clearComments]);
+
+  const loadAuthorInfo = async (authorId: string) => {
+    try {
+      const memberData = await getMemberInfo(authorId);
+      setAuthorInfo(memberData);
+    } catch (error) {
+      console.error('작성자 정보 로드 실패:', error);
+    }
+  };
+
+  const loadCommentAuthors = async () => {
+    const uniqueAuthorIds = [...new Set(comments.map(comment => comment.author_id))];
+    const authors: Record<string, any> = {};
+    
+    for (const authorId of uniqueAuthorIds) {
+      try {
+        const memberData = await getMemberInfo(authorId);
+        if (memberData) {
+          authors[authorId] = memberData;
+        }
+      } catch (error) {
+        console.error(`댓글 작성자 ${authorId} 정보 로드 실패:`, error);
+      }
+    }
+    
+    setCommentAuthors(authors);
+  };
+
+  const getAuthorDisplayName = (authorId: string, memberData: any) => {
+    if (memberData) {
+      return `${memberData.gen}기 ${memberData.name}`;
+    }
+    return authorId; // 멤버 정보가 없으면 ID로 표시
+  };
 
   const handleCreateComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,10 +122,20 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
       return;
     }
 
+    if (!user || !user.id) {
+      setError('사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
+      return;
+    }
+
     try {
       setError('');
       await createComment(postId, newComment);
       setNewComment({ content: '' });
+      
+      // 댓글 작성 후 댓글 목록 새로고침
+      if (postId) {
+        fetchPost(postId);
+      }
     } catch (err) {
       console.error('댓글 생성 실패:', err);
       setError('댓글 작성에 실패했습니다.');
@@ -74,12 +143,17 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
   };
 
   const handleDeleteComment = async (commentId: number) => {
-    if (!postId || !confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
+    if (!postId || !commentId || !confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
       return;
     }
 
     try {
       await deleteComment(postId, commentId);
+      
+      // 댓글 삭제 후 댓글 목록 새로고침
+      if (postId) {
+        fetchPost(postId);
+      }
     } catch (err) {
       console.error('댓글 삭제 실패:', err);
       setError('댓글 삭제에 실패했습니다.');
@@ -97,6 +171,21 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
     } catch (err) {
       console.error('게시글 삭제 실패:', err);
       setError('게시글 삭제에 실패했습니다.');
+    }
+  };
+
+  const handleToggleLike = async () => {
+    if (!postId || !user) {
+      setError('로그인이 필요합니다.');
+      return;
+    }
+
+    try {
+      setError('');
+      await toggleLike(postId);
+    } catch (err) {
+      console.error('좋아요 토글 실패:', err);
+      setError('좋아요 처리에 실패했습니다.');
     }
   };
 
@@ -148,7 +237,7 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                     {getCategoryLabel(selectedPost.category)}
                   </span>
                   <span className="text-sm text-gray-300">
-                    작성자: {selectedPost.author_id}
+                    작성자: {getAuthorDisplayName(selectedPost.author_id, authorInfo)}
                   </span>
                   <span className="text-sm text-gray-300">
                     {new Date(selectedPost.created_at).toLocaleString('ko-KR')}
@@ -167,6 +256,35 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                   {selectedPost.title}
                 </h1>
 
+                {/* 좋아요 섹션 */}
+                <div className="flex items-center space-x-4 mb-4">
+                  {user && (
+                    <button
+                      onClick={handleToggleLike}
+                      disabled={isTogglingLike}
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+                        selectedPost.is_liked
+                          ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                          : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-red-400'
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      <FontAwesomeIcon 
+                        icon={selectedPost.is_liked ? faHeart : faHeartRegular} 
+                        className={`w-4 h-4 ${isTogglingLike ? 'animate-pulse' : ''}`} 
+                      />
+                      <span className="text-sm font-medium">
+                        {selectedPost.is_liked ? '좋아요 취소' : '좋아요'}
+                      </span>
+                    </button>
+                  )}
+                  <div className="flex items-center space-x-1 text-gray-300">
+                    <FontAwesomeIcon icon={faHeart} className="w-4 h-4" />
+                    <span className="text-sm">
+                      {selectedPost.like_count || 0}명이 좋아합니다
+                    </span>
+                  </div>
+                </div>
+
                 <div className="prose max-w-none">
                   <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
                     {selectedPost.content}
@@ -179,9 +297,17 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                 <h3 className="text-lg font-semibold mb-4 text-white">
                   댓글 ({comments.length})
                 </h3>
+                
+                {/* 댓글 로딩 상태 */}
+                {isLoadingComments && (
+                  <div className="flex justify-center items-center py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600" />
+                    <span className="ml-2 text-gray-300">댓글을 불러오는 중...</span>
+                  </div>
+                )}
 
                 {/* 댓글 작성 폼 */}
-                {user && (
+                {user && !isLoadingComments && (
                   <div className="mb-6">
                     <form onSubmit={handleCreateComment}>
                       <div className="mb-3">
@@ -195,7 +321,7 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="text-sm text-gray-300">
-                          {user.id}로 댓글 작성
+                          {getAuthorDisplayName(user.id, authorInfo)}(으)로 댓글 작성
                         </div>
                         <button
                           type="submit"
@@ -217,46 +343,50 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                 )}
 
                 {/* 댓글 목록 */}
-                <div className="space-y-4">
-                  {comments.length === 0 ? (
-                    <div className="text-center text-gray-300 py-8">
-                      아직 댓글이 없습니다.
-                      {!user && (
-                        <p className="mt-2 text-sm">
-                          댓글을 작성하려면 로그인이 필요합니다.
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    comments.map((comment) => (
-                      <div key={comment.id} className="bg-white/10 rounded-lg p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <span className="text-sm font-medium text-white">
-                                {comment.author_id}
-                              </span>
-                              <span className="text-xs text-gray-300">
-                                {new Date(comment.created_at).toLocaleString('ko-KR')}
-                              </span>
-                            </div>
-                            <p className="text-gray-300 whitespace-pre-wrap">
-                              {comment.content}
-                            </p>
-                          </div>
-                          {user && user.id === comment.author_id && (
-                            <button
-                              onClick={() => handleDeleteComment(comment.id)}
-                              className="text-red-400 hover:text-red-300 text-sm ml-4"
-                            >
-                              삭제
-                            </button>
-                          )}
-                        </div>
+                {!isLoadingComments && (
+                  <div className="space-y-4">
+                    {comments.length === 0 ? (
+                      <div className="text-center text-gray-300 py-8">
+                        아직 댓글이 없습니다.
+                        {!user && (
+                          <p className="mt-2 text-sm">
+                            댓글을 작성하려면 로그인이 필요합니다.
+                          </p>
+                        )}
                       </div>
-                    ))
-                  )}
-                </div>
+                    ) : (
+                      comments
+                        .filter(comment => comment && comment.id && comment.author_id && comment.created_at) // 유효한 댓글만 필터링
+                        .map((comment) => (
+                          <div key={comment.id} className="bg-white/10 rounded-lg p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <span className="text-sm font-medium text-white">
+                                    {getAuthorDisplayName(comment.author_id, commentAuthors[comment.author_id])}
+                                  </span>
+                                  <span className="text-xs text-gray-300">
+                                    {comment.created_at ? new Date(comment.created_at).toLocaleString('ko-KR') : '날짜 없음'}
+                                  </span>
+                                </div>
+                                <p className="text-gray-300 whitespace-pre-wrap">
+                                  {comment.content || '내용 없음'}
+                                </p>
+                              </div>
+                              {user && user.id === comment.author_id && (
+                                <button
+                                  onClick={() => handleDeleteComment(comment.id)}
+                                  className="text-red-400 hover:text-red-300 text-sm ml-4"
+                                >
+                                  삭제
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                    )}
+                  </div>
+                )}
               </div>
             </>
           ) : (

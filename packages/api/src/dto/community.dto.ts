@@ -1,6 +1,7 @@
 import type {
   Post,
   Comment,
+  LikeStatus,
 } from '@prometheus-fe/types';
 
 // 공통 응답 인터페이스 (내부에서만 사용)
@@ -39,6 +40,11 @@ export interface CreateCommentRequest {
 
 export interface CreateCommentResponse extends BaseResponse {
   comment: Comment;
+}
+
+// 좋아요 관련
+export interface LikeStatusResponse extends LikeStatus {
+  // LikeStatus 타입을 그대로 사용
 }
 
 

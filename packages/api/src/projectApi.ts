@@ -16,7 +16,10 @@ import {
   UpdateProjectMemberDto,
   RemoveProjectMemberDto,
   GetMemberProjectHistoryRequest,
-  GetMemberProjectHistoryDto
+  GetMemberProjectHistoryDto,
+  AddProjectLikeRequest,
+  AddProjectLikeDto,
+  RemoveProjectLikeDto
 } from './dto/project.dto';
 
 export class ProjectApi {
@@ -28,40 +31,11 @@ export class ProjectApi {
 
   async create(formData: any): Promise<CreateProjectDto> {
     try {
-      // Helper function to ensure proper ISO date format
-      const ensureISODate = (dateString: string | null): string | null => {
-        if (!dateString) return null;
-        
-        try {
-          // If it's already in ISO format, return as is
-          if (dateString.includes('T') || dateString.includes('Z')) {
-            return dateString;
-          }
-          
-          // If it's YYYY-MM-DD format, convert to ISO
-          if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-            return new Date(dateString + 'T00:00:00.000Z').toISOString();
-          }
-          
-          // Try to parse and convert
-          const date = new Date(dateString);
-          if (isNaN(date.getTime())) {
-            throw new Error(`Invalid date format: ${dateString}`);
-          }
-          return date.toISOString();
-        } catch (error) {
-          console.warn('Date conversion warning:', error);
-          return dateString; // Return original if conversion fails
-        }
-      };
-
       // Transform form data to match API requirements
       const data: CreateProjectRequest = {
         title: formData.title.trim(),
         keywords: formData.keywords?.length > 0 ? formData.keywords : null,
         description: formData.description?.trim() || null,
-        start_date: formData.start_date ? ensureISODate(formData.start_date) : null,
-        end_date: formData.end_date ? ensureISODate(formData.end_date) : null,
         github_url: formData.github_url?.trim() || null,
         demo_url: formData.demo_url?.trim() || null,
         panel_url: formData.panel_url?.trim() || null,
@@ -211,6 +185,28 @@ export class ProjectApi {
     } catch (error: any) {
       console.error('Error fetching projects for admin:', error);
       throw new Error(error.message || 'Failed to fetch projects for admin');
+    }
+  }
+
+  // 프로젝트 좋아요 추가
+  async addLike(projectId: number | string): Promise<AddProjectLikeDto> {
+    try {
+      const response = await this.apiClient.post<AddProjectLikeDto>(`/projects/${projectId}/like`, {});
+      return response;
+    } catch (error: any) {
+      console.error(`Error adding like to project ${projectId}:`, error);
+      throw new Error(error.message || 'Failed to add like');
+    }
+  }
+
+  // 프로젝트 좋아요 제거
+  async removeLike(projectId: number | string): Promise<RemoveProjectLikeDto> {
+    try {
+      const response = await this.apiClient.delete<RemoveProjectLikeDto>(`/projects/${projectId}/like`);
+      return response;
+    } catch (error: any) {
+      console.error(`Error removing like from project ${projectId}:`, error);
+      throw new Error(error.message || 'Failed to remove like');
     }
   }
 
