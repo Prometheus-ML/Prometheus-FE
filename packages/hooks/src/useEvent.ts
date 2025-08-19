@@ -18,7 +18,13 @@ import {
   EventFilter,
   AttendanceStatus,
   AttendanceCode,
-  CheckInAttendanceData
+  CheckInAttendanceData,
+  Participant,
+  ParticipantList,
+  ParticipantRequest,
+  ParticipantResult,
+  ExcusedAbsenceRequest,
+  UpdateExcusedAbsenceRequest
 } from '@prometheus-fe/types';
 
 /**
@@ -144,9 +150,7 @@ export function useEventManagement() {
       if (formData.startTime >= formData.endTime) {
         throw new Error('시작 시간이 종료 시간보다 늦을 수 없습니다.');
       }
-      if (formData.startTime < new Date()) {
-        throw new Error('과거 날짜로 이벤트를 생성할 수 없습니다.');
-      }
+      // 과거 날짜 검증 제거 - 과거 날짜로도 이벤트 생성 가능
 
       console.log('✅ [EventManagement] 유효성 검사 통과, API 호출 중...');
       const result = await event.createEvent(formData);
@@ -575,6 +579,105 @@ export function useMyAttendance() {
 }
 
 /**
+ * 참여자 관리 훅 (관리자용)
+ */
+export function useParticipantManagement() {
+  const { event } = useApi();
+  const [isAdding, setIsAdding] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [total, setTotal] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+
+  const addParticipants = useCallback(async (
+    eventId: number,
+    memberIds: string[]
+  ): Promise<ParticipantResult> => {
+    try {
+      setIsAdding(true);
+      setError(null);
+
+      if (memberIds.length === 0) {
+        throw new Error('추가할 멤버를 선택해주세요.');
+      }
+
+      const result = await event.addParticipants(eventId, { memberIds });
+      
+      // 참여자 목록 새로고침
+      await fetchParticipants(eventId);
+      
+      return result;
+    } catch (err: any) {
+      const errorMessage = err?.message || '참여자 추가에 실패했습니다.';
+      setError(errorMessage);
+      console.error('참여자 추가 실패:', err);
+      throw err;
+    } finally {
+      setIsAdding(false);
+    }
+  }, [event]);
+
+  const removeParticipants = useCallback(async (
+    eventId: number,
+    memberIds: string[]
+  ): Promise<ParticipantResult> => {
+    try {
+      setIsRemoving(true);
+      setError(null);
+
+      if (memberIds.length === 0) {
+        throw new Error('제거할 멤버를 선택해주세요.');
+      }
+
+      const result = await event.removeParticipants(eventId, { memberIds });
+      
+      // 참여자 목록 새로고침
+      await fetchParticipants(eventId);
+      
+      return result;
+    } catch (err: any) {
+      const errorMessage = err?.message || '참여자 제거에 실패했습니다.';
+      setError(errorMessage);
+      console.error('참여자 제거 실패:', err);
+      throw err;
+    } finally {
+      setIsRemoving(false);
+    }
+  }, [event]);
+
+  const fetchParticipants = useCallback(async (eventId: number) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const result = await event.getParticipants(eventId);
+      setParticipants(result.participants);
+      setTotal(result.total);
+    } catch (err: any) {
+      const errorMessage = err?.message || '참여자 목록을 불러오는데 실패했습니다.';
+      setError(errorMessage);
+      console.error('참여자 목록 조회 실패:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [event]);
+
+  return {
+    participants,
+    total,
+    isLoading,
+    isAdding,
+    isRemoving,
+    error,
+    addParticipants,
+    removeParticipants,
+    fetchParticipants
+  };
+}
+
+/**
  * 통합 이벤트 훅 (편의 훅)
  */
 export function useEvent() {
@@ -583,6 +686,8 @@ export function useEvent() {
   const attendanceCodeManagement = useAttendanceCodeManagement();
   const attendanceManagement = useAttendanceManagement();
   const myAttendance = useMyAttendance();
+  const participantManagement = useParticipantManagement();
+  const excusedAbsenceManagement = useExcusedAbsenceManagement();
 
   return {
     // 이벤트 목록 관련
@@ -628,6 +733,95 @@ export function useEvent() {
     myAttendanceError: myAttendance.error,
     fetchMyAttendances: myAttendance.fetchMyAttendances,
     getMyAttendanceForEvent: myAttendance.getMyAttendanceForEvent,
-    checkInAttendance: myAttendance.checkInAttendance
+    checkInAttendance: myAttendance.checkInAttendance,
+
+    // 참여자 관리 관련
+    isAddingParticipants: participantManagement.isAdding,
+    isRemovingParticipants: participantManagement.isRemoving,
+    participantError: participantManagement.error,
+    addParticipants: participantManagement.addParticipants,
+    removeParticipants: participantManagement.removeParticipants,
+    fetchParticipants: participantManagement.fetchParticipants,
+    participants: participantManagement.participants,
+    totalParticipants: participantManagement.total,
+    isLoadingParticipants: participantManagement.isLoading,
+
+    // 사유결석 관리 관련
+    isSettingExcusedAbsence: excusedAbsenceManagement.isSetting,
+    isUpdatingExcusedAbsence: excusedAbsenceManagement.isUpdating,
+    excusedAbsenceError: excusedAbsenceManagement.error,
+    setExcusedAbsence: excusedAbsenceManagement.setExcusedAbsence,
+    updateExcusedAbsenceReason: excusedAbsenceManagement.updateExcusedAbsenceReason
+  };
+}
+
+/**
+ * 사유결석 관리 훅 (관리자용)
+ */
+export function useExcusedAbsenceManagement() {
+  const { event } = useApi();
+  const [isSetting, setIsSetting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const setExcusedAbsence = useCallback(async (
+    eventId: number,
+    memberId: string,
+    reason: string
+  ): Promise<Attendance> => {
+    try {
+      setIsSetting(true);
+      setError(null);
+
+      if (!memberId.trim()) {
+        throw new Error('멤버 ID를 입력해주세요.');
+      }
+      if (!reason.trim()) {
+        throw new Error('사유를 입력해주세요.');
+      }
+
+      const result = await event.setExcusedAbsence(eventId, { memberId, reason });
+      return result;
+    } catch (err: any) {
+      const errorMessage = err?.message || '사유결석 설정에 실패했습니다.';
+      setError(errorMessage);
+      console.error('사유결석 설정 실패:', err);
+      throw err;
+    } finally {
+      setIsSetting(false);
+    }
+  }, [event]);
+
+  const updateExcusedAbsenceReason = useCallback(async (
+    eventId: number,
+    memberId: string,
+    reason: string
+  ): Promise<Attendance> => {
+    try {
+      setIsUpdating(true);
+      setError(null);
+
+      if (!reason.trim()) {
+        throw new Error('사유를 입력해주세요.');
+      }
+
+      const result = await event.updateExcusedAbsenceReason(eventId, memberId, { reason });
+      return result;
+    } catch (err: any) {
+      const errorMessage = err?.message || '사유결석 사유 수정에 실패했습니다.';
+      setError(errorMessage);
+      console.error('사유결석 사유 수정 실패:', err);
+      throw err;
+    } finally {
+      setIsUpdating(false);
+    }
+  }, [event]);
+
+  return {
+    isSetting,
+    isUpdating,
+    error,
+    setExcusedAbsence,
+    updateExcusedAbsenceReason
   };
 }

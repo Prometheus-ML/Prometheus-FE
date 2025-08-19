@@ -53,7 +53,7 @@ function ConfirmModal({ show, title, message, confirmText, onConfirm, onCancel }
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center modal-fixed p-4">
       <GlassCard className="w-full max-w-md p-6">
         <div className="mb-4">
           <h2 className="text-lg font-semibold text-white">{title}</h2>

@@ -19,7 +19,13 @@ import {
   EventType,
   AttendanceStatus,
   AttendanceCode,
-  CheckInAttendanceData
+  CheckInAttendanceData,
+  Participant,
+  ParticipantList,
+  ParticipantRequest,
+  ParticipantResult,
+  ExcusedAbsenceRequest,
+  UpdateExcusedAbsenceRequest
 } from '@prometheus-fe/types';
 import {
   CreateEventRequest,
@@ -40,7 +46,14 @@ import {
   GenerateAttendanceCodeRequest,
   AttendanceCodeResponseDto,
   CheckAttendanceCodeRequest,
-  CheckAttendanceCodeResponseDto
+  CheckAttendanceCodeResponseDto,
+  AddParticipantsRequestDto,
+  RemoveParticipantsRequestDto,
+  ParticipantResultDto,
+  ParticipantListResponseDto,
+  ParticipantDto,
+  ExcusedAbsenceRequestDto,
+  UpdateExcusedAbsenceRequestDto
 } from './dto/event.dto';
 
 export class EventApi {
@@ -443,6 +456,96 @@ export class EventApi {
   }
 
   /**
+   * 참여자 추가 (관리자용)
+   */
+  async addParticipants(eventId: number, request: ParticipantRequest): Promise<ParticipantResult> {
+    const requestData: AddParticipantsRequestDto = {
+      member_ids: request.memberIds
+    };
+
+    const response = await this.apiClient.post<ParticipantResultDto>(
+      `/admin/event/${eventId}/participants/add`,
+      requestData
+    );
+
+    return {
+      message: response.message,
+      added: response.added,
+      alreadyExists: response.already_exists,
+      errors: response.errors
+    };
+  }
+
+  /**
+   * 참여자 제거 (관리자용)
+   */
+  async removeParticipants(eventId: number, request: ParticipantRequest): Promise<ParticipantResult> {
+    const requestData: RemoveParticipantsRequestDto = {
+      member_ids: request.memberIds
+    };
+
+    const response = await this.apiClient.post<ParticipantResultDto>(
+      `/admin/event/${eventId}/participants/remove`,
+      requestData
+    );
+
+    return {
+      message: response.message,
+      removed: response.removed,
+      notFound: response.not_found,
+      errors: response.errors
+    };
+  }
+
+  /**
+   * 참여자 목록 조회 (관리자용)
+   */
+  async getParticipants(eventId: number): Promise<ParticipantList> {
+    const response = await this.apiClient.get<ParticipantListResponseDto>(
+      `/admin/event/${eventId}/participants`
+    );
+
+    return this.transformParticipantListResponse(response);
+  }
+
+  /**
+   * 사유결석 설정 (관리자용)
+   */
+  async setExcusedAbsence(eventId: number, request: ExcusedAbsenceRequest): Promise<Attendance> {
+    const requestData: ExcusedAbsenceRequestDto = {
+      member_id: request.memberId,
+      reason: request.reason
+    };
+
+    const response = await this.apiClient.post<AttendanceResponseDto>(
+      `/admin/event/${eventId}/excused-absence`,
+      requestData
+    );
+
+    return this.transformAttendanceResponse(response);
+  }
+
+  /**
+   * 사유결석 사유 수정 (관리자용)
+   */
+  async updateExcusedAbsenceReason(
+    eventId: number, 
+    memberId: string, 
+    request: UpdateExcusedAbsenceRequest
+  ): Promise<Attendance> {
+    const requestData: UpdateExcusedAbsenceRequestDto = {
+      reason: request.reason
+    };
+
+    const response = await this.apiClient.put<AttendanceResponseDto>(
+      `/admin/event/${eventId}/excused-absence/${memberId}`,
+      requestData
+    );
+
+    return this.transformAttendanceResponse(response);
+  }
+
+  /**
    * EventResponseDto를 Event 도메인 타입으로 변환
    */
   private transformEventResponse(dto: EventResponseDto): Event {
@@ -502,6 +605,22 @@ export class EventApi {
       attendances: dto.attendances.map(attendance => 
         this.transformAttendanceResponse(attendance)
       ),
+      total: dto.total
+    };
+  }
+
+  /**
+   * ParticipantListResponseDto를 ParticipantList 도메인 타입으로 변환
+   */
+  private transformParticipantListResponse(dto: ParticipantListResponseDto): ParticipantList {
+    return {
+      participants: dto.participants.map(participant => ({
+        eventId: participant.event_id,
+        memberId: participant.member_id,
+        memberName: participant.member_name,
+        status: participant.status as AttendanceStatus,
+        addedAt: new Date(participant.added_at)
+      })),
       total: dto.total
     };
   }

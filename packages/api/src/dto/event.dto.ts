@@ -180,6 +180,51 @@ export interface CheckAttendanceCodeResponseDto {
 }
 
 /**
+ * 참여자 추가 요청 DTO
+ */
+export interface AddParticipantsRequestDto {
+  member_ids: string[];
+}
+
+/**
+ * 참여자 제거 요청 DTO
+ */
+export interface RemoveParticipantsRequestDto {
+  member_ids: string[];
+}
+
+/**
+ * 참여자 추가/제거 응답 DTO
+ */
+export interface ParticipantResultDto {
+  message: string;
+  added?: number;
+  removed?: number;
+  already_exists?: number;
+  not_found?: number;
+  errors: string[];
+}
+
+/**
+ * 참여자 정보 DTO
+ */
+export interface ParticipantDto {
+  event_id: number;
+  member_id: string;
+  member_name?: string;
+  status: string;
+  added_at: string; // ISO 8601 형식
+}
+
+/**
+ * 참여자 목록 응답 DTO
+ */
+export interface ParticipantListResponseDto {
+  participants: ParticipantDto[];
+  total: number;
+}
+
+/**
  * API 에러 응답 DTO
  */
 export interface ApiErrorDto {
@@ -214,4 +259,19 @@ export interface AttendanceQueryParams {
   status_filter?: string;
   member_id_filter?: string;
   event_id?: number;
+}
+
+/**
+ * 사유결석 설정 요청 DTO
+ */
+export interface ExcusedAbsenceRequestDto {
+  member_id: string;
+  reason: string;
+}
+
+/**
+ * 사유결석 사유 수정 요청 DTO
+ */
+export interface UpdateExcusedAbsenceRequestDto {
+  reason: string;
 }

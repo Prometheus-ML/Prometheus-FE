@@ -268,7 +268,11 @@ export default function ProjectPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProjects.map((project: Project) => (
-              <GlassCard key={project.id} className="overflow-hidden hover:bg-white/20 transition-colors border border-white/20">
+              <GlassCard 
+                key={project.id} 
+                className="overflow-hidden hover:bg-white/20 transition-colors border border-white/20 cursor-pointer"
+                onClick={() => window.location.href = `/project/${project.id}`}
+              >
                 <div className="p-4">
                   {/* 프로젝트 이미지 */}
                   <div className="mb-4">
@@ -292,11 +296,11 @@ export default function ProjectPage() {
 
                   {/* 프로젝트 정보 */}
                   <div className="space-y-3">
-                    <div className="flex items-start justify-between">
-                      <h3 className="text-lg font-semibold text-white line-clamp-2 flex-1">
-                        {project.title}
-                      </h3>
-                    </div>
+                                      <div className="flex items-start justify-between">
+                    <h3 className="text-lg font-semibold text-white line-clamp-2 flex-1">
+                      <span className="text-red-300 font-bold">{project.gen}기</span> {project.title}
+                    </h3>
+                  </div>
 
                     {project.description && (
                       <p className="text-gray-300 text-sm line-clamp-3">
@@ -305,9 +309,6 @@ export default function ProjectPage() {
                     )}
 
                     <div className="flex items-center space-x-2 text-sm text-gray-300">
-                      <span className={`px-2 py-1 text-xs rounded-full border ${getGenColor(project.gen)}`}>
-                        {project.gen}기
-                      </span>
                       <span className={`px-2 py-1 text-xs rounded-full border ${getStatusColor(project.status)}`}>
                         {project.status === 'active' ? '진행중' : 
                          project.status === 'completed' ? '완료' : 
@@ -334,8 +335,8 @@ export default function ProjectPage() {
                       </div>
                     )}
 
-                    {/* 좋아요 및 상세보기 버튼 */}
-                    <div className="flex items-center justify-between pt-2">
+                    {/* 좋아요 버튼 */}
+                    <div className="flex items-center justify-between pt-2" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => handleLikeToggle(project)}
@@ -353,13 +354,6 @@ export default function ProjectPage() {
                           {project.like_count || 0}
                         </button>
                       </div>
-                      <a
-                        href={`/project/${project.id}`}
-                        className="inline-flex items-center px-3 py-1 text-sm bg-red-500/20 border border-red-500/30 rounded text-red-300 hover:bg-red-500/30 transition-colors"
-                      >
-                        <FontAwesomeIcon icon={faEye} className="mr-1 h-3 w-3" />
-                        상세보기
-                      </a>
                     </div>
                   </div>
                 </div>

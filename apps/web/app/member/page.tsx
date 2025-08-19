@@ -8,6 +8,7 @@ import { useImage, useMember, useCoffeeChat } from '@prometheus-fe/hooks';
 import GlassCard from '../../src/components/GlassCard';
 import RedButton from '../../src/components/RedButton';
 import ProfileModal from '../../src/components/ProfileModal';
+import SearchBar from '../../src/components/SearchMemberBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faArrowLeft, 
@@ -46,6 +47,7 @@ export default function MemberPage() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedGen, setSelectedGen] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [isSearchLoading, setIsSearchLoading] = useState<boolean>(false);
 
   // 모달 상태
   const [showDetail, setShowDetail] = useState<boolean>(false);
@@ -101,9 +103,13 @@ export default function MemberPage() {
   }, []);
 
   // 사용자 목록 조회
-  const fetchMembers = useCallback(async () => {
+  const fetchMembers = useCallback(async (isSearch = false) => {
     try {
-      setIsLoading(true);
+      if (isSearch) {
+        setIsSearchLoading(true);
+      } else {
+        setIsLoading(true);
+      }
       
       let params: any = {
         page,
@@ -140,7 +146,11 @@ export default function MemberPage() {
       setMembers([]);
       setTotal(0);
     } finally {
-      setIsLoading(false);
+      if (isSearch) {
+        setIsSearchLoading(false);
+      } else {
+        setIsLoading(false);
+      }
     }
   }, [page, size, searchTerm, selectedGen, selectedStatus, isPrivate, getPublicMembers, getPrivateMembers]);
 
@@ -185,33 +195,25 @@ export default function MemberPage() {
     // setFilters(prev => ({ ...prev, [key]: value })); // This line was removed
   }, []);
 
-  // 페이지 변경 시 목록 다시 로드
+  // 초기 로딩 및 페이지/필터 변경 시 목록 다시 로드
   useEffect(() => {
     fetchMembers();
+  }, [page, selectedGen, selectedStatus, fetchMembers]);
+
+  // 검색 핸들러
+  const handleSearch = useCallback(() => {
+    setPage(1);
+    fetchMembers(true);
   }, [fetchMembers]);
 
-  // 검색어 변경 시 디바운스 적용
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setPage(1);
-      fetchMembers();
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchTerm, selectedGen, selectedStatus]);
-
-  // 초기 기수 설정
-  useEffect(() => {
+  // 초기화 핸들러
+  const handleReset = useCallback(() => {
+    setSearchTerm('');
     setSelectedGen('all');
-  }, []);
-
-  // 기수별 탭 변경 시 데이터 다시 로드 (공통)
-  useEffect(() => {
-    if (selectedGen !== 'all') { // 0이 아닐 때만 실행 (초기 로딩 방지)
-      setPage(1); // 페이지 초기화
-      fetchMembers();
-    }
-  }, [selectedGen, fetchMembers]);
+    setSelectedStatus('all');
+    setPage(1);
+    fetchMembers(true);
+  }, [fetchMembers]);
 
   // Skeleton UI Component
   const SkeletonCard = () => (
@@ -281,77 +283,50 @@ export default function MemberPage() {
         {/* 검색 및 필터 */}
         <div className="mb-6 space-y-4">
           {/* 검색 바 */}
-          <div className="relative">
-            <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#e0e0e0] w-4 h-4" />
-            <input
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              type="text"
-              placeholder="이름, 학교를 검색해보세요!"
-              className="w-full border border-[#404040] rounded-md px-10 py-3 bg-[#1A1A1A] text-[#FFFFFF] placeholder-[#e0e0e0] focus:border-[#c2402a] focus:outline-none"
-            />
-          </div>
-          
-          {/* 필터 */}
-          <div className="flex flex-wrap gap-3">
-            {/* 기수 필터 */}
-            <select
-              value={selectedGen}
-              onChange={(e) => setSelectedGen(e.target.value)}
-              className="border border-[#404040] rounded-md px-3 py-2 bg-[#1A1A1A] text-[#FFFFFF] focus:border-[#c2402a] focus:outline-none"
-            >
-              <option value="all">전체 기수</option>
-              {genTabs.slice(1).map((tab) => (
-                <option key={tab.id} value={tab.id}>
-                  {tab.label}
-                </option>
-              ))}
-            </select>
-            
-            {/* 상태 필터 */}
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="border border-[#404040] rounded-md px-3 py-2 bg-[#1A1A1A] text-[#FFFFFF] focus:border-[#c2402a] focus:outline-none"
-            >
-              <option value="all">전체 상태</option>
-              <option value="active">활동중</option>
-              <option value="alumni">알럼나이</option>
-            </select>
-          </div>
+          <SearchBar
+            searchTerm={searchTerm}
+            onSearchTermChange={setSearchTerm}
+            selects={[
+              {
+                id: 'gen',
+                value: selectedGen,
+                onChange: setSelectedGen,
+                options: [
+                  { value: 'all', label: '전체 기수' },
+                  ...genTabs.slice(1).map((tab) => ({
+                    value: tab.id,
+                    label: tab.label
+                  }))
+                ]
+              },
+              {
+                id: 'status',
+                value: selectedStatus,
+                onChange: setSelectedStatus,
+                options: [
+                  { value: 'all', label: '전체 상태' },
+                  { value: 'active', label: '활동중' },
+                  { value: 'alumni', label: '알럼나이' }
+                ]
+              }
+            ]}
+            onSearch={handleSearch}
+            onReset={handleReset}
+            isLoading={isSearchLoading}
+            placeholder="이름, 학교를 검색해보세요!"
+          />
         </div>
-                     {/* 기수별 탭 */}
-        <div className="mb-6">
-             <div className="flex flex-wrap gap-3">
-              <option value="all">전체 기수</option>
-              {genTabs.slice(1).map((tab) => (
-                <option key={tab.id} value={tab.id}>
-                  {tab.label}
-                </option>
-              ))}
-            </div>
-        </div>
-
-        {/* 로딩 상태 */}
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <GlassCard key={index} className="animate-pulse">
-                <SkeletonCard />
-              </GlassCard>
-            ))}
-          </div>
-        ) : (
-          /* 멤버 카드 그리드 */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {members.map((member, index) => (
-              <GlassCard
-                key={'id' in member ? member.id : index}
-                className={`relative p-4 text-center transition-transform duration-200 hover:scale-105 ${
-                  isPrivate ? 'cursor-pointer' : 'cursor-default'
-                }`}
-                onClick={() => onCardClick(member)}
-              >
+        
+        {/* 멤버 카드 그리드 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {members.map((member, index) => (
+            <GlassCard
+              key={'id' in member ? member.id : index}
+              className={`relative p-4 text-center transition-transform duration-200 hover:scale-105 ${
+                isPrivate ? 'cursor-pointer' : 'cursor-default'
+              }`}
+              onClick={() => onCardClick(member)}
+            >
                 <div className="flex flex-col items-center">
                   <div className="relative mb-3">
                     {member.profile_image_url && !imageErrors['id' in member ? member.id : index] ? (
@@ -377,7 +352,7 @@ export default function MemberPage() {
                   
                   {/* 기수와 커피챗 아이콘 */}
                   <div className="flex items-center gap-2 mb-2">
-                    {'gen' in member && member.gen && (
+                    {'gen' in member && (
                       <span className={`px-1.5 py-0.5 text-xs rounded-full font-medium flex items-center gap-1 ${
                         'status' in member && member.status === 'active' 
                           ? 'bg-[#8B0000] text-[#ffa282]' 
@@ -386,7 +361,7 @@ export default function MemberPage() {
                         {'status' in member && member.status === 'active' && (
                           <FontAwesomeIcon icon={faCircle} className="w-1 h-1" />
                         )}
-                        {member.gen}기
+                        {member.gen === 0 ? '창립멤버' : `${member.gen}기`}
                       </span>
                     )}
                     {isPrivate && 'coffee_chat_enabled' in member && member.coffee_chat_enabled && (
@@ -429,6 +404,16 @@ export default function MemberPage() {
                 </div>
               </GlassCard>
             ))}
+          </div>
+
+        {!isLoading && !isSearchLoading && members.length === 0 && (
+          <div className="px-4 py-5 sm:p-6">
+            <div className="text-center">
+              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <h3 className="mt-2 text-sm font-medium text-white">멤버가 없습니다.</h3>
+            </div>
           </div>
         )}
 

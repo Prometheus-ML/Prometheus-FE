@@ -6,6 +6,7 @@ import { useAuthStore } from '@prometheus-fe/stores';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
+import Portal from './Portal';
 
 interface PostModalProps {
   postId: number | null;
@@ -209,193 +210,195 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        {/* 헤더 */}
-        <div className="flex items-center justify-between p-6 border-b border-white/20">
-          <h2 className="text-xl font-bold text-white">게시글 상세</h2>
-          <button
-            onClick={onClose}
-            className="text-white/70 hover:text-white text-2xl"
-          >
-            ✕
-          </button>
-        </div>
+    <Portal>
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+          {/* 헤더 */}
+          <div className="flex items-center justify-between p-6 border-b border-white/20">
+            <h2 className="text-xl font-bold text-white">게시글 상세</h2>
+            <button
+              onClick={onClose}
+              className="text-white/70 hover:text-white text-2xl"
+            >
+              ✕
+            </button>
+          </div>
 
-        {/* 내용 */}
-        <div className="flex-1 overflow-y-auto p-6">
-          {isLoadingPost ? (
-            <div className="flex justify-center items-center py-20">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
-            </div>
-          ) : selectedPost ? (
-            <>
-              {/* 게시글 정보 */}
-              <div className="mb-6">
-                <div className="flex items-center space-x-2 mb-4">
-                  <span className={`px-3 py-1 text-sm rounded-full border ${getCategoryColor(selectedPost.category)}`}>
-                    {getCategoryLabel(selectedPost.category)}
-                  </span>
-                  <span className="text-sm text-gray-300">
-                    작성자: {getAuthorDisplayName(selectedPost.author_id, authorInfo)}
-                  </span>
-                  <span className="text-sm text-gray-300">
-                    {new Date(selectedPost.created_at).toLocaleString('ko-KR')}
-                  </span>
-                  {user && user.id === selectedPost.author_id && (
-                    <button
-                      onClick={handleDeletePost}
-                      className="text-red-400 hover:text-red-300 text-sm ml-auto"
-                    >
-                      게시글 삭제
-                    </button>
-                  )}
-                </div>
-
-                <h1 className="text-2xl font-bold text-white mb-4">
-                  {selectedPost.title}
-                </h1>
-
-                {/* 좋아요 섹션 */}
-                <div className="flex items-center space-x-4 mb-4">
-                  {user && (
-                    <button
-                      onClick={handleToggleLike}
-                      disabled={isTogglingLike}
-                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
-                        selectedPost.is_liked
-                          ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
-                          : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-red-400'
-                      } disabled:opacity-50 disabled:cursor-not-allowed`}
-                    >
-                      <FontAwesomeIcon 
-                        icon={selectedPost.is_liked ? faHeart : faHeartRegular} 
-                        className={`w-4 h-4 ${isTogglingLike ? 'animate-pulse' : ''}`} 
-                      />
-                      <span className="text-sm font-medium">
-                        {selectedPost.is_liked ? '좋아요 취소' : '좋아요'}
-                      </span>
-                    </button>
-                  )}
-                  <div className="flex items-center space-x-1 text-gray-300">
-                    <FontAwesomeIcon icon={faHeart} className="w-4 h-4" />
-                    <span className="text-sm">
-                      {selectedPost.like_count || 0}명이 좋아합니다
-                    </span>
-                  </div>
-                </div>
-
-                <div className="prose max-w-none">
-                  <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
-                    {selectedPost.content}
-                  </p>
-                </div>
+          {/* 내용 */}
+          <div className="flex-1 overflow-y-auto p-6">
+            {isLoadingPost ? (
+              <div className="flex justify-center items-center py-20">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
               </div>
-
-              {/* 댓글 섹션 */}
-              <div className="border-t border-white/20 pt-6">
-                <h3 className="text-lg font-semibold mb-4 text-white">
-                  댓글 ({comments.length})
-                </h3>
-                
-                {/* 댓글 로딩 상태 */}
-                {isLoadingComments && (
-                  <div className="flex justify-center items-center py-8">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600" />
-                    <span className="ml-2 text-gray-300">댓글을 불러오는 중...</span>
-                  </div>
-                )}
-
-                {/* 댓글 작성 폼 */}
-                {user && !isLoadingComments && (
-                  <div className="mb-6">
-                    <form onSubmit={handleCreateComment}>
-                      <div className="mb-3">
-                        <textarea
-                          value={newComment.content}
-                          onChange={(e) => setNewComment({ content: e.target.value })}
-                          placeholder="댓글을 입력하세요..."
-                          rows={3}
-                          className="w-full bg-white/20 text-black border border-white/30 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm text-gray-300">
-                          {getAuthorDisplayName(user.id, authorInfo)}(으)로 댓글 작성
-                        </div>
-                        <button
-                          type="submit"
-                          disabled={isCreatingComment || !newComment.content.trim()}
-                          className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          {isCreatingComment ? '작성 중...' : '댓글 작성'}
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                )}
-
-                {/* 에러 메시지 */}
-                {error && (
-                  <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400 text-sm">
-                    {error}
-                  </div>
-                )}
-
-                {/* 댓글 목록 */}
-                {!isLoadingComments && (
-                  <div className="space-y-4">
-                    {comments.length === 0 ? (
-                      <div className="text-center text-gray-300 py-8">
-                        아직 댓글이 없습니다.
-                        {!user && (
-                          <p className="mt-2 text-sm">
-                            댓글을 작성하려면 로그인이 필요합니다.
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      comments
-                        .filter(comment => comment && comment.id && comment.author_id && comment.created_at) // 유효한 댓글만 필터링
-                        .map((comment) => (
-                          <div key={comment.id} className="bg-white/10 rounded-lg p-4">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-2 mb-2">
-                                  <span className="text-sm font-medium text-white">
-                                    {getAuthorDisplayName(comment.author_id, commentAuthors[comment.author_id])}
-                                  </span>
-                                  <span className="text-xs text-gray-300">
-                                    {comment.created_at ? new Date(comment.created_at).toLocaleString('ko-KR') : '날짜 없음'}
-                                  </span>
-                                </div>
-                                <p className="text-gray-300 whitespace-pre-wrap">
-                                  {comment.content || '내용 없음'}
-                                </p>
-                              </div>
-                              {user && user.id === comment.author_id && (
-                                <button
-                                  onClick={() => handleDeleteComment(comment.id)}
-                                  className="text-red-400 hover:text-red-300 text-sm ml-4"
-                                >
-                                  삭제
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        ))
+            ) : selectedPost ? (
+              <>
+                {/* 게시글 정보 */}
+                <div className="mb-6">
+                  <div className="flex items-center space-x-2 mb-4">
+                    <span className={`px-3 py-1 text-sm rounded-full border ${getCategoryColor(selectedPost.category)}`}>
+                      {getCategoryLabel(selectedPost.category)}
+                    </span>
+                    <span className="text-sm text-gray-300">
+                      작성자: {getAuthorDisplayName(selectedPost.author_id, authorInfo)}
+                    </span>
+                    <span className="text-sm text-gray-300">
+                      {new Date(selectedPost.created_at).toLocaleString('ko-KR')}
+                    </span>
+                    {user && user.id === selectedPost.author_id && (
+                      <button
+                        onClick={handleDeletePost}
+                        className="text-red-400 hover:text-red-300 text-sm ml-auto"
+                      >
+                        게시글 삭제
+                      </button>
                     )}
                   </div>
-                )}
+
+                  <h1 className="text-2xl font-bold text-white mb-4">
+                    {selectedPost.title}
+                  </h1>
+
+                  {/* 좋아요 섹션 */}
+                  <div className="flex items-center space-x-4 mb-4">
+                    {user && (
+                      <button
+                        onClick={handleToggleLike}
+                        disabled={isTogglingLike}
+                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+                          selectedPost.is_liked
+                            ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                            : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-red-400'
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      >
+                        <FontAwesomeIcon 
+                          icon={selectedPost.is_liked ? faHeart : faHeartRegular} 
+                          className={`w-4 h-4 ${isTogglingLike ? 'animate-pulse' : ''}`} 
+                        />
+                        <span className="text-sm font-medium">
+                          {selectedPost.is_liked ? '좋아요 취소' : '좋아요'}
+                        </span>
+                      </button>
+                    )}
+                    <div className="flex items-center space-x-1 text-gray-300">
+                      <FontAwesomeIcon icon={faHeart} className="w-4 h-4" />
+                      <span className="text-sm">
+                        {selectedPost.like_count || 0}명이 좋아합니다
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="prose max-w-none">
+                    <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                      {selectedPost.content}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 댓글 섹션 */}
+                <div className="border-t border-white/20 pt-6">
+                  <h3 className="text-lg font-semibold mb-4 text-white">
+                    댓글 ({comments.length})
+                  </h3>
+                  
+                  {/* 댓글 로딩 상태 */}
+                  {isLoadingComments && (
+                    <div className="flex justify-center items-center py-8">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600" />
+                      <span className="ml-2 text-gray-300">댓글을 불러오는 중...</span>
+                    </div>
+                  )}
+
+                  {/* 댓글 작성 폼 */}
+                  {user && !isLoadingComments && (
+                    <div className="mb-6">
+                      <form onSubmit={handleCreateComment}>
+                        <div className="mb-3">
+                          <textarea
+                            value={newComment.content}
+                            onChange={(e) => setNewComment({ content: e.target.value })}
+                            placeholder="댓글을 입력하세요..."
+                            rows={3}
+                            className="w-full bg-white/20 text-black border border-white/30 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm text-gray-300">
+                            {getAuthorDisplayName(user.id, authorInfo)}(으)로 댓글 작성
+                          </div>
+                          <button
+                            type="submit"
+                            disabled={isCreatingComment || !newComment.content.trim()}
+                            className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {isCreatingComment ? '작성 중...' : '댓글 작성'}
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  )}
+
+                  {/* 에러 메시지 */}
+                  {error && (
+                    <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400 text-sm">
+                      {error}
+                    </div>
+                  )}
+
+                  {/* 댓글 목록 */}
+                  {!isLoadingComments && (
+                    <div className="space-y-4">
+                      {comments.length === 0 ? (
+                        <div className="text-center text-gray-300 py-8">
+                          아직 댓글이 없습니다.
+                          {!user && (
+                            <p className="mt-2 text-sm">
+                              댓글을 작성하려면 로그인이 필요합니다.
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        comments
+                          .filter(comment => comment && comment.id && comment.author_id && comment.created_at) // 유효한 댓글만 필터링
+                          .map((comment) => (
+                            <div key={comment.id} className="bg-white/10 rounded-lg p-4">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-2 mb-2">
+                                    <span className="text-sm font-medium text-white">
+                                      {getAuthorDisplayName(comment.author_id, commentAuthors[comment.author_id])}
+                                    </span>
+                                    <span className="text-xs text-gray-300">
+                                      {comment.created_at ? new Date(comment.created_at).toLocaleString('ko-KR') : '날짜 없음'}
+                                    </span>
+                                  </div>
+                                  <p className="text-gray-300 whitespace-pre-wrap">
+                                    {comment.content || '내용 없음'}
+                                  </p>
+                                </div>
+                                {user && user.id === comment.author_id && (
+                                  <button
+                                    onClick={() => handleDeleteComment(comment.id)}
+                                    className="text-red-400 hover:text-red-300 text-sm ml-4"
+                                  >
+                                    삭제
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="py-20 text-center text-gray-300">
+                게시글을 찾을 수 없습니다.
               </div>
-            </>
-          ) : (
-            <div className="py-20 text-center text-gray-300">
-              게시글을 찾을 수 없습니다.
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </Portal>
   );
 }

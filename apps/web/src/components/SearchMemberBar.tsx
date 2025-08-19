@@ -3,8 +3,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useMember } from '@prometheus-fe/hooks';
 import { MemberSummaryResponse } from '@prometheus-fe/types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faSearch, 
+  faRotateLeft 
+} from '@fortawesome/free-solid-svg-icons';
 
-interface SearchMemberBarProps {
+// 기존 SearchMemberBar를 MemberSelector로 변경
+interface MemberSelectorProps {
   onMemberSelect?: (member: MemberSummaryResponse) => void;
   onMemberDeselect?: () => void;
   placeholder?: string;
@@ -15,7 +21,7 @@ interface SearchMemberBarProps {
   onMultipleSelect?: (members: MemberSummaryResponse[]) => void;
 }
 
-export const SearchMemberBar: React.FC<SearchMemberBarProps> = ({
+export const MemberSelector: React.FC<MemberSelectorProps> = ({
   onMemberSelect,
   onMemberDeselect,
   placeholder = "멤버를 검색하세요...",
@@ -247,4 +253,141 @@ export const SearchMemberBar: React.FC<SearchMemberBarProps> = ({
   );
 };
 
-export default SearchMemberBar;
+// 새로운 SearchBar 컴포넌트
+interface SearchBarProps {
+  // 검색어
+  searchTerm: string;
+  onSearchTermChange: (term: string) => void;
+  
+  // select 옵션들
+  selects: {
+    id: string;
+    value: string;
+    onChange: (value: string) => void;
+    options: { value: string; label: string }[];
+    placeholder?: string;
+  }[];
+  
+  // 버튼 핸들러
+  onSearch?: () => void;
+  onReset?: () => void;
+  
+  // 로딩 상태
+  isLoading?: boolean;
+  
+  // 기타 props
+  className?: string;
+  placeholder?: string;
+  disabled?: boolean;
+}
+
+export const SearchBar: React.FC<SearchBarProps> = ({
+  searchTerm,
+  onSearchTermChange,
+  selects,
+  onSearch,
+  onReset,
+  isLoading = false,
+  className = "",
+  placeholder = "이름, 학교를 검색해보세요",
+  disabled = false,
+}) => {
+  // 검색어 입력 핸들러
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onSearchTermChange(e.target.value);
+  };
+
+  // 초기화 핸들러
+  const handleReset = () => {
+    onSearchTermChange('');
+    selects.forEach(select => {
+      select.onChange('all');
+    });
+    onReset?.();
+  };
+
+  // 검색 핸들러
+  const handleSearch = () => {
+    onSearch?.();
+  };
+
+  return (
+    <div className={`space-y-4 ${className}`}>
+      {/* 검색 입력창 (윗줄) */}
+      <div className="relative">
+        <FontAwesomeIcon 
+          icon={faSearch} 
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#e0e0e0] w-4 h-4" 
+        />
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          placeholder={placeholder}
+          disabled={disabled}
+          className="w-full border border-[#404040] rounded-md px-10 py-3 bg-[#1A1A1A] text-[#FFFFFF] placeholder-[#e0e0e0] focus:border-[#c2402a] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+        />
+      </div>
+
+      {/* Select 필터들 (아랫줄) */}
+      <div className="grid grid-cols-12 gap-3">
+        {/* Select 필터들 */}
+        <div className={`${selects.length > 0 ? 'col-span-10' : 'col-span-12'} flex gap-3`}>
+          {selects.map((select, index) => (
+            <select
+              key={select.id}
+              value={select.value}
+              onChange={(e) => select.onChange(e.target.value)}
+              disabled={disabled}
+              className="flex-1 border border-[#404040] rounded-md px-3 py-2 bg-[#1A1A1A] text-[#FFFFFF] focus:border-[#c2402a] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {select.options.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          ))}
+        </div>
+
+        {/* 버튼들 (row-span-2) */}
+        {selects.length > 0 && (
+          <div className="col-span-2 flex gap-2">
+            <button
+              onClick={handleReset}
+              disabled={disabled}
+              className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-[#404040] rounded-md bg-[#1A1A1A] text-[#e0e0e0] hover:bg-[#2A2A2A] hover:border-[#c2402a] focus:outline-none focus:ring-2 focus:ring-[#c2402a] focus:ring-offset-2 focus:ring-offset-[#1A1A1A] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title="초기화"
+            >
+              <FontAwesomeIcon icon={faRotateLeft} className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleSearch}
+              disabled={disabled || isLoading}
+              className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent rounded-md bg-[#c2402a] text-white hover:bg-[#a03020] focus:outline-none focus:ring-2 focus:ring-[#c2402a] focus:ring-offset-2 focus:ring-offset-[#1A1A1A] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title="검색"
+            >
+              {isLoading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+              ) : (
+                <FontAwesomeIcon icon={faSearch} className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* 로딩 상태 표시 (검색바 아래) */}
+      {isLoading && (
+        <div className="space-y-3">
+          <div className="h-4 bg-white/10 rounded animate-pulse"></div>
+          <div className="h-4 bg-white/10 rounded animate-pulse w-3/4"></div>
+          <div className="h-4 bg-white/10 rounded animate-pulse w-1/2"></div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// 기존 export 유지
+export default SearchBar;

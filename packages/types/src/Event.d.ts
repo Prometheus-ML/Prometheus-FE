@@ -25,6 +25,7 @@ export type AttendanceStatus =
   | 'absent'     // 결석
   | 'late'       // 지각
   | 'excused'    // 사유 있는 결석
+  | 'not_attended' // 미출석 (참여자 등록 시 기본값)
   | 'unknown';   // 미확인
 
 /**
@@ -200,6 +201,56 @@ export interface AttendanceList {
 }
 
 /**
+ * 참여자 정보 도메인 타입
+ */
+export interface Participant {
+  /** 이벤트 ID */
+  eventId: number;
+  
+  /** 멤버 ID */
+  memberId: string;
+  
+  /** 멤버 이름 */
+  memberName?: string;
+  
+  /** 출석 상태 */
+  status: AttendanceStatus;
+  
+  /** 등록 시간 */
+  addedAt: Date;
+}
+
+/**
+ * 참여자 목록 응답 타입
+ */
+export interface ParticipantList {
+  /** 참여자 목록 */
+  participants: Participant[];
+  
+  /** 전체 참여자 수 */
+  total: number;
+}
+
+/**
+ * 참여자 추가/제거 요청 데이터 타입
+ */
+export interface ParticipantRequest {
+  memberIds: string[];
+}
+
+/**
+ * 참여자 추가/제거 결과 타입
+ */
+export interface ParticipantResult {
+  message: string;
+  added?: number;
+  removed?: number;
+  alreadyExists?: number;
+  notFound?: number;
+  errors: string[];
+}
+
+/**
  * 이벤트 생성 폼 데이터 타입
  */
 export interface EventFormData {
@@ -242,4 +293,19 @@ export interface BulkAttendanceResult {
   created: number;
   updated: number;
   errors: string[];
+}
+
+/**
+ * 사유결석 설정 요청 데이터 타입
+ */
+export interface ExcusedAbsenceRequest {
+  memberId: string;
+  reason: string;
+}
+
+/**
+ * 사유결석 사유 수정 요청 데이터 타입
+ */
+export interface UpdateExcusedAbsenceRequest {
+  reason: string;
 }
