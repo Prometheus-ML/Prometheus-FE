@@ -167,6 +167,22 @@ export function useGroup() {
     }
   }, [group, fetchJoinRequests]);
 
+  // 그룹에서 멤버 제거
+  const removeMember = useCallback(async (groupId: number | string, memberId: string) => {
+    if (!group) {
+      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
+      return;
+    }
+    try {
+      await group.removeMember(groupId, memberId);
+      // 멤버 목록을 다시 불러옴
+      await fetchGroupMembers(groupId);
+    } catch (error) {
+      console.error(`멤버 ${memberId} 제거 실패:`, error);
+      throw error;
+    }
+  }, [group, fetchGroupMembers]);
+
   // 그룹 노트 생성
   const createGroupNote = useCallback(async (groupId: number | string, noteData: any) => {
     if (!group) {
@@ -245,6 +261,7 @@ export function useGroup() {
     fetchJoinRequests,
     approveMember,
     rejectMember,
+    removeMember,
     createGroupNote,
     filterGroupsByCategory,
     

@@ -110,6 +110,15 @@ export class GroupApi {
     }
   }
 
+  async removeMember(groupId: number | string, memberId: string): Promise<void> {
+    try {
+      await this.api.delete(`${this.base}/${groupId}/members/${memberId}`);
+    } catch (error: any) {
+      console.error(`Error removing member ${memberId} from group ${groupId}:`, error);
+      throw new Error(error.message || 'Failed to remove member');
+    }
+  }
+
   // Group Notes
   async createGroupNote(groupId: number | string, data: GroupNoteCreateRequest): Promise<GroupNoteCreateResponse> {
     try {

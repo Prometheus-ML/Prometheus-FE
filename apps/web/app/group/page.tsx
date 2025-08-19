@@ -37,6 +37,7 @@ export default function GroupPage() {
     fetchJoinRequests,
     approveMember,
     rejectMember,
+    removeMember,
     filterGroupsByCategory,
   } = useGroup();
 
@@ -122,7 +123,11 @@ export default function GroupPage() {
 
   const handleGroupClick = async (groupId: number) => {
     try {
-      await fetchGroup(groupId);
+      await Promise.all([
+        fetchGroup(groupId),
+        fetchGroupMembers(groupId),
+        fetchJoinRequests(groupId).catch(() => {})
+      ]);
       setSelectedGroupId(groupId);
       setShowGroupDetail(true);
     } catch (err) {
@@ -165,6 +170,22 @@ export default function GroupPage() {
     } catch (err) {
       console.error('멤버 거절 실패:', err);
       setError('멤버 거절에 실패했습니다.');
+    }
+  };
+
+  const handleRemoveMember = async (memberId: string) => {
+    if (!selectedGroupId) return;
+    
+    if (!confirm('정말 이 멤버를 그룹에서 제거하시겠습니까?')) {
+      return;
+    }
+    
+    try {
+      await removeMember(selectedGroupId, memberId);
+      await fetchGroupMembers(selectedGroupId);
+    } catch (err) {
+      console.error('멤버 제거 실패:', err);
+      setError('멤버 제거에 실패했습니다.');
     }
   };
 
@@ -466,7 +487,7 @@ export default function GroupPage() {
               )}
               
               <div className="text-sm text-gray-300">
-                <p>소유자: {selectedGroup.owner_name} ({selectedGroup.owner_gen}기)</p>
+                <p>소유자: {selectedGroup.owner_gen}기 {selectedGroup.owner_name}</p>
                 <p>멤버 수: {members.length}명</p>
                 {selectedGroup.max_members && (
                   <p>최대 인원: {selectedGroup.max_members}명</p>
@@ -491,8 +512,24 @@ export default function GroupPage() {
                           {member.gen}기
                         </span>
                         <span className="text-gray-300 text-sm">({member.member_id})</span>
+                        <span className={`px-2 py-1 text-xs rounded ${
+                          member.role === 'owner' 
+                            ? 'bg-yellow-500/20 text-yellow-300' 
+                            : 'bg-blue-500/20 text-blue-300'
+                        }`}>
+                          {member.role === 'owner' ? '소유자' : '멤버'}
+                        </span>
                       </div>
-                      <span className="text-gray-300 text-sm">역할: {member.role}</span>
+                      {/* 소유자가 아닌 멤버만 제거 가능 */}
+                      {user && user.id === selectedGroup.owner_id && member.role !== 'owner' && (
+                        <button
+                          onClick={() => handleRemoveMember(member.member_id)}
+                          className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                        >
+                          <FontAwesomeIcon icon={faTimes} className="mr-1" />
+                          제거
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
