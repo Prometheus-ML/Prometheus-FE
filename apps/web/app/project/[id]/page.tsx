@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useProject, useImage, useMember } from '@prometheus-fe/hooks';
+import { useAuthStore } from '@prometheus-fe/stores';
 import AddMemberModal from '../../../src/components/AddMemberModal';
 import GlassCard from '../../../src/components/GlassCard';
 import RedButton from '../../../src/components/RedButton';
@@ -105,9 +106,10 @@ export default function ProjectDetailPage() {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
 
-  // TODO: Replace with actual auth logic
-  const canManage = true; // Manager 이상
-  const isLeader = false; // 현재 사용자가 리더인지
+  // 실제 인증 상태 사용
+  const { canAccessManager, isAuthenticated } = useAuthStore();
+  const canManage = canAccessManager(); // Manager 이상
+  const isLeader = false; // 현재 사용자가 리더인지 (추후 구현 필요)
   const canEdit = canManage || isLeader;
   const canEditMembers = canEdit;
   
@@ -138,6 +140,12 @@ export default function ProjectDetailPage() {
   // 좋아요 토글 처리
   const handleLikeToggle = async () => {
     if (!selectedProject || likeLoading) return;
+    
+    // 로그인하지 않은 사용자는 좋아요 기능 사용 불가
+    if (!isAuthenticated()) {
+      alert('로그인이 필요한 기능입니다.');
+      return;
+    }
     
     try {
       setLikeLoading(true);
@@ -325,12 +333,13 @@ export default function ProjectDetailPage() {
           {/* 좋아요 버튼 */}
           <button
             onClick={handleLikeToggle}
-            disabled={likeLoading}
+            disabled={likeLoading || !isAuthenticated()}
             className={`inline-flex items-center px-3 py-1.5 rounded transition-colors ${
               selectedProject.is_liked
                 ? 'bg-red-500/20 border border-red-500/30 text-red-300 hover:bg-red-500/30'
                 : 'bg-white/10 border border-white/20 text-white hover:bg-white/20'
-            } ${likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            } ${likeLoading || !isAuthenticated() ? 'opacity-50 cursor-not-allowed' : ''}`}
+            title={!isAuthenticated() ? '로그인이 필요한 기능입니다' : ''}
           >
             <FontAwesomeIcon 
               icon={selectedProject.is_liked ? faHeart : faHeartBroken} 
