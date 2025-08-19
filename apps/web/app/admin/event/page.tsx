@@ -5,7 +5,7 @@ import { useEvent, useEventDetail, useAttendance, useAttendanceCodeManagement, u
 import { Event, EventFormData, AttendanceFormData, EventType, AttendanceStatus, AttendanceCode } from '@prometheus-fe/types';
 import GlassCard from '../../../src/components/GlassCard';
 import RedButton from '../../../src/components/RedButton';
-import EventModal from '../../../src/components/EventModal';
+import { EventFormModal } from '../../../src/components/EventModal';
 import AttendanceModal from '../../../src/components/AttendanceModal';
 import Portal from '../../../src/components/Portal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -184,7 +184,7 @@ export default function AdminEventPage() {
 
         {/* 모달들 */}
         <Portal>
-          <EventModal
+          <EventFormModal
             isOpen={showEventModal}
             onClose={() => {
               setShowEventModal(false);
@@ -193,10 +193,7 @@ export default function AdminEventPage() {
               setIsEditing(false);
             }}
             event={isEditing ? editingEvent : selectedEvent}
-            isAdmin={true}
-            onEdit={handleEditEvent}
-            onSave={isEditing ? handleUpdateEvent : handleCreateEvent}
-            isEditing={isEditing}
+            onSubmit={isEditing ? handleUpdateEvent : handleCreateEvent}
           />
 
           <AttendanceModal

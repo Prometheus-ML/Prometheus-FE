@@ -82,22 +82,8 @@ export class ApiClient {
       if (response.status === 403) {
         const responseText = await response.text();
         
-        // 403 에러 시 토큰 갱신 시도
-        if (this.authCallbacks.refreshAccessToken && retryCount === 0) {
-          try {
-            const refreshSuccess = await this.authCallbacks.refreshAccessToken();
-            if (refreshSuccess) {
-              // 토큰 갱신 성공 시 요청 재시도
-              return this.request<T>(endpoint, options, retryCount + 1);
-            }
-          } catch (refreshError) {
-            console.error('Token refresh failed:', refreshError);
-          }
-        }
-        
-        // 토큰 갱신 실패 또는 이미 재시도한 경우
+        // 403 에러 시 바로 onForbidden 콜백 호출 (메인 페이지로 이동)
         await this.authCallbacks.onForbidden?.(responseText);
-        await this.authCallbacks.onRefreshFailed?.();
         throw { status: 403, data: null, message: 'Forbidden: Access denied' } as any;
       }
 

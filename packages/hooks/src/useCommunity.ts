@@ -26,7 +26,8 @@ export function useCommunity() {
     }
 
     try {
-      const memberData = await member.getMember(memberId);
+      // 일반 사용자용 API 사용 (admin API 대신)
+      const memberData = await member.getMemberDetail(memberId);
       // 캐시에 저장
       setMemberCache(prev => ({
         ...prev,

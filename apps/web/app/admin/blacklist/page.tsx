@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useImage, useMember } from '@prometheus-fe/hooks';
-import { SearchMemberBar } from '../../../src/components/SearchMemberBar';
+import { MemberSelector } from '../../../src/components/SearchMemberBar';
 import GlassCard from '../../../src/components/GlassCard';
 import RedButton from '../../../src/components/RedButton';
 import { 
@@ -60,7 +60,7 @@ function AddBlacklistModal({
           {/* 멤버 검색 */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">멤버 검색</label>
-            <SearchMemberBar
+            <MemberSelector
               onMemberSelect={onSelectMember}
               onMemberDeselect={onDeselectMember}
               placeholder="멤버 이름으로 검색하세요..."
