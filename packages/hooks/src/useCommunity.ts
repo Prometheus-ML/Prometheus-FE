@@ -12,6 +12,7 @@ export function useCommunity() {
   const [isLoadingPost, setIsLoadingPost] = useState(false);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [isCreatingPost, setIsCreatingPost] = useState(false);
+  const [isUpdatingPost, setIsUpdatingPost] = useState(false);
   const [isCreatingComment, setIsCreatingComment] = useState(false);
   const [isTogglingLike, setIsTogglingLike] = useState(false);
 
@@ -87,6 +88,35 @@ export function useCommunity() {
       setIsCreatingPost(false);
     }
   }, [community]);
+
+  // 게시글 수정
+  const updatePost = useCallback(async (postId: number | string, postData: any) => {
+    if (!community) {
+      console.warn('community is not available. Ensure useCommunity is used within ApiProvider.');
+      return null;
+    }
+    try {
+      setIsUpdatingPost(true);
+      const updatedPost = await community.updatePost(postId, postData);
+      
+      // 게시글 목록에서 해당 게시글 업데이트
+      setPosts(prev => prev.map(post => 
+        post.id === Number(postId) ? updatedPost.post : post
+      ));
+      
+      // 현재 선택된 게시글이 해당 게시글이면 업데이트
+      if (selectedPost && selectedPost.id === Number(postId)) {
+        setSelectedPost(updatedPost.post);
+      }
+      
+      return updatedPost;
+    } catch (error) {
+      console.error('게시글 수정 실패:', error);
+      throw error;
+    } finally {
+      setIsUpdatingPost(false);
+    }
+  }, [community, selectedPost]);
 
   // 게시글 삭제
   const deletePost = useCallback(async (postId: number | string) => {
@@ -235,6 +265,7 @@ export function useCommunity() {
     isLoadingPost,
     isLoadingComments,
     isCreatingPost,
+    isUpdatingPost,
     isCreatingComment,
     isTogglingLike,
     
@@ -242,6 +273,7 @@ export function useCommunity() {
     fetchPosts,
     fetchPost,
     createPost,
+    updatePost,
     deletePost,
     createComment,
     deleteComment,

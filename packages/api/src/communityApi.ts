@@ -2,6 +2,8 @@ import { ApiClient } from './apiClient';
 import {
   CreatePostRequest,
   CreatePostResponse,
+  UpdatePostRequest,
+  UpdatePostResponse,
   GetPostsRequest,
   GetPostsResponse,
   CreateCommentRequest,
@@ -56,6 +58,16 @@ export class CommunityApi {
     } catch (error: any) {
       console.error(`Error fetching post ${postId}:`, error);
       throw new Error(error.message || 'Failed to fetch post');
+    }
+  }
+
+  async updatePost(postId: number | string, data: UpdatePostRequest): Promise<UpdatePostResponse> {
+    try {
+      const response = await this.api.put<UpdatePostResponse>(`${this.postsBase}/${postId}`, data);
+      return response;
+    } catch (error: any) {
+      console.error(`Error updating post ${postId}:`, error);
+      throw new Error(error.message || 'Failed to update post');
     }
   }
 

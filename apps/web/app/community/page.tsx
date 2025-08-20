@@ -10,7 +10,7 @@ import RedButton from '../../src/components/RedButton';
 import GlassCard from '../../src/components/GlassCard';
 import { QueryBar } from '../../src/components/QueryBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faTrash, faUser, faCalendarAlt, faComments, faSearch, faUndo, faArrowLeft, faHeart } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faTrash, faUser, faCalendarAlt, faComments, faSearch, faUndo, faArrowLeft, faHeart, faImage } from '@fortawesome/free-solid-svg-icons';
 
 const CATEGORIES = [
   { value: 'free', label: '자유게시판' },
@@ -208,7 +208,7 @@ export default function CommunityPage() {
     fetchData();
   }, [fetchPosts]);
 
-  const handleCreatePost = async (post: { category: string; title: string; content: string }) => {
+  const handleCreatePost = async (post: { category: string; title: string; content: string; images?: string[] }) => {
     if (!post.title.trim() || !post.content.trim()) {
       setError('제목과 내용을 모두 입력해주세요.');
       return;
@@ -430,6 +430,13 @@ export default function CommunityPage() {
                         {getCategoryLabel(post.category)}
                       </span>
                      <span className="text-white font-medium">{post.title}</span>
+                     {/* 이미지 아이콘 표시 */}
+                     {post.images && post.images.length > 0 && (
+                       <span className="flex items-center text-blue-400 text-xs">
+                         <FontAwesomeIcon icon={faImage} className="mr-1" />
+                         {post.images.length}
+                       </span>
+                     )}
                    </div>
                                      <div className="flex items-center space-x-2 text-sm text-gray-300 ml-4">
 

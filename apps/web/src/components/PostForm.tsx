@@ -1,4 +1,10 @@
-import { useState } from 'react';
+'use client';
+
+import { useState, useEffect, ChangeEvent } from 'react';
+import Image from 'next/image';
+import { useImage } from '@prometheus-fe/hooks';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFolder, faTimes } from '@fortawesome/free-solid-svg-icons';
 
 const CATEGORIES = [
   { value: 'free', label: '자유게시판' },
@@ -9,7 +15,7 @@ const CATEGORIES = [
 ] as const;
 
 interface PostFormProps {
-  onSubmit: (post: { category: string; title: string; content: string }) => Promise<void>;
+  onSubmit: (post: { category: string; title: string; content: string; images?: string[] }) => Promise<void>;
   onCancel: () => void;
   isSubmitting?: boolean;
 }
@@ -19,6 +25,25 @@ export default function PostForm({ onSubmit, onCancel, isSubmitting = false }: P
     category: 'free',
     title: '',
     content: '',
+    images: [] as string[],
+  });
+
+  // useImage 훅 사용
+  const {
+    isUploading,
+    uploadError,
+    uploadImage,
+    validateImageFile,
+    getThumbnailUrl,
+    clearError
+  } = useImage({
+    onUploadStart: () => console.log('이미지 업로드 시작'),
+    onUploadSuccess: (response) => {
+      console.log('이미지 업로드 성공:', response);
+    },
+    onUploadError: (error) => {
+      console.error('이미지 업로드 실패:', error);
+    }
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,7 +54,43 @@ export default function PostForm({ onSubmit, onCancel, isSubmitting = false }: P
     }
 
     await onSubmit(newPost);
-    setNewPost({ category: 'free', title: '', content: '' });
+    setNewPost({ category: 'free', title: '', content: '', images: [] });
+  };
+
+  const handleImageFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e?.target?.files?.[0];
+    if (!file) return;
+    
+    // 이미지 파일 검증
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      alert(validationError);
+      return;
+    }
+
+    // 이전 에러 클리어
+    clearError();
+    
+    try {
+      // useImage 훅을 사용하여 이미지 업로드
+      const imageUrl = await uploadImage(file, 'post');
+      if (imageUrl) {
+        setNewPost(prev => ({
+          ...prev,
+          images: [...prev.images, imageUrl]
+        }));
+      }
+    } catch (error) {
+      // 에러는 useImage 훅에서 처리되므로 여기서는 추가 처리만
+      console.error('이미지 업로드 처리 중 오류:', error);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setNewPost(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
   };
 
   return (
@@ -77,13 +138,71 @@ export default function PostForm({ onSubmit, onCancel, isSubmitting = false }: P
             placeholder="게시글 내용을 입력하세요"
           />
         </div>
+        
+        {/* 이미지 업로드 필드 */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            이미지 업로드
+          </label>
+          <div className="space-y-2">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageFileChange}
+              disabled={isUploading}
+              className="text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-500 file:text-white hover:file:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            
+            {/* 업로드된 이미지 목록 */}
+            {newPost.images.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600">업로드된 이미지 ({newPost.images.length}개):</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {newPost.images.map((imageUrl, index) => (
+                    <div key={index} className="relative inline-block">
+                      <Image
+                        src={getThumbnailUrl(imageUrl, 200)}
+                        alt={`게시글 이미지 ${index + 1}`}
+                        className="rounded border object-cover"
+                        width={200}
+                        height={150}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          if (target.src !== imageUrl) {
+                            target.src = imageUrl;
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 transition-colors"
+                        title="이미지 제거"
+                      >
+                        <FontAwesomeIcon icon={faTimes} className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* 업로드 에러 표시 */}
+            {uploadError && (
+              <div className="text-red-500 text-sm p-2 bg-red-50 border border-red-200 rounded">
+                {uploadError}
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="flex items-center space-x-2">
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isUploading}
             className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
           >
-            {isSubmitting ? '작성 중...' : '게시글 작성'}
+            {isSubmitting ? '작성 중...' : isUploading ? '업로드 중...' : '게시글 작성'}
           </button>
           <button
             type="button"

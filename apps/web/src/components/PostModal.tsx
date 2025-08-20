@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useCommunity } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
+import { useImage } from '@prometheus-fe/hooks';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faHeart, 
@@ -52,12 +54,23 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
   const [newComment, setNewComment] = useState<any>({ content: '' });
   const [error, setError] = useState('');
 
+  // useImage 훅 사용
+  const { getThumbnailUrl } = useImage();
+
   // 모달이 열릴 때 게시글 데이터 로드
   useEffect(() => {
     if (isOpen && postId) {
       fetchPost(postId);
     }
   }, [isOpen, postId, fetchPost]);
+
+  // 디버깅용: selectedPost 변경 시 로그
+  useEffect(() => {
+    if (selectedPost) {
+      console.log('PostModal - selectedPost:', selectedPost);
+      console.log('PostModal - selectedPost.images:', selectedPost.images);
+    }
+  }, [selectedPost]);
 
   // 모달이 닫힐 때 상태 초기화
   useEffect(() => {
@@ -279,6 +292,34 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                       {selectedPost.content}
                     </p>
                   </div>
+
+                  {/* 이미지 표시 */}
+                  {selectedPost.images && selectedPost.images.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="text-sm font-medium text-gray-300 mb-3">첨부된 이미지 ({selectedPost.images.length}개)</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {selectedPost.images.map((imageUrl, index) => (
+                          <div key={index} className="relative group">
+                            <Image
+                              src={getThumbnailUrl(imageUrl, 200)}
+                              alt={`게시글 이미지 ${index + 1}`}
+                              className="w-full h-32 object-cover rounded-lg border border-white/20 hover:border-white/40 transition-colors cursor-pointer"
+                              width={200}
+                              height={150}
+                              onClick={() => window.open(imageUrl, '_blank')}
+                              onError={(e) => {
+                                // 이미지 로드 실패 시 에러 처리
+                                const target = e.target as HTMLImageElement;
+                                console.error(`이미지 로드 실패: ${imageUrl}`);
+                                // 에러 시 기본 이미지나 플레이스홀더 표시
+                                target.style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* 댓글 섹션 */}

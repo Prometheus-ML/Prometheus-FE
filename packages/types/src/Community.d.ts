@@ -7,6 +7,7 @@ export interface Post {
   category: string;
   title: string;
   content: string;
+  images?: string[];  // 이미지 URL 리스트
   is_deleted: boolean;
   created_at: string;
   updated_at: string;
