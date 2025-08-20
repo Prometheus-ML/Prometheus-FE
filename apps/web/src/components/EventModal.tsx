@@ -42,7 +42,7 @@ export default function EventModal({
   const [formData, setFormData] = useState<EventFormData>({
     title: '',
     description: '',
-    eventType: 'study' as EventType,
+    eventType: '스터디' as EventType,
     startTime: new Date(),
     endTime: new Date(),
     location: '',
@@ -87,7 +87,7 @@ export default function EventModal({
       setFormData({
         title: '',
         description: '',
-        eventType: 'study' as EventType,
+        eventType: '스터디' as EventType,
         startTime: new Date(),
         endTime: new Date(),
         location: '',
@@ -346,12 +346,14 @@ export default function EventModal({
                         onChange={(e) => setFormData({ ...formData, eventType: e.target.value as EventType })}
                           className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
                       >
-                        <option value="study">스터디</option>
-                        <option value="project">프로젝트</option>
-                        <option value="hackathon">해커톤</option>
-                        <option value="seminar">세미나</option>
-                        <option value="meeting">회의</option>
-                        <option value="other">기타</option>
+                        <option value="스터디">스터디</option>
+                        <option value="워크샵">워크샵</option>
+                        <option value="세미나">세미나</option>
+                        <option value="회의">회의</option>
+                        <option value="데모데이">데모데이</option>
+                        <option value="홈커밍데이">홈커밍데이</option>
+                        <option value="네트워킹">네트워킹</option>
+                        <option value="기타">기타</option>
                       </select>
                     </div>
 

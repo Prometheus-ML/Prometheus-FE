@@ -168,11 +168,11 @@ export default function AdminEventPage() {
               {status.text}
             </span>
             <span className="text-xs text-gray-300">
-              {event.type === 'MEETING' ? '정기모임' : '특별이벤트'}
+              {event.eventType === '회의' ? '정기모임' : '특별이벤트'}
             </span>
           </div>
           <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded">
-            {event.gen}기
+            {event.currentGen}기
           </span>
         </div>
         
