@@ -8,6 +8,7 @@ import PostModal from '../../src/components/PostModal';
 import PostForm from '../../src/components/PostForm';
 import RedButton from '../../src/components/RedButton';
 import GlassCard from '../../src/components/GlassCard';
+import { SearchBar } from '../../src/components/SearchMemberBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faTrash, faUser, faCalendarAlt, faComments, faSearch, faUndo, faArrowLeft, faHeart } from '@fortawesome/free-solid-svg-icons';
 
@@ -18,6 +19,16 @@ const CATEGORIES = [
   { value: 'promotion', label: '홍보' },
   { value: 'announcement', label: '공지사항' },
 ] as const;
+
+// 탭 아이템 정의
+const TAB_ITEMS = [
+  { id: 'all', label: '전체' },
+  { id: 'free', label: '자유게시판' },
+  { id: 'activity', label: '활동' },
+  { id: 'career', label: '진로' },
+  { id: 'promotion', label: '홍보' },
+  { id: 'announcement', label: '공지사항' },
+];
 
 interface PostFilters {
   search: string;
@@ -39,6 +50,7 @@ export default function CommunityPage() {
 
   const { user } = useAuthStore();
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
   const [filters, setFilters] = useState<PostFilters>({
     search: '',
     category_filter: ''
@@ -51,6 +63,19 @@ export default function CommunityPage() {
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [authorCache, setAuthorCache] = useState<Record<string, any>>({});
+
+  // 탭 변경 핸들러 (기존 필터에 추가)
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    const category = tabId === 'all' ? '' : tabId;
+    const newFilters = {
+      ...filters,
+      category_filter: category
+    };
+    setFilters(newFilters);
+    setAppliedFilters(newFilters);
+    loadPostsWithFilters(newFilters);
+  };
 
   // 초기 게시글 목록 로드
   useEffect(() => {
@@ -68,6 +93,17 @@ export default function CommunityPage() {
     try {
       setError('');
       const params = { page: 1, size: 20, ...appliedFilters };
+      await fetchPosts(params);
+    } catch (err) {
+      console.error('게시글 목록 로드 실패:', err);
+      setError('게시글 목록을 불러오지 못했습니다.');
+    }
+  };
+
+  const loadPostsWithFilters = async (filterParams: PostFilters) => {
+    try {
+      setError('');
+      const params = { page: 1, size: 20, ...filterParams };
       await fetchPosts(params);
     } catch (err) {
       console.error('게시글 목록 로드 실패:', err);
@@ -111,7 +147,7 @@ export default function CommunityPage() {
   // 검색 및 필터 적용
   const applyFilters = () => {
     setAppliedFilters(filters);
-    loadPosts();
+    loadPostsWithFilters(filters);
   };
 
   // 필터 초기화
@@ -122,7 +158,8 @@ export default function CommunityPage() {
     };
     setFilters(emptyFilters);
     setAppliedFilters(emptyFilters);
-    loadPosts();
+    setActiveTab('all');
+    loadPostsWithFilters(emptyFilters);
   };
 
   const handleCreatePost = async (post: { category: string; title: string; content: string }) => {
@@ -203,7 +240,7 @@ export default function CommunityPage() {
   const searchResultCount = posts.length;
 
   return (
-    <div className="min-h-screen font-pretendard">
+    <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
       {/* 헤더 */}
       <header className="mx-4 px-6 py-6 border-b border-white/20">
         <div className="flex items-center justify-between">
@@ -234,50 +271,22 @@ export default function CommunityPage() {
       <div className="px-4 py-6">
         {/* 검색 및 필터 */}
         <div className="mb-6 space-y-4">
-          {/* 검색 바 */}
-          <div className="relative">
-            <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#e0e0e0] w-4 h-4" />
-            <input
-              value={filters.search}
-              onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-              type="text"
-              placeholder="제목, 내용을 검색해보세요!"
-              className="w-full border border-[#404040] rounded-md px-10 py-3 bg-[#1A1A1A] text-[#FFFFFF] placeholder-[#e0e0e0] focus:border-[#c2402a] focus:outline-none"
-            />
-          </div>
-          
-          {/* 필터 */}
-          <div className="flex flex-wrap gap-3">
-            {/* 카테고리 필터 */}
-            <select
-              value={filters.category_filter}
-              onChange={(e) => setFilters(prev => ({ ...prev, category_filter: e.target.value }))}
-              className="border border-[#404040] rounded-md px-3 py-2 bg-[#1A1A1A] text-[#FFFFFF] focus:border-[#c2402a] focus:outline-none"
-            >
-              <option value="">전체 카테고리</option>
-              {CATEGORIES.map(category => (
-                <option key={category.value} value={category.value}>
-                  {category.label}
-                </option>
-              ))}
-            </select>
-            
-            {/* 필터 초기화 버튼 */}
-            <RedButton onClick={clearFilters} className="inline-flex items-center">
-              <FontAwesomeIcon icon={faUndo} className="mr-2 h-4 w-4" />
-              초기화
-            </RedButton>
-
-            {/* 검색 버튼 */}
-            <RedButton onClick={applyFilters} className="inline-flex items-center">
-              <FontAwesomeIcon icon={faSearch} className="mr-2 h-4 w-4" />
-              검색
-            </RedButton>
-          </div>
+          <SearchBar
+            searchTerm={filters.search}
+            onSearchTermChange={(term) => setFilters(prev => ({ ...prev, search: term }))}
+            tabs={TAB_ITEMS}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            selects={[]}
+            onSearch={applyFilters}
+            onReset={clearFilters}
+            isLoading={isLoadingPosts}
+            placeholder="제목, 내용을 검색해보세요!"
+          />
         </div>
 
         {/* 검색 결과 수 */}
-        {appliedFilters.search && (
+        {(appliedFilters.search || appliedFilters.category_filter) && (
           <div className="mb-4 text-sm text-[#e0e0e0]">
             검색 결과: {searchResultCount}개
           </div>
@@ -371,7 +380,7 @@ export default function CommunityPage() {
               <FontAwesomeIcon icon={faComments} className="mx-auto h-12 w-12 text-gray-400 mb-4" />
               <h3 className="mt-2 text-sm font-medium text-white">게시글이 없습니다.</h3>
               <p className="mt-1 text-sm text-gray-300">
-                {appliedFilters.search ? '검색 결과가 없습니다.' : '아직 등록된 게시글이 없습니다.'}
+                {(appliedFilters.search || appliedFilters.category_filter) ? '검색 결과가 없습니다.' : '아직 등록된 게시글이 없습니다.'}
               </p>
             </div>
           </div>

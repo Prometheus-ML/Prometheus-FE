@@ -9,6 +9,48 @@ import {
   faRotateLeft 
 } from '@fortawesome/free-solid-svg-icons';
 
+// TabBar 컴포넌트를 SearchMemberBar에 통합
+interface TabItem {
+  id: string;
+  label: string;
+  icon?: React.ReactNode;
+}
+
+interface TabBarProps {
+  tabs: TabItem[];
+  activeTab: string;
+  onTabChange: (tabId: string) => void;
+  className?: string;
+}
+
+const TabBar: React.FC<TabBarProps> = ({ 
+  tabs, 
+  activeTab, 
+  onTabChange, 
+  className = '' 
+}) => {
+  return (
+    <div className={`border-b border-white/20 ${className}`}>
+      <div className="flex w-full overflow-x-auto scrollbar-hide">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => onTabChange(tab.id)}
+            className={`flex-shrink-0 flex items-center justify-center px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
+              activeTab === tab.id
+                ? 'text-white border-b-2 border-white'
+                : 'text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            {tab.icon && <span className="mr-2">{tab.icon}</span>}
+            {tab.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // 기존 SearchMemberBar를 MemberSelector로 변경
 interface MemberSelectorProps {
   onMemberSelect?: (member: MemberSummaryResponse) => void;
@@ -253,11 +295,16 @@ export const MemberSelector: React.FC<MemberSelectorProps> = ({
   );
 };
 
-// 새로운 SearchBar 컴포넌트
+// 새로운 SearchBar 컴포넌트 (TabBar 통합)
 interface SearchBarProps {
   // 검색어
   searchTerm: string;
   onSearchTermChange: (term: string) => void;
+  
+  // 탭 필터링
+  tabs?: TabItem[];
+  activeTab?: string;
+  onTabChange?: (tabId: string) => void;
   
   // select 옵션들
   selects: {
@@ -284,6 +331,9 @@ interface SearchBarProps {
 export const SearchBar: React.FC<SearchBarProps> = ({
   searchTerm,
   onSearchTermChange,
+  tabs,
+  activeTab,
+  onTabChange,
   selects,
   onSearch,
   onReset,
@@ -303,7 +353,17 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     selects.forEach(select => {
       select.onChange('all');
     });
+    if (tabs && onTabChange) {
+      onTabChange(tabs[0]?.id || '');
+    }
     onReset?.();
+  };
+
+  // 탭 변경 핸들러 (기존 필터에 추가)
+  const handleTabChange = (tabId: string) => {
+    if (onTabChange) {
+      onTabChange(tabId);
+    }
   };
 
   // 검색 핸들러
@@ -313,6 +373,16 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   return (
     <div className={`space-y-4 ${className}`}>
+      {/* 탭 필터링 (최상단) */}
+      {tabs && activeTab && onTabChange && (
+        <TabBar
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          className="mb-4"
+        />
+      )}
+
       {/* 검색 입력창 (윗줄) */}
       <div className="relative">
         <FontAwesomeIcon 
@@ -388,6 +458,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     </div>
   );
 };
+
+// TabBar export 추가
+export { TabBar };
 
 // 기존 export 유지
 export default SearchBar;

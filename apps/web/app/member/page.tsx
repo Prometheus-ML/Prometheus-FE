@@ -48,6 +48,9 @@ export default function MemberPage() {
   const [selectedGen, setSelectedGen] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [isSearchLoading, setIsSearchLoading] = useState<boolean>(false);
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState<string>('');
+  const [appliedGen, setAppliedGen] = useState<string>('all');
+  const [appliedStatus, setAppliedStatus] = useState<string>('all');
 
   // 모달 상태
   const [showDetail, setShowDetail] = useState<boolean>(false);
@@ -117,18 +120,18 @@ export default function MemberPage() {
       };
 
       // 검색어 필터 적용
-      if (searchTerm.trim()) {
-        params.search = searchTerm.trim();
+      if (appliedSearchTerm.trim()) {
+        params.search = appliedSearchTerm.trim();
       }
 
       // 기수 필터 적용 (전체가 아닐 때만)
-      if (selectedGen !== 'all') {
-        params.gen = parseInt(selectedGen);
+      if (appliedGen !== 'all') {
+        params.gen = parseInt(appliedGen);
       }
 
       // 상태 필터 적용 (전체가 아닐 때만)
-      if (selectedStatus !== 'all') {
-        params.status = selectedStatus;
+      if (appliedStatus !== 'all') {
+        params.status = appliedStatus;
       }
 
       let response;
@@ -152,7 +155,7 @@ export default function MemberPage() {
         setIsLoading(false);
       }
     }
-  }, [page, size, searchTerm, selectedGen, selectedStatus, isPrivate, getPublicMembers, getPrivateMembers]);
+  }, [page, size, appliedSearchTerm, appliedGen, appliedStatus, isPrivate, getPublicMembers, getPrivateMembers]);
 
   // 페이지 이동
   const prevPage = useCallback(() => {
@@ -195,22 +198,28 @@ export default function MemberPage() {
     // setFilters(prev => ({ ...prev, [key]: value })); // This line was removed
   }, []);
 
-  // 초기 로딩 및 페이지/필터 변경 시 목록 다시 로드
+  // 초기 로딩 및 페이지 변경 시 목록 다시 로드
   useEffect(() => {
     fetchMembers();
-  }, [page, selectedGen, selectedStatus, fetchMembers]);
+  }, [page, appliedSearchTerm, appliedGen, appliedStatus, fetchMembers]);
 
   // 검색 핸들러
   const handleSearch = useCallback(() => {
+    setAppliedSearchTerm(searchTerm);
+    setAppliedGen(selectedGen);
+    setAppliedStatus(selectedStatus);
     setPage(1);
     fetchMembers(true);
-  }, [fetchMembers]);
+  }, [searchTerm, selectedGen, selectedStatus, fetchMembers]);
 
   // 초기화 핸들러
   const handleReset = useCallback(() => {
     setSearchTerm('');
     setSelectedGen('all');
     setSelectedStatus('all');
+    setAppliedSearchTerm('');
+    setAppliedGen('all');
+    setAppliedStatus('all');
     setPage(1);
     fetchMembers(true);
   }, [fetchMembers]);
@@ -227,9 +236,9 @@ export default function MemberPage() {
   );
 
   // Loading state
-  if (isLoading && !searchTerm && selectedGen === 'all' && selectedStatus === 'all') {
+  if (isLoading && !appliedSearchTerm && appliedGen === 'all' && appliedStatus === 'all') {
   return (
-      <div className="md:max-w-4xl max-w-lg mx-auto min-h-screen font-pretendard">
+      <div className="md:max-w-6xl max-w-lg mx-auto min-h-screen font-pretendard">
         {/* Header */}
         <header className="mx-4 px-6 py-6 border-b border-white/20">
           <div className="flex items-center justify-between">

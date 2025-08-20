@@ -254,6 +254,16 @@ export interface EventQueryParams {
 }
 
 /**
+ * 출석 가능한 이벤트 쿼리 파라미터 DTO
+ */
+export interface AttendableEventQueryParams {
+  page?: number;
+  size?: number;
+  gen?: number;
+  event_type?: string;
+}
+
+/**
  * 출석 쿼리 파라미터 DTO
  */
 export interface AttendanceQueryParams {

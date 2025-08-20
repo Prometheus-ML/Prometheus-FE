@@ -1,14 +1,15 @@
 "use client";
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useCommunity } from '@prometheus-fe/hooks';
 import PostModal from '../../../src/components/PostModal';
 import PostForm from '../../../src/components/PostForm';
 import GlassCard from '../../../src/components/GlassCard';
 import RedButton from '../../../src/components/RedButton';
-import TabBar from '../../../src/components/TabBar';
+import { SearchBar } from '../../../src/components/SearchMemberBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faTrash, faHeart, faComments } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faTrash, faHeart, faComments, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
 const CATEGORIES = [
   { value: 'free', label: '자유게시판' },
@@ -17,6 +18,16 @@ const CATEGORIES = [
   { value: 'promotion', label: '홍보' },
   { value: 'announcement', label: '공지사항' },
 ] as const;
+
+// 탭 아이템 정의
+const TAB_ITEMS = [
+  { id: 'all', label: '전체' },
+  { id: 'free', label: '자유게시판' },
+  { id: 'activity', label: '활동' },
+  { id: 'career', label: '진로' },
+  { id: 'promotion', label: '홍보' },
+  { id: 'announcement', label: '공지사항' },
+];
 
 export default function AdminPostPage() {
   const canAccessAdministrator = useAuthStore((s) => s.canAccessAdministrator);
@@ -37,7 +48,11 @@ export default function AdminPostPage() {
   // Hydration 완료 상태 관리
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const [error, setError] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [activeTab, setActiveTab] = useState('all');
+  const [filters, setFilters] = useState({
+    search: '',
+    category_filter: ''
+  });
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -122,13 +137,29 @@ export default function AdminPostPage() {
     return authorId; // 멤버 정보가 없으면 ID로 표시
   };
 
-  const handleCategoryFilter = (category: string) => {
-    setSelectedCategory(category);
+  // 탭 변경 핸들러 (기존 필터에 추가)
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    const category = tabId === 'all' ? '' : tabId;
+    setFilters(prev => ({ ...prev, category_filter: category }));
+    
     if (category) {
       filterPostsByCategory(category);
     } else {
       loadPosts();
     }
+  };
+
+  // 검색 및 필터 적용
+  const applyFilters = () => {
+    // 여기서는 탭 기반 필터링이므로 별도 처리 불필요
+  };
+
+  // 필터 초기화
+  const clearFilters = () => {
+    setFilters({ search: '', category_filter: '' });
+    setActiveTab('all');
+    loadPosts();
   };
 
   const handleDeletePost = async (postId: number) => {
@@ -150,13 +181,13 @@ export default function AdminPostPage() {
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
-      free: 'bg-gray-100 text-gray-800',
-      activity: 'bg-blue-100 text-blue-800',
-      career: 'bg-green-100 text-green-800',
-      promotion: 'bg-yellow-100 text-yellow-800',
-      announcement: 'bg-red-100 text-red-800',
+      free: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+      activity: 'bg-green-500/20 text-green-300 border-green-500/30',
+      career: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
+      promotion: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+      announcement: 'bg-red-500/20 text-red-300 border-red-500/30',
     };
-    return colors[category] || 'bg-gray-100 text-gray-800';
+    return colors[category] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
   };
 
   const handlePostClick = (postId: number) => {
@@ -186,7 +217,7 @@ export default function AdminPostPage() {
   };
 
   // Hydration이 완료되지 않았거나 권한이 없는 경우
-      if (!isMounted || !isAuthenticated() || !canAccessAdministrator()) {
+  if (!isMounted || !isAuthenticated() || !canAccessAdministrator()) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-lg text-gray-600">
@@ -197,66 +228,91 @@ export default function AdminPostPage() {
   }
 
   return (
-    <div className="py-6">
+    <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
       {/* 헤더 */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-white">게시글 관리</h1>
-        <div className="flex items-center space-x-4">
-          <div className="text-sm text-gray-300">
-            총 {totalPosts}개의 게시글
+      <header className="mx-4 px-6 py-6 border-b border-white/20">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link href="/" className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
+              <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
+            </Link>
+            <div>
+              <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">게시글 관리</h1>
+              <p className="text-sm font-pretendard text-[#e0e0e0]">관리자 게시글 관리</p>
+            </div>
           </div>
-          <RedButton
-            onClick={() => setShowCreateForm(!showCreateForm)}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium"
-          >
-            <FontAwesomeIcon icon={faPlus} className="mr-2 h-4 w-4" />
-            게시글 작성
-          </RedButton>
+          <div className="text-right">
+            <RedButton
+              onClick={() => setShowCreateForm(!showCreateForm)}
+              className="inline-flex items-center text-sm font-medium mb-2"
+            >
+              <FontAwesomeIcon icon={faPlus} className="mr-2 h-4 w-4" />
+              게시글 작성
+            </RedButton>
+            <p className="text-sm text-[#e0e0e0]">전체 <span className="text-[#ffa282] font-bold">{totalPosts}</span>개</p>
+          </div>
         </div>
-      </div>
+      </header>
 
-      {/* 게시글 작성 폼 */}
-      {showCreateForm && (
-        <GlassCard className="mb-6">
-          <PostForm
-            onSubmit={handleCreatePost}
-            onCancel={() => setShowCreateForm(false)}
-            isSubmitting={isCreatingPost}
+      <div className="px-4 py-6">
+        {/* 검색 및 필터 */}
+        <div className="mb-6 space-y-4">
+          <SearchBar
+            searchTerm={filters.search}
+            onSearchTermChange={(term) => setFilters(prev => ({ ...prev, search: term }))}
+            tabs={TAB_ITEMS}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            selects={[
+              {
+                id: 'category',
+                value: filters.category_filter,
+                onChange: (value) => setFilters(prev => ({ ...prev, category_filter: value })),
+                options: [
+                  { value: '', label: '전체 카테고리' },
+                  ...CATEGORIES.map(category => ({
+                    value: category.value,
+                    label: category.label
+                  }))
+                ]
+              }
+            ]}
+            onSearch={applyFilters}
+            onReset={clearFilters}
+            isLoading={isLoadingPosts}
+            placeholder="제목, 내용을 검색해보세요!"
           />
-        </GlassCard>
-      )}
-
-      {/* 카테고리 필터 */}
-      <GlassCard className="mb-6">
-        <TabBar
-          tabs={[
-            { id: '', label: '전체' },
-            ...CATEGORIES.map(category => ({ id: category.value, label: category.label }))
-          ]}
-          activeTab={selectedCategory}
-          onTabChange={handleCategoryFilter}
-        />
-      </GlassCard>
-
-      {/* 에러 메시지 */}
-      {error && (
-        <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400">
-          {error}
         </div>
-      )}
 
-      {/* 게시글 목록 */}
-      {isLoadingPosts ? (
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
-        </div>
-      ) : (
-        <GlassCard className="overflow-hidden">
-          <ul className="divide-y divide-white/10">
+        {/* 게시글 작성 폼 */}
+        {showCreateForm && (
+          <GlassCard className="mb-6">
+            <PostForm
+              onSubmit={handleCreatePost}
+              onCancel={() => setShowCreateForm(false)}
+              isSubmitting={isCreatingPost}
+            />
+          </GlassCard>
+        )}
+
+        {/* 에러 메시지 */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400">
+            {error}
+          </div>
+        )}
+
+        {/* 게시글 목록 */}
+        {isLoadingPosts ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
+          </div>
+        ) : (
+          <div className="space-y-4">
             {posts.map((post: any) => (
-              <li 
+              <GlassCard 
                 key={post.id} 
-                className="px-4 py-4 hover:bg-white/10 cursor-pointer border-b border-white/10 last:border-b-0"
+                className="p-4 hover:bg-white/20 transition-colors cursor-pointer border border-white/20"
                 onClick={() => handlePostClick(post.id)}
               >
                 <div className="flex items-start justify-between">
@@ -300,29 +356,29 @@ export default function AdminPostPage() {
                     </button>
                   </div>
                 </div>
-              </li>
+              </GlassCard>
             ))}
-          </ul>
-        </GlassCard>
-      )}
-
-      {!isLoadingPosts && posts.length === 0 && (
-        <div className="px-4 py-5 sm:p-6">
-          <div className="text-center">
-            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <h3 className="mt-2 text-sm font-medium text-white">게시글이 없습니다.</h3>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* PostModal */}
-      <PostModal
-        postId={selectedPostId}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-      />
+        {!isLoadingPosts && posts.length === 0 && (
+          <div className="px-4 py-5 sm:p-6">
+            <div className="text-center">
+              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <h3 className="mt-2 text-sm font-medium text-white">게시글이 없습니다.</h3>
+            </div>
+          </div>
+        )}
+
+        {/* PostModal */}
+        <PostModal
+          postId={selectedPostId}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+        />
+      </div>
     </div>
   );
 }

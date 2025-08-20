@@ -114,6 +114,7 @@ export default function ProjectDetailPage() {
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
+  const [isLikeUpdating, setIsLikeUpdating] = useState(false);
 
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [memberModalMode, setMemberModalMode] = useState<'add' | 'edit'>('add');
@@ -188,7 +189,7 @@ export default function ProjectDetailPage() {
 
   // 좋아요 토글 처리
   const handleLikeToggle = async () => {
-    if (!selectedProject || likeLoading) return;
+    if (!selectedProject || likeLoading || isLikeUpdating) return;
     
     // 로그인하지 않은 사용자는 좋아요 기능 사용 불가
     if (!isAuthenticated()) {
@@ -198,6 +199,7 @@ export default function ProjectDetailPage() {
     
     try {
       setLikeLoading(true);
+      setIsLikeUpdating(true);
       
       if (selectedProject.is_liked) {
         await removeProjectLike(selectedProject.id);
@@ -205,7 +207,7 @@ export default function ProjectDetailPage() {
         await addProjectLike(selectedProject.id);
       }
       
-      // 좋아요 상태 변경 후 프로젝트 정보를 다시 로드하여 상태 동기화
+      // 좋아요 상태만 업데이트 (전체 프로젝트 정보를 다시 로드하지 않음)
       // 백엔드에서 업데이트된 is_liked 상태를 가져오기 위해 새로고침
       await loadProject();
     } catch (error: any) {
@@ -213,6 +215,7 @@ export default function ProjectDetailPage() {
       alert('좋아요 처리에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
     } finally {
       setLikeLoading(false);
+      setIsLikeUpdating(false);
     }
   };
 
@@ -290,7 +293,7 @@ export default function ProjectDetailPage() {
   };
 
   // Loading state with skeleton
-  if (isLoadingProject && !error) {
+  if (isLoadingProject && !error && !isLikeUpdating) {
     return (
       <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
         {/* 헤더 */}
@@ -309,37 +312,71 @@ export default function ProjectDetailPage() {
         </header>
 
         <div className="px-4 py-6">
-          {/* Project Info Skeleton */}
-          <div className="mb-8">
-            <div className="flex items-center mb-4">
-              <div className="w-48 h-8 bg-gray-600 rounded mb-2"></div>
-              <div className="w-20 h-6 bg-gray-600 rounded ml-2"></div>
+          {/* 프로젝트 제목 및 메타 정보 Skeleton */}
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-48 h-8 bg-gray-600 rounded"></div>
+                <div className="w-20 h-6 bg-gray-600 rounded"></div>
+                <div className="w-12 h-6 bg-gray-600 rounded"></div>
+              </div>
+              
+              {/* 프로젝트 링크 아이콘 Skeleton */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-6 h-6 bg-gray-600 rounded"></div>
+                <div className="w-6 h-6 bg-gray-600 rounded"></div>
+              </div>
             </div>
-            <div className="w-full h-32 bg-gray-600 rounded mb-6"></div>
+            
+            {/* 수정 버튼 Skeleton */}
+            <div className="w-16 h-8 bg-gray-600 rounded"></div>
           </div>
 
-          {/* Project Images Skeleton */}
+          {/* 이미지가 없을 때 빈 로고 표시 Skeleton */}
+          <div className="mb-8 flex justify-center">
+            <div className="w-64 h-64 bg-gray-600 rounded-lg"></div>
+          </div>
+
+          {/* 프로젝트 설명 Skeleton */}
           <div className="mb-8">
-            <div className="w-full h-64 bg-gray-600 rounded-lg mb-6"></div>
+            <GlassCard className="p-6">
+              <div className="space-y-2">
+                <div className="w-full h-4 bg-gray-600 rounded"></div>
+                <div className="w-3/4 h-4 bg-gray-600 rounded"></div>
+                <div className="w-1/2 h-4 bg-gray-600 rounded"></div>
+              </div>
+            </GlassCard>
           </div>
 
-          {/* Members Skeleton */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <GlassCard className="p-6">
-                <h2 className="text-lg font-semibold mb-4 text-white flex items-center">
-                  <FontAwesomeIcon icon={faUsers} className="mr-2" />
-                  구성원
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                  {Array.from({ length: 6 }).map((_, index) => (
-                    <div key={index} className="bg-white/10 border border-white/20 rounded-lg p-3 text-center">
-                      <SkeletonCard />
+          {/* 액션 버튼들 Skeleton */}
+          <div className="mb-8 flex items-center space-x-2">
+            <div className="w-16 h-8 bg-gray-600 rounded"></div>
+            <div className="w-16 h-8 bg-gray-600 rounded"></div>
+            <div className="w-16 h-8 bg-gray-600 rounded"></div>
+          </div>
+        </div>
+
+        {/* 구성원 Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <GlassCard className="p-6">
+              <h2 className="text-lg font-semibold mb-4 text-white flex items-center">
+                <FontAwesomeIcon icon={faUsers} className="mr-2" />
+                구성원
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className="bg-white/10 border border-white/20 rounded-lg p-3 text-center">
+                    <div className="flex items-center justify-center gap-1 mb-2">
+                      <div className="w-12 h-5 bg-gray-600 rounded"></div>
+                      <div className="w-20 h-6 bg-gray-600 rounded"></div>
+                      <div className="w-8 h-4 bg-gray-600 rounded"></div>
                     </div>
-                  ))}
-                </div>
-              </GlassCard>
-            </div>
+                    <div className="w-full h-3 bg-gray-600 rounded mt-2"></div>
+                  </div>
+                ))}
+              </div>
+            </GlassCard>
           </div>
         </div>
       </div>
@@ -359,7 +396,89 @@ export default function ProjectDetailPage() {
   if (!selectedProject) {
     return (
       <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
-        <div className="text-center text-gray-300">프로젝트가 없습니다.</div>
+        {/* 헤더 */}
+        <header className="mx-4 px-6 py-6 border-b border-white/20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Link href="/project" className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
+                <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
+              </Link>
+              <div>
+                <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">프로젝트 상세</h1>
+                <p className="text-sm font-pretendard text-[#e0e0e0]">프로젝트 정보 및 팀원</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="px-4 py-6">
+          {/* 프로젝트 제목 및 메타 정보 Skeleton */}
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-48 h-8 bg-gray-600 rounded"></div>
+                <div className="w-20 h-6 bg-gray-600 rounded"></div>
+                <div className="w-12 h-6 bg-gray-600 rounded"></div>
+              </div>
+              
+              {/* 프로젝트 링크 아이콘 Skeleton */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-6 h-6 bg-gray-600 rounded"></div>
+                <div className="w-6 h-6 bg-gray-600 rounded"></div>
+              </div>
+            </div>
+            
+            {/* 수정 버튼 Skeleton */}
+            <div className="w-16 h-8 bg-gray-600 rounded"></div>
+          </div>
+
+          {/* 이미지가 없을 때 빈 로고 표시 Skeleton */}
+          <div className="mb-8 flex justify-center">
+            <div className="w-64 h-64 bg-gray-600 rounded-lg"></div>
+          </div>
+
+          {/* 프로젝트 설명 Skeleton */}
+          <div className="mb-8">
+            <GlassCard className="p-6">
+              <div className="space-y-2">
+                <div className="w-full h-4 bg-gray-600 rounded"></div>
+                <div className="w-3/4 h-4 bg-gray-600 rounded"></div>
+                <div className="w-1/2 h-4 bg-gray-600 rounded"></div>
+              </div>
+            </GlassCard>
+          </div>
+
+          {/* 액션 버튼들 Skeleton */}
+          <div className="mb-8 flex items-center space-x-2">
+            <div className="w-16 h-8 bg-gray-600 rounded"></div>
+            <div className="w-16 h-8 bg-gray-600 rounded"></div>
+            <div className="w-16 h-8 bg-gray-600 rounded"></div>
+          </div>
+        </div>
+
+        {/* 구성원 Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <GlassCard className="p-6">
+              <h2 className="text-lg font-semibold mb-4 text-white flex items-center">
+                <FontAwesomeIcon icon={faUsers} className="mr-2" />
+                구성원
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className="bg-white/10 border border-white/20 rounded-lg p-3 text-center">
+                    <div className="flex items-center justify-center gap-1 mb-2">
+                      <div className="w-12 h-5 bg-gray-600 rounded"></div>
+                      <div className="w-20 h-6 bg-gray-600 rounded"></div>
+                      <div className="w-8 h-4 bg-gray-600 rounded"></div>
+                    </div>
+                    <div className="w-full h-3 bg-gray-600 rounded mt-2"></div>
+                  </div>
+                ))}
+              </div>
+            </GlassCard>
+          </div>
+        </div>
       </div>
     );
   }
@@ -385,16 +504,16 @@ export default function ProjectDetailPage() {
         {/* 프로젝트 제목 및 메타 정보 */}
         <div className="flex items-start justify-between mb-6">
           <div className="flex-1">
-            <div className="flex items-center mb-4">
+            <div className="flex items-center gap-2 mb-4">
               <h1 className="text-2xl font-semibold text-white">{selectedProject.title}</h1>
-              <span className={`px-1.5 py-0.5 text-xs rounded-full flex font-semibold items-center gap-2 bg-gray-500/20 text-gray-300`}>
+              <span className={`px-1.5 py-0.5 text-xs rounded-full flex font-semibold items-center ${getGenColor(selectedProject.gen)}`}>
                 {selectedProject.gen <= 4 ? '이전기수' : `${selectedProject.gen}기`}
               </span>
               {/* 좋아요 버튼 - 제목 오른쪽에 */}
               <button
                 onClick={handleLikeToggle}
                 disabled={likeLoading || !isAuthenticated()}
-                className={`inline-flex items-center px-2 py-1 text-sm transition-colors ${
+                className={`inline-flex items-center px-1 py-1 text-sm transition-colors ${
                   selectedProject.is_liked
                     ? 'text-red-300 hover:text-red-200'
                     : 'text-white hover:text-gray-300'
@@ -403,9 +522,9 @@ export default function ProjectDetailPage() {
               >
                 <FontAwesomeIcon 
                   icon={faHeart} 
-                  className={`mr-1 h-3 w-3 ${selectedProject.is_liked ? 'text-red-300' : 'text-white'}`}
+                  className={`mr-1 h-3 w-3 ${likeLoading ? 'animate-pulse' : ''} ${selectedProject.is_liked ? 'text-red-300' : 'text-white'}`}
                 />
-                {selectedProject.like_count || 0}
+                {likeLoading ? '...' : (selectedProject.like_count || 0)}
               </button>
             </div>
             
@@ -478,44 +597,44 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* 프로젝트 이미지 섹션 - 크게 표시 */}
-        {(isValidUrl(selectedProject.thumbnail_url) || isValidUrl(selectedProject.panel_url)) && (
-          <div className="mb-8">
-            {isValidUrl(selectedProject.thumbnail_url) && (
+      {(isValidUrl(selectedProject.thumbnail_url) || isValidUrl(selectedProject.panel_url)) && (
+        <div className="mb-8">
+          {isValidUrl(selectedProject.thumbnail_url) && (
               <div className="mb-6">
-                <Image
+              <Image
                   src={getThumbnailUrl(selectedProject.thumbnail_url!, 800)}
-                  alt="프로젝트 썸네일"
+                alt="프로젝트 썸네일"
                   className="w-full max-w-4xl mx-auto rounded-lg shadow-lg object-cover"
                   width={800}
                   height={400}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    if (target.src !== selectedProject.thumbnail_url!) {
-                      target.src = selectedProject.thumbnail_url!;
-                    }
-                  }}
-                />
-              </div>
-            )}
-            {isValidUrl(selectedProject.panel_url) && (
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  if (target.src !== selectedProject.thumbnail_url!) {
+                    target.src = selectedProject.thumbnail_url!;
+                  }
+                }}
+              />
+            </div>
+          )}
+          {isValidUrl(selectedProject.panel_url) && (
               <div className="mb-6">
-                <Image
+              <Image
                   src={getThumbnailUrl(selectedProject.panel_url!, 1000)}
-                  alt="프로젝트 패널 이미지"
+                alt="프로젝트 패널 이미지"
                   className="w-full max-w-5xl mx-auto rounded-lg shadow-lg object-cover"
                   width={1000}
                   height={500}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    if (target.src !== selectedProject.panel_url!) {
-                      target.src = selectedProject.panel_url!;
-                    }
-                  }}
-                />
-              </div>
-            )}
-          </div>
-        )}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  if (target.src !== selectedProject.panel_url!) {
+                    target.src = selectedProject.panel_url!;
+                  }
+                }}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
         {/* 액션 버튼들 */}
         <div className="mb-8 flex items-center space-x-2">
@@ -532,9 +651,9 @@ export default function ProjectDetailPage() {
           >
             <FontAwesomeIcon 
               icon={faHeart} 
-              className="mr-1 h-3 w-3" 
+              className={`mr-1 h-3 w-3 ${likeLoading ? 'animate-pulse' : ''}`}
             />
-            {selectedProject.like_count || 0}
+            {likeLoading ? '...' : (selectedProject.like_count || 0)}
           </button>
           
           {canEdit && (
@@ -583,16 +702,16 @@ export default function ProjectDetailPage() {
                     className="bg-white/10 border border-white/20 rounded-lg p-3 text-center"
                   >
                     <div className="flex items-center justify-center gap-1 mb-2">
-                      {m.member_gen !== null && m.member_gen !== undefined && (
+                        {m.member_gen !== null && m.member_gen !== undefined && (
                         <span className={`px-1.5 py-0.5 text-xs rounded-full font-medium flex items-center gap-1 bg-[#8B0000] text-[#ffa282]`}>
-                          {m.member_gen}기
-                        </span>
-                      )}
+                            {m.member_gen}기
+                          </span>
+                        )}
                       <h3 className="text-lg font-semibold text-white">{m.member_name || '알 수 없음'}</h3>
                       
                       <div className="text-xs text-gray-300">/ {m.role === 'team_leader' ? '팀장' : m.role === 'team_member' ? '팀원' : m.role || '팀원'}</div>
-                    </div>
-                    {m.contribution && (
+                      </div>
+                        {m.contribution && (
                       <div className="text-xs text-gray-300 mt-2 truncate" title={m.contribution}>
                         {m.contribution}
                       </div>
