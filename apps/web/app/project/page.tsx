@@ -180,6 +180,86 @@ export default function ProjectPage() {
     }).filter((option): option is { value: string; label: string } => option !== null)
   ];
 
+  // Skeleton UI Component
+  const SkeletonCard = () => (
+    <div className="p-4 animate-pulse">
+      <div className="w-full h-48 bg-gray-600 rounded-lg mb-4"></div>
+      <div className="space-y-3">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2 flex-1 mr-2">
+            <div className="w-32 h-6 bg-gray-600 rounded"></div>
+            <div className="w-16 h-5 bg-gray-600 rounded"></div>
+          </div>
+        </div>
+        <div className="h-10">
+          <div className="w-full h-4 bg-gray-600 rounded mb-2"></div>
+          <div className="w-3/4 h-4 bg-gray-600 rounded"></div>
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="flex gap-1">
+            <div className="w-12 h-6 bg-gray-600 rounded-full"></div>
+            <div className="w-16 h-6 bg-gray-600 rounded-full"></div>
+            <div className="w-14 h-6 bg-gray-600 rounded-full"></div>
+          </div>
+          <div className="w-12 h-6 bg-gray-600 rounded"></div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Loading state with skeleton
+  if (isLoadingProjects && !appliedFilters.search && appliedFilters.gen_filter === 'all') {
+    return (
+      <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
+        {/* 헤더 */}
+        <header className="mx-4 px-6 py-6 border-b border-white/20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Link href="/" className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
+                <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
+              </Link>
+              <div>
+                <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">프로젝트</h1>
+                <p className="text-sm font-pretendard text-[#e0e0e0]">프로메테우스 프로젝트 목록</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="px-4 py-6">
+          {/* 검색 및 필터 */}
+          <div className="mb-6 space-y-4">
+            <SearchBar
+              searchTerm={filters.search}
+              onSearchTermChange={(term) => setFilters(prev => ({ ...prev, search: term }))}
+              selects={[
+                {
+                  id: 'gen',
+                  value: filters.gen_filter,
+                  onChange: (value) => setFilters(prev => ({ ...prev, gen_filter: value })),
+                  options: genOptions
+                }
+              ]}
+              onSearch={applyFilters}
+              onReset={clearFilters}
+              isLoading={isLoadingProjects}
+              placeholder="프로젝트명, 설명, 키워드를 검색해보세요!"
+            />
+          </div>
+
+          {/* Project Cards Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <GlassCard key={index} className="overflow-hidden">
+                <SkeletonCard />
+              </GlassCard>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
       {/* 헤더 */}

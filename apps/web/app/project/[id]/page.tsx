@@ -169,6 +169,23 @@ export default function ProjectDetailPage() {
     }
   };
 
+  // Skeleton UI Component
+  const SkeletonCard = () => (
+    <div className="p-4 animate-pulse">
+      <div className="flex items-center justify-center mb-4">
+        <div className="w-16 h-16 bg-gray-600 rounded-full"></div>
+      </div>
+      <div className="w-20 h-5 bg-gray-600 rounded mb-2"></div>
+      <div className="w-32 h-4 bg-gray-600 rounded"></div>
+    </div>
+  );
+
+  useEffect(() => {
+    if (projectId) {
+      Promise.all([loadProject(), loadMembers()]);
+    }
+  }, [projectId]);
+
   // 좋아요 토글 처리
   const handleLikeToggle = async () => {
     if (!selectedProject || likeLoading) return;
@@ -272,17 +289,58 @@ export default function ProjectDetailPage() {
     }
   };
 
-  useEffect(() => {
-    if (projectId) {
-      Promise.all([loadProject(), loadMembers()]);
-    }
-  }, [projectId]);
-
-  if (isLoadingProject) {
+  // Loading state with skeleton
+  if (isLoadingProject && !error) {
     return (
       <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
+        {/* 헤더 */}
+        <header className="mx-4 px-6 py-6 border-b border-white/20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Link href="/project" className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
+                <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
+              </Link>
+              <div>
+                <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">프로젝트 상세</h1>
+                <p className="text-sm font-pretendard text-[#e0e0e0]">프로젝트 정보 및 팀원</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="px-4 py-6">
+          {/* Project Info Skeleton */}
+          <div className="mb-8">
+            <div className="flex items-center mb-4">
+              <div className="w-48 h-8 bg-gray-600 rounded mb-2"></div>
+              <div className="w-20 h-6 bg-gray-600 rounded ml-2"></div>
+            </div>
+            <div className="w-full h-32 bg-gray-600 rounded mb-6"></div>
+          </div>
+
+          {/* Project Images Skeleton */}
+          <div className="mb-8">
+            <div className="w-full h-64 bg-gray-600 rounded-lg mb-6"></div>
+          </div>
+
+          {/* Members Skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <GlassCard className="p-6">
+                <h2 className="text-lg font-semibold mb-4 text-white flex items-center">
+                  <FontAwesomeIcon icon={faUsers} className="mr-2" />
+                  구성원
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <div key={index} className="bg-white/10 border border-white/20 rounded-lg p-3 text-center">
+                      <SkeletonCard />
+                    </div>
+                  ))}
+                </div>
+              </GlassCard>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -403,6 +461,15 @@ export default function ProjectDetailPage() {
           )}
         </div>
 
+        {/* 이미지가 없을 때 빈 로고 표시 */}
+        {!isValidUrl(selectedProject.thumbnail_url) && !isValidUrl(selectedProject.panel_url) && (
+          <div className="mb-8 flex justify-center">
+            <div className="w-64 h-64 bg-white/10 rounded-lg flex items-center justify-center">
+              <FontAwesomeIcon icon={faFolder} className="text-white/30 text-6xl" />
+            </div>
+          </div>
+        )}
+
         {/* 프로젝트 설명 - 아이콘 아래에 전체 너비 */}
         <div className="mb-8">
           <GlassCard className="p-6">
@@ -411,53 +478,47 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* 프로젝트 이미지 섹션 - 크게 표시 */}
-      {(isValidUrl(selectedProject.thumbnail_url) || isValidUrl(selectedProject.panel_url)) && (
-        <div className="mb-8">
-          {isValidUrl(selectedProject.thumbnail_url) && (
+        {(isValidUrl(selectedProject.thumbnail_url) || isValidUrl(selectedProject.panel_url)) && (
+          <div className="mb-8">
+            {isValidUrl(selectedProject.thumbnail_url) && (
               <div className="mb-6">
-              <Image
+                <Image
                   src={getThumbnailUrl(selectedProject.thumbnail_url!, 800)}
-                alt="프로젝트 썸네일"
+                  alt="프로젝트 썸네일"
                   className="w-full max-w-4xl mx-auto rounded-lg shadow-lg object-cover"
                   width={800}
                   height={400}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  if (target.src !== selectedProject.thumbnail_url!) {
-                    target.src = selectedProject.thumbnail_url!;
-                  }
-                }}
-              />
-            </div>
-          )}
-          {isValidUrl(selectedProject.panel_url) && (
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    if (target.src !== selectedProject.thumbnail_url!) {
+                      target.src = selectedProject.thumbnail_url!;
+                    }
+                  }}
+                />
+              </div>
+            )}
+            {isValidUrl(selectedProject.panel_url) && (
               <div className="mb-6">
-              <Image
+                <Image
                   src={getThumbnailUrl(selectedProject.panel_url!, 1000)}
-                alt="프로젝트 패널 이미지"
+                  alt="프로젝트 패널 이미지"
                   className="w-full max-w-5xl mx-auto rounded-lg shadow-lg object-cover"
                   width={1000}
                   height={500}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  if (target.src !== selectedProject.panel_url!) {
-                    target.src = selectedProject.panel_url!;
-                  }
-                }}
-              />
-            </div>
-          )}
-        </div>
-      )}
-
-        {/* 이미지가 없을 때 빈 로고 표시 */}
-        {!isValidUrl(selectedProject.thumbnail_url) && !isValidUrl(selectedProject.panel_url) && (
-          <div className="mb-8 flex justify-center">
-            <div className="w-64 h-64 bg-white/10 rounded-lg flex items-center justify-center">
-              <FontAwesomeIcon icon={faFolder} className="text-white/30 text-6xl" />
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    if (target.src !== selectedProject.panel_url!) {
+                      target.src = selectedProject.panel_url!;
+                    }
+                  }}
+                />
+              </div>
+            )}
           </div>
-        </div>
-        <div className="flex items-center space-x-2">
+        )}
+
+        {/* 액션 버튼들 */}
+        <div className="mb-8 flex items-center space-x-2">
           {/* 좋아요 버튼 */}
           <button
             onClick={handleLikeToggle}
@@ -470,7 +531,7 @@ export default function ProjectDetailPage() {
             title={!isAuthenticated() ? '로그인이 필요한 기능입니다' : ''}
           >
             <FontAwesomeIcon 
-              icon={selectedProject.is_liked ? faHeart : faHeartBroken} 
+              icon={faHeart} 
               className="mr-1 h-3 w-3" 
             />
             {selectedProject.like_count || 0}
@@ -515,33 +576,33 @@ export default function ProjectDetailPage() {
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600" />
               </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {projectMembers.map((m) => (
                   <div
                     key={m.id}
-                      className="bg-white/10 border border-white/20 rounded-lg p-3 text-center"
-                    >
-                      <div className="flex items-center justify-center gap-1 mb-2">
-                        {m.member_gen !== null && m.member_gen !== undefined && (
-                          <span className={`px-1.5 py-0.5 text-xs rounded-full font-medium flex items-center gap-1 bg-[#8B0000] text-[#ffa282]`}>
-                            {m.member_gen}기
-                          </span>
-                        )}
-                        <h3 className="text-lg font-semibold text-white">{m.member_name || '알 수 없음'}</h3>
-                        
-                        <div className="text-xs text-gray-300">/ {m.role === 'team_leader' ? '팀장' : m.role === 'team_member' ? '팀원' : m.role || '팀원'}</div>
-                      </div>
-                        {m.contribution && (
-                        <div className="text-xs text-gray-300 mt-2 truncate" title={m.contribution}>
-                          {m.contribution}
+                    className="bg-white/10 border border-white/20 rounded-lg p-3 text-center"
+                  >
+                    <div className="flex items-center justify-center gap-1 mb-2">
+                      {m.member_gen !== null && m.member_gen !== undefined && (
+                        <span className={`px-1.5 py-0.5 text-xs rounded-full font-medium flex items-center gap-1 bg-[#8B0000] text-[#ffa282]`}>
+                          {m.member_gen}기
+                        </span>
+                      )}
+                      <h3 className="text-lg font-semibold text-white">{m.member_name || '알 수 없음'}</h3>
+                      
+                      <div className="text-xs text-gray-300">/ {m.role === 'team_leader' ? '팀장' : m.role === 'team_member' ? '팀원' : m.role || '팀원'}</div>
+                    </div>
+                    {m.contribution && (
+                      <div className="text-xs text-gray-300 mt-2 truncate" title={m.contribution}>
+                        {m.contribution}
                       </div>
                     )}
                   </div>
                 ))}
 
-                  {projectMembers.length === 0 && (
-                    <div className="col-span-full text-center py-8 text-gray-400">
-                      등록된 구성원이 없습니다.
+                {projectMembers.length === 0 && (
+                  <div className="col-span-full text-center py-8 text-gray-400">
+                    등록된 구성원이 없습니다.
                   </div>
                 )}
               </div>
@@ -566,7 +627,6 @@ export default function ProjectDetailPage() {
         onClose={closeMemberModal}
         onSubmit={submitMember}
       />
-      </div>
     </div>
   );
 }
