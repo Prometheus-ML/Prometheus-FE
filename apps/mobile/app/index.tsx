@@ -1,22 +1,26 @@
+import React, { useEffect } from 'react';
 import { Text, View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { useState } from 'react';
 import { router } from 'expo-router';
+import { useAuthStore } from '@prometheus-fe/stores';
 
 export default function Home() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userProfile, setUserProfile] = useState({
-    name: '홍길동',
-    gen: 3,
-    activity_start_date: '2024-01-01'
-  });
+  const { isAuthenticated, user, logout } = useAuthStore();
+
+  useEffect(() => {
+    // 인증 상태에 따라 적절한 화면으로 리디렉션
+    // 인증된 사용자는 인덱스 화면에서 메인 콘텐츠를 볼 수 있음
+    // if (isAuthenticated()) {
+    //   router.replace('/main');
+    // }
+  }, [isAuthenticated]);
 
   const handleLogin = () => {
     // 로그인 화면으로 네비게이션
     router.push('/(auth)/login');
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     Alert.alert(
       '로그아웃',
       '정말 로그아웃하시겠습니까?',
@@ -25,13 +29,13 @@ export default function Home() {
         { 
           text: '로그아웃', 
           style: 'destructive',
-          onPress: () => {
-            setIsAuthenticated(false);
-            setUserProfile({
-              name: '',
-              gen: 0,
-              activity_start_date: ''
-            });
+          onPress: async () => {
+            try {
+              await logout();
+              router.replace('/');
+            } catch (error) {
+              Alert.alert('로그아웃 오류', '로그아웃 중 오류가 발생했습니다.');
+            }
           }
         }
       ]
@@ -39,8 +43,8 @@ export default function Home() {
   };
 
   const getDaysCount = () => {
-    if (!userProfile.activity_start_date) return 0;
-    const startDate = new Date(userProfile.activity_start_date);
+    if (!user?.activity_start_date) return 0;
+    const startDate = new Date(user.activity_start_date);
     const today = new Date();
     const diffTime = Math.abs(today.getTime() - startDate.getTime());
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -53,7 +57,9 @@ export default function Home() {
     console.log(`Navigate to: ${route}`);
   };
 
-  if (isAuthenticated) {
+  // 인증된 사용자라면 메인 화면으로 리디렉션되므로 이 부분은 실행되지 않음
+  // 하지만 혹시 모를 상황을 대비해 남겨둠
+  if (isAuthenticated() && user) {
     return (
       <View style={styles.container}>
         {/* Header */}
@@ -85,12 +91,12 @@ export default function Home() {
           {/* Personalized Greeting */}
           <View style={styles.greetingCard}>
             <Text style={styles.greetingTitle}>
-              <Text style={styles.userName}>{userProfile.name}</Text> 님은{'\n'}
+              <Text style={styles.userName}>{user.name}</Text> 님은{'\n'}
               <Text style={styles.highlight}>PROMETHEUS</Text>와{' '}
               <Text style={styles.userName}>{daysCount}</Text>일째
             </Text>
             <View style={styles.genBadge}>
-              <Text style={styles.genText}>{userProfile.gen}기</Text>
+              <Text style={styles.genText}>{user.gen}기</Text>
             </View>
           </View>
 

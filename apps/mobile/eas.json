@@ -1,0 +1,52 @@
+{
+  "cli": {
+    "appVersionSource": "local"
+  },
+  "build": {
+    "monorepo": {
+      "pnpm": "10.10.0",
+      "env": {
+        "DEBUG": "turbo:*"
+      }
+    },
+    "development": {
+      "extends": "monorepo",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "developmentClient": true,
+      "ios": {
+        "simulator": true
+      }
+    },
+    "preview": {
+      "extends": "monorepo",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
+      }
+    },
+    "production": {
+      "extends": "monorepo",
+      "distribution": "store",
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "ios": {
+        "resourceClass": "m-medium"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "seunghoon719@naver.com",
+        "ascAppId": "6749256458"
+      }
+    }
+  }
+}

@@ -1,12 +1,59 @@
-import { Text, View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Text, View, StyleSheet, TouchableOpacity, Dimensions, Alert } from 'react-native';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { GoogleLoginButton } from '../../components';
+import { useAuthStore } from '@prometheus-fe/stores';
 
 const { width, height } = Dimensions.get('window');
 
 export default function Login() {
-  const handleGoogleLogin = () => {
-    // TODO: Google 로그인 구현
-    console.log('Google login pressed');
-  };
+  const [googleConfigured, setGoogleConfigured] = useState(false);
+  const { error, clearError } = useAuthStore();
+
+  // Google Sign-In 설정
+  useEffect(() => {
+    const configureGoogleSignIn = async () => {
+      try {
+        const googleClientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID;
+        const googleIosClientId = process.env.EXPO_PUBLIC_IOS_GOOGLE_CLIENT_ID;
+
+        if (!googleClientId) {
+          console.error('Google Client ID가 설정되지 않았습니다.');
+          Alert.alert(
+            'Google 로그인 설정 오류',
+            'Google Client ID가 설정되지 않았습니다. 개발자에게 문의하세요.'
+          );
+          return;
+        }
+
+        GoogleSignin.configure({
+          webClientId: googleClientId,
+          iosClientId: googleIosClientId,
+          scopes: ['profile', 'email'],
+          offlineAccess: true,
+        });
+
+        setGoogleConfigured(true);
+        console.log('Google Sign-In configured successfully');
+      } catch (error) {
+        console.error('Google Sign-In configuration failed:', error);
+        Alert.alert(
+          'Google 로그인 설정 오류',
+          'Google 로그인 설정에 실패했습니다.'
+        );
+      }
+    };
+
+    configureGoogleSignIn();
+  }, []);
+
+  // 에러가 있을 때 표시
+  useEffect(() => {
+    if (error) {
+      Alert.alert('로그인 오류', error);
+      clearError();
+    }
+  }, [error, clearError]);
 
   return (
     <View style={styles.container}>
@@ -30,12 +77,13 @@ export default function Login() {
 
         {/* Login section */}
         <View style={styles.loginSection}>
-          <TouchableOpacity style={styles.googleButton} onPress={handleGoogleLogin}>
-            <View style={styles.googleIcon}>
-              <Text style={styles.googleG}>G</Text>
+          {googleConfigured ? (
+            <GoogleLoginButton />
+          ) : (
+            <View style={[styles.googleButton, { opacity: 0.5 }]}>
+              <Text style={styles.googleButtonText}>Google 로그인 설정 중...</Text>
             </View>
-            <Text style={styles.googleButtonText}>Google로 로그인</Text>
-          </TouchableOpacity>
+          )}
           
           <Text style={styles.infoText}>프로메테우스 멤버가 아니에요</Text>
         </View>
