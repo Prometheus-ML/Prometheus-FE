@@ -86,8 +86,8 @@ export default function EditProjectPage() {
   // Check permissions
   if (!canEdit) {
     return (
-      <div className="py-6">
-        <div className="text-center">
+      <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
+        <div className="text-center py-12">
           <h1 className="text-2xl font-bold text-white mb-4">접근 권한 없음</h1>
           <p className="text-gray-300 mb-4">
             {!isMember 
@@ -111,7 +111,7 @@ export default function EditProjectPage() {
 
   if (isLoadingProject) {
     return (
-      <div className="py-6">
+      <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
         <div className="flex justify-center items-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
         </div>
@@ -121,7 +121,7 @@ export default function EditProjectPage() {
 
   if (error && !selectedProject) {
     return (
-      <div className="py-6">
+      <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
         <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400 text-center mb-4">
           {error}
         </div>
@@ -143,7 +143,7 @@ export default function EditProjectPage() {
 
   if (!selectedProject) {
     return (
-      <div className="py-6">
+      <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
         <div className="text-center text-gray-300 mb-4">프로젝트를 찾을 수 없습니다.</div>
         <div className="text-center">
           <Link 
@@ -159,36 +159,37 @@ export default function EditProjectPage() {
   }
 
   return (
-    <div className="py-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-white flex items-center">
-          <FontAwesomeIcon icon={faEdit} className="mr-2" />
-          프로젝트 수정
-        </h1>
-        <Link 
-          href={`/project/${projectId}`} 
-          className="text-sm text-gray-300 hover:text-white inline-flex items-center"
-        >
-          <FontAwesomeIcon icon={faArrowLeft} className="mr-1" />
-          상세로
-        </Link>
-      </div>
-
-      {/* 에러 메시지 표시 */}
-      {error && selectedProject && (
-        <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400">
-          {error}
+    <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
+      {/* 헤더 */}
+      <header className="mx-4 px-6 py-6 border-b border-white/20">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link href={`/project/${projectId}`} className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
+              <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
+            </Link>
+            <div>
+              <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">프로젝트 수정</h1>
+              <p className="text-sm font-pretendard text-[#e0e0e0]">프로젝트 정보 수정</p>
+            </div>
+          </div>
         </div>
-      )}
+      </header>
 
-      {/* 제출 중 상태 표시 */}
-      {isSubmitting && (
-        <div className="mb-4 p-3 bg-blue-500/20 border border-blue-500/30 rounded-md text-blue-400">
-          프로젝트를 수정하는 중...
-        </div>
-      )}
+      <div className="px-4 py-6">
+        {/* 에러 메시지 표시 */}
+        {error && selectedProject && (
+          <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400">
+            {error}
+          </div>
+        )}
 
-      <GlassCard>
+        {/* 제출 중 상태 표시 */}
+        {isSubmitting && (
+          <div className="mb-4 p-3 bg-blue-500/20 border border-blue-500/30 rounded-md text-blue-400">
+            프로젝트를 수정하는 중...
+          </div>
+        )}
+
         <ProjectForm 
           initial={{
             ...selectedProject,
@@ -197,13 +198,14 @@ export default function EditProjectPage() {
             github_url: selectedProject.github_url || '',
             demo_url: selectedProject.demo_url || '',
             panel_url: selectedProject.panel_url || '',
+            thumbnail_url: selectedProject.thumbnail_url || '',
             status: selectedProject.status as 'active' | 'completed' | 'paused',
           }}
           mode="edit"
-          showStatus={true}
+          showStatus={false}
           onSubmit={handleSave}
         />
-      </GlassCard>
+      </div>
     </div>
   );
 }
