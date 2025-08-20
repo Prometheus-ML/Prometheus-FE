@@ -38,6 +38,7 @@ export class CommunityApi {
       if (params?.page) sp.set('page', String(params.page));
       if (params?.size) sp.set('size', String(params.size));
       if (params?.category) sp.set('category', params.category);
+      if (params?.search) sp.set('search', params.search);
       
       const query = sp.toString() ? `?${sp.toString()}` : '';
       const response = await this.api.get<GetPostsResponse>(`${this.postsBase}/${query}`);

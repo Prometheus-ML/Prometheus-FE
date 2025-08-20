@@ -7,7 +7,7 @@ import PostModal from '../../../src/components/PostModal';
 import PostForm from '../../../src/components/PostForm';
 import GlassCard from '../../../src/components/GlassCard';
 import RedButton from '../../../src/components/RedButton';
-import QueryBar from '../../../src/components/QueryBar';
+import { QueryBar } from '../../../src/components/QueryBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faTrash, faHeart, faComments, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
@@ -230,9 +230,9 @@ export default function AdminPostPage() {
       <div className="px-4 py-6">
         {/* 검색 및 필터 */}
         <div className="mb-6 space-y-4">
-          <SearchBar
+          <QueryBar
             searchTerm={filters.search}
-            onSearchTermChange={(term) => setFilters(prev => ({ ...prev, search: term }))}
+            onSearchTermChange={(term: string) => setFilters(prev => ({ ...prev, search: term }))}
             tabs={TAB_ITEMS}
             activeTab={activeTab}
             onTabChange={handleTabChange}
@@ -240,7 +240,7 @@ export default function AdminPostPage() {
               {
                 id: 'category',
                 value: filters.category_filter,
-                onChange: (value) => setFilters(prev => ({ ...prev, category_filter: value })),
+                onChange: (value: string) => setFilters(prev => ({ ...prev, category_filter: value })),
                 options: [
                   { value: '', label: '전체 카테고리' },
                   ...CATEGORIES.map(category => ({
@@ -255,7 +255,7 @@ export default function AdminPostPage() {
             isLoading={isLoadingPosts}
             placeholder="제목, 내용을 검색해보세요!"
           />
-        </div>
+      </div>
 
       {/* 게시글 작성 폼 */}
       {showCreateForm && (

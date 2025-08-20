@@ -236,12 +236,12 @@ export default function EventModal({
     <Portal>
       <div className="fixed inset-0 z-50 overflow-y-auto">
         {/* Prometheus background */}
-        <div className="flex items-start justify-center min-h-screen pt-16 px-4 pb-20 text-center sm:block sm:p-0 relative z-10">
+        <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0 relative z-10">
           {/* 배경 오버레이 */}
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={onClose} />
 
           {/* 모달 컨텐츠 */}
-          <div className="inline-block align-top bg-black/80 backdrop-blur-lg rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-top md:max-w-4xl max-w-lg sm:w-full relative border border-white/20 max-h-[80vh] flex flex-col">
+          <div className="inline-block align-middle bg-black/80 backdrop-blur-lg rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle md:max-w-4xl max-w-lg sm:w-full relative border border-white/20 max-h-[90vh] flex flex-col">
             {/* 헤더 */}
             <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex-shrink-0">
               <div className="text-center w-full">
@@ -540,13 +540,18 @@ export default function EventModal({
                     </div>
                     <div>
                       <span className="text-gray-400">기수:</span>
-                      <p className="text-white">{event.currentGen}기</p>
+                      <span className={`px-1.5 py-0.5 text-xs rounded-full font-medium flex items-center gap-1 ${event.currentGen <= 4 ? 'bg-gray-500/20 text-gray-300' : 'bg-[#8B0000] text-[#ffa282]'}`}>
+                        {event.currentGen <= 4 ? '이전기수' : `${event.currentGen}기`}
+                      </span>
                     </div>
                   </div>
 
                   {/* 날짜 및 시간 정보 */}
                   <div className="space-y-3">
-                    <h5 className="text-md font-medium text-white">📅 날짜 및 시간</h5>
+                    <h5 className="text-md font-medium text-white flex items-center">
+                      <FontAwesomeIcon icon={faCalendarAlt} className="mr-2" />
+                      날짜 및 시간
+                    </h5>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-gray-400">시작 시간:</span>
@@ -560,7 +565,10 @@ export default function EventModal({
                     
                     {event.location && (
                       <div>
-                        <span className="text-gray-400">📍 장소:</span>
+                        <span className="text-gray-400 flex items-center">
+                          <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1" />
+                          장소:
+                        </span>
                         <p className="text-white">{event.location}</p>
                       </div>
                     )}
@@ -569,7 +577,10 @@ export default function EventModal({
                   {/* 출석 관련 정보 */}
                   {event.isAttendanceRequired && (
                     <div className="space-y-3">
-                      <h5 className="text-md font-medium text-white">✅ 출석 관리</h5>
+                      <h5 className="text-md font-medium text-white flex items-center">
+                        <FontAwesomeIcon icon={faCheck} className="mr-2" />
+                        출석 관리
+                      </h5>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                           <span className="text-gray-400">출석 시작:</span>
@@ -593,36 +604,48 @@ export default function EventModal({
                     </div>
                   )}
 
-                  {/* 이벤트 상태 */}
-                  <div className="space-y-2">
-                    <h5 className="text-md font-medium text-white">📊 이벤트 상태</h5>
-                    <div className="flex flex-wrap gap-2">
-                      <span className="px-2 py-1 bg-red-500/20 text-red-300 text-xs rounded-full">
-                        {event.eventType}
-                      </span>
-                      {event.isAttendanceRequired && (
-                        <span className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded-full">
-                          출석필수
-                        </span>
-                      )}
-                      {event.isAttendanceCodeRequired && (
-                        <span className="px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full">
-                          코드필수
-                        </span>
-                      )}
-                      {event.hasAttendanceCode && (
-                        <span className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded-full">
-                          코드생성됨
-                        </span>
-                      )}
-                    </div>
-                  </div>
+
                     </div>
                   )}
 
                   {activeTab === 'attendance' && !isAdmin && event.isAttendanceRequired && (
                     <div className="space-y-3">
-                      <h5 className="text-md font-medium text-white">✅ 출석 체크</h5>
+                      {/* 이벤트 상태 정보 */}
+                  <div className="space-y-2">
+                        <h5 className="text-md font-medium text-white flex items-center">
+                          <FontAwesomeIcon icon={faUserGraduate} className="mr-2" />
+                          이벤트 상태
+                        </h5>
+                    <div className="flex flex-wrap gap-2">
+                          <span className="px-2 py-1 bg-red-500/20 text-red-300 text-xs rounded-full flex items-center">
+                            <FontAwesomeIcon icon={faUserGraduate} className="mr-1" />
+                        {event.eventType}
+                      </span>
+                      {event.isAttendanceRequired && (
+                            <span className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded-full flex items-center">
+                              <FontAwesomeIcon icon={faCheck} className="mr-1" />
+                          출석필수
+                        </span>
+                      )}
+                      {event.isAttendanceCodeRequired && (
+                            <span className="px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full flex items-center">
+                              <FontAwesomeIcon icon={faKey} className="mr-1" />
+                          코드필수
+                        </span>
+                      )}
+                      {event.hasAttendanceCode && (
+                            <span className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded-full flex items-center">
+                              <FontAwesomeIcon icon={faCheck} className="mr-1" />
+                          코드생성됨
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                      <h5 className="text-md font-medium text-white flex items-center">
+                        <FontAwesomeIcon icon={faCheck} className="mr-2" />
+                        출석 체크
+                      </h5>
                       
                       {isLoadingAttendance ? (
                         <div className="flex justify-center items-center py-4">

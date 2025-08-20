@@ -139,18 +139,18 @@ export default function ProfileModal({
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     
-                    {member.gen && (
-                      <span className={`px-2 py-1 text-xs rounded-full font-medium flex items-center gap-1 ${
-                        member.status === 'active' 
-                          ? 'bg-[#8B0000] text-[#ffa282]' 
-                          : 'bg-gray-500/20 text-gray-300'
-                      }`}>
-                        {member.status === 'active' && (
-                          <FontAwesomeIcon icon={faCircle} className="w-2 h-2" />
-                        )}
-                        {member.gen}기
-                      </span>
-                    )}
+                    {'gen' in member && (
+                        <span className={`px-1.5 py-0.5 text-xs rounded-full font-medium flex items-center gap-1 ${
+                          'status' in member && member.status === 'active' 
+                            ? 'bg-[#8B0000] text-[#ffa282]' 
+                            : 'bg-gray-500/20 text-gray-300'
+                        }`}>
+                          {'status' in member && member.status === 'active' && (
+                            <FontAwesomeIcon icon={faCircle} className="w-1 h-1" />
+                          )}
+                          {member.gen === 0 ? '창립멤버' : `${member.gen}기`}
+                        </span>
+                      )}
                     <h3 className="text-2xl font-semibold text-white">{member.name}</h3>
                     {member.coffee_chat_enabled && (
                       <div className="relative">

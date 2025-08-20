@@ -9,6 +9,7 @@ import { useAuthStore } from '@prometheus-fe/stores';
 import AddMemberModal from '../../../src/components/AddMemberModal';
 import GlassCard from '../../../src/components/GlassCard';
 import RedButton from '../../../src/components/RedButton';
+import Portal from '../../../src/components/Portal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faEdit, 
@@ -65,11 +66,12 @@ function ConfirmModal({ show, title, message, confirmText, onConfirm, onCancel }
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center modal-fixed p-4 z-50">
+    <Portal>
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center modal-fixed p-4 z-50">
       <GlassCard className="w-full max-w-md p-6">
         <div className="mb-4">
           <h2 className="text-lg font-semibold text-white">{title}</h2>
-          <p className="text-gray-300 mt-2">{message}</p>
+            <p className="text-gray-300 mt-2">{message}</p>
         </div>
         <div className="flex justify-end space-x-2">
           <button
@@ -84,6 +86,7 @@ function ConfirmModal({ show, title, message, confirmText, onConfirm, onCancel }
         </div>
       </GlassCard>
     </div>
+    </Portal>
   );
 }
 

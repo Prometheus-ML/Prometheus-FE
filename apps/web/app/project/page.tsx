@@ -39,7 +39,7 @@ export default function ProjectPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
-  const [size] = useState<number>(20);
+  const [size] = useState<number>(15);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const [likeLoading, setLikeLoading] = useState<Record<string, boolean>>({});
@@ -439,21 +439,52 @@ export default function ProjectPage() {
         )}
 
         {/* 페이지네이션 */}
-        {totalPages > 1 && (
-          <div className="flex justify-center space-x-2 mt-6">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+        {!isLoading && !isSearchLoading && projects.length > 0 && totalPages > 1 && (
+          <div className="flex justify-center mt-8">
+            <div className="flex items-center space-x-2">
               <button
-                key={pageNum}
-                onClick={() => setPage(pageNum)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                  pageNum === page
-                    ? 'bg-red-500 text-white'
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
+                onClick={() => setPage(page - 1)}
+                disabled={page === 1}
+                className="px-3 py-2 text-sm text-gray-300 hover:text-white disabled:text-gray-600 disabled:cursor-not-allowed transition-colors"
               >
-                {pageNum}
+                이전
               </button>
-            ))}
+              
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (page <= 3) {
+                  pageNum = i + 1;
+                } else if (page >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = page - 2 + i;
+                }
+                
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setPage(pageNum)}
+                    className={`px-3 py-2 text-sm rounded transition-colors ${
+                      page === pageNum
+                        ? 'bg-[#c2402a] text-white'
+                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+              
+              <button
+                onClick={() => setPage(page + 1)}
+                disabled={page === totalPages}
+                className="px-3 py-2 text-sm text-gray-300 hover:text-white disabled:text-gray-600 disabled:cursor-not-allowed transition-colors"
+              >
+                다음
+              </button>
+            </div>
           </div>
         )}
       </div>

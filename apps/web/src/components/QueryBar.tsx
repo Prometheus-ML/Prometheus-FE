@@ -195,11 +195,7 @@ export const QueryBar: React.FC<QueryBarProps> = ({
             className="flex-1 inline-flex items-center justify-center px-2 py-2 border border-transparent rounded-md bg-[#c2402a] text-white hover:bg-[#a03020] focus:outline-none focus:ring-2 focus:ring-[#c2402a] focus:ring-offset-2 focus:ring-offset-[#1A1A1A] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="검색"
           >
-            {isLoading ? (
-              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white" />
-            ) : (
-              <FontAwesomeIcon icon={faSearch} className="w-3 h-3" />
-            )}
+            {!isLoading && <FontAwesomeIcon icon={faSearch} className="w-3 h-3" />}
           </button>
           <button
             onClick={handleReset}
@@ -207,7 +203,7 @@ export const QueryBar: React.FC<QueryBarProps> = ({
             className="flex-1 inline-flex items-center justify-center px-2 py-2 border border-[#404040] rounded-md bg-[#1A1A1A] text-[#e0e0e0] hover:bg-[#2A2A2A] hover:border-[#c2402a] focus:outline-none focus:ring-2 focus:ring-[#c2402a] focus:ring-offset-2 focus:ring-offset-[#1A1A1A] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="초기화"
           >
-            <FontAwesomeIcon icon={faRotateLeft} className="w-3 h-3" />
+            {!isLoading && <FontAwesomeIcon icon={faRotateLeft} className="w-3 h-3" />}
           </button>
         </div>
       </div>

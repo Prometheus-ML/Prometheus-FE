@@ -26,6 +26,7 @@ export interface GetPostsRequest {
   page?: number;
   size?: number;
   category?: string;
+  search?: string;
 }
 
 export interface GetPostsResponse {
