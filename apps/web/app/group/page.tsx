@@ -3,12 +3,14 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useGroup } from '@prometheus-fe/hooks';
+import { useImage } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
 import GlassCard from '../../src/components/GlassCard';
 import RedButton from '../../src/components/RedButton';
 import QueryBar from '../../src/components/QueryBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faUsers, faEye, faUserPlus, faCheck, faTimes, faSearch, faUndo, faHeart, faHeartBroken, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faUsers, faEye, faUserPlus, faCheck, faTimes, faSearch, faUndo, faHeart, faHeartBroken, faArrowLeft, faImage } from '@fortawesome/free-solid-svg-icons';
+import Image from 'next/image';
 
 const CATEGORIES = [
   { value: 'STUDY', label: '스터디 그룹' },
@@ -58,6 +60,25 @@ export default function GroupPage() {
   } = useGroup();
 
   const { user } = useAuthStore();
+  
+  // useImage 훅 사용
+  const {
+    isUploading,
+    uploadError,
+    uploadImage,
+    validateImageFile,
+    getThumbnailUrl,
+    clearError
+  } = useImage({
+    onUploadStart: () => console.log('이미지 업로드 시작'),
+    onUploadSuccess: (response) => {
+      console.log('이미지 업로드 성공:', response);
+    },
+    onUploadError: (error) => {
+      console.error('이미지 업로드 실패:', error);
+    }
+  });
+
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [filters, setFilters] = useState<GroupFilters>({
@@ -268,6 +289,33 @@ export default function GroupPage() {
     return colors[category] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
   };
 
+  // 썸네일 파일 변경 핸들러
+  const handleThumbnailFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e?.target?.files?.[0];
+    if (!file) return;
+
+    // 이미지 파일 검증
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    // 이전 에러 클리어
+    clearError();
+    
+    try {
+      // useImage 훅을 사용하여 이미지 업로드
+      const imageUrl = await uploadImage(file, 'group');
+      if (imageUrl) {
+        setNewGroup((prev: any) => ({ ...prev, thumbnail_url: imageUrl }));
+      }
+    } catch (error) {
+      console.error('썸네일 이미지 업로드 처리 중 오류:', error);
+      setError('이미지 업로드에 실패했습니다.');
+    }
+  };
+
   return (
     <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
       {/* 헤더 */}
@@ -401,8 +449,65 @@ export default function GroupPage() {
                   min="1"
                 />
               </div>
+              
+              {/* 썸네일 이미지 업로드 */}
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-white mb-1">
+                  썸네일 이미지
+                </label>
+                <div className="space-y-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleThumbnailFileChange}
+                    disabled={isUploading}
+                    className="text-sm text-white file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-white/20 file:text-white hover:file:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                  {isUploading && (
+                    <div className="text-sm text-blue-400 flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mr-2"></div>
+                      이미지 업로드 중...
+                    </div>
+                  )}
+                  {uploadError && (
+                    <div className="text-sm text-red-400">
+                      {uploadError}
+                    </div>
+                  )}
+                  {newGroup.thumbnail_url ? (
+                    <div className="relative inline-block">
+                      <Image
+                        src={getThumbnailUrl(newGroup.thumbnail_url, 300)}
+                        alt="그룹 썸네일"
+                        className="rounded border object-cover"
+                        width={300}
+                        height={200}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          if (target.src !== newGroup.thumbnail_url && newGroup.thumbnail_url) {
+                            target.src = newGroup.thumbnail_url;
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setNewGroup((prev: any) => ({ ...prev, thumbnail_url: '' }))}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 transition-colors"
+                        title="이미지 제거"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-full h-48 bg-white/10 rounded-lg flex items-center justify-center">
+                      <FontAwesomeIcon icon={faImage} className="text-white/30 text-4xl" />
+                    </div>
+                  )}
+                </div>
+              </div>
+              
               <div className="flex items-center space-x-2 mt-4">
-                <RedButton type="submit" disabled={isCreatingGroup}>
+                <RedButton type="submit" disabled={isCreatingGroup || isUploading}>
                   {isCreatingGroup ? '생성 중...' : '그룹 만들기'}
                 </RedButton>
                 <button
@@ -449,6 +554,31 @@ export default function GroupPage() {
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
+                    {/* 그룹 썸네일 */}
+                    <div className="mb-3">
+                      <div className="w-20 h-20 rounded-lg overflow-hidden bg-white/10">
+                        {group.thumbnail_url ? (
+                          <Image
+                            src={getThumbnailUrl(group.thumbnail_url, 200)}
+                            alt={group.name}
+                            width={80}
+                            height={80}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              if (target.src !== group.thumbnail_url && group.thumbnail_url) {
+                                target.src = group.thumbnail_url;
+                              }
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <FontAwesomeIcon icon={faUsers} className="text-white/30 text-2xl" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
                     <div className="flex items-center space-x-3 mb-2">
                       <h3 className="text-lg font-semibold text-white">{group.name}</h3>
                       <span className={`px-2 py-1 text-xs rounded-full border ${getCategoryColor(group.category)}`}>
@@ -554,6 +684,31 @@ export default function GroupPage() {
             </div>
             
             <div className="space-y-4">
+              {/* 그룹 썸네일 */}
+              <div className="flex justify-center">
+                <div className="w-48 h-32 rounded-lg overflow-hidden bg-white/10">
+                  {selectedGroup.thumbnail_url ? (
+                    <Image
+                      src={getThumbnailUrl(selectedGroup.thumbnail_url, 400)}
+                      alt={selectedGroup.name}
+                      width={192}
+                      height={128}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        if (target.src !== selectedGroup.thumbnail_url && selectedGroup.thumbnail_url) {
+                          target.src = selectedGroup.thumbnail_url;
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <FontAwesomeIcon icon={faUsers} className="text-white/30 text-4xl" />
+                    </div>
+                  )}
+                </div>
+              </div>
+              
               <div>
                 <span className={`px-2 py-1 text-xs rounded-full border ${getCategoryColor(selectedGroup.category)}`}>
                   {getCategoryLabel(selectedGroup.category)}
