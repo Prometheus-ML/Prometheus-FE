@@ -42,7 +42,6 @@ export default function AdminPostPage() {
     createPost,
     deletePost,
     filterPostsByCategory,
-    getMemberInfo,
   } = useCommunity();
 
   // Hydration 완료 상태 관리
@@ -56,7 +55,6 @@ export default function AdminPostPage() {
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [authorCache, setAuthorCache] = useState<Record<string, any>>({});
 
   // Hydration 완료 감지
   useEffect(() => {
@@ -99,42 +97,17 @@ export default function AdminPostPage() {
 
   // 게시글 작성자 정보 로드
   useEffect(() => {
-    if (posts.length > 0) {
-      loadAuthorInfos();
-    }
+    // 이 부분은 백엔드에서 제공하는 author_name과 author_gen을 직접 사용하도록 수정
+    // 따라서 이 로직은 제거되거나 필요에 따라 재구성되어야 합니다.
+    // 현재는 작성자 ID만 사용하여 표시합니다.
   }, [posts]);
 
-  const loadAuthorInfos = async () => {
-    const uniqueAuthorIds = [...new Set(posts.map(post => post.author_id))];
-    const authors: Record<string, any> = {};
-    
-    for (const authorId of uniqueAuthorIds) {
-      if (!authorCache[authorId]) {
-        try {
-          const memberData = await getMemberInfo(authorId);
-          if (memberData) {
-            authors[authorId] = memberData;
-          }
-        } catch (error) {
-          console.error(`작성자 ${authorId} 정보 로드 실패:`, error);
-        }
-      }
+  const getAuthorDisplayName = (post: any) => {
+    // 백엔드에서 제공하는 author_name과 author_gen을 직접 사용
+    if (post.author_name && post.author_gen) {
+      return `${post.author_gen}기 ${post.author_name}`;
     }
-    
-    if (Object.keys(authors).length > 0) {
-      setAuthorCache(prev => ({
-        ...prev,
-        ...authors
-      }));
-    }
-  };
-
-  const getAuthorDisplayName = (authorId: string) => {
-    const memberData = authorCache[authorId];
-    if (memberData) {
-      return `${memberData.gen}기 ${memberData.name}`;
-    }
-    return authorId; // 멤버 정보가 없으면 ID로 표시
+    return post.author_id; // 멤버 정보가 없으면 ID로 표시
   };
 
   // 탭 변경 핸들러 (기존 필터에 추가)
@@ -322,7 +295,7 @@ export default function AdminPostPage() {
                         {getCategoryLabel(post.category)}
                       </span>
                       <span className="text-xs text-gray-300">
-                        작성자: {getAuthorDisplayName(post.author_id)}
+                        작성자: {getAuthorDisplayName(post)}
                       </span>
                       <span className="text-xs text-gray-300">
                         {new Date(post.created_at).toLocaleDateString('ko-KR')}

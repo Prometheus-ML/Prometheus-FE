@@ -43,8 +43,10 @@ export interface CreateCommentResponse extends BaseResponse {
 }
 
 // 좋아요 관련
-export interface LikeStatusResponse extends LikeStatus {
-  // LikeStatus 타입을 그대로 사용
+export interface LikeStatusResponse {
+  post_id: number;
+  is_liked: boolean;
+  like_count: number;
 }
 
 

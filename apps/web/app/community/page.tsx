@@ -45,7 +45,6 @@ export default function CommunityPage() {
     createPost,
     deletePost,
     filterPostsByCategory,
-    getMemberInfo,
   } = useCommunity();
 
   const { user } = useAuthStore();
@@ -62,7 +61,6 @@ export default function CommunityPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [authorCache, setAuthorCache] = useState<Record<string, any>>({});
 
   // 탭 변경 핸들러 (기존 필터에 추가)
   const handleTabChange = (tabId: string) => {
@@ -81,13 +79,6 @@ export default function CommunityPage() {
   useEffect(() => {
     loadPosts();
   }, []);
-
-  // 게시글 작성자 정보 로드
-  useEffect(() => {
-    if (posts.length > 0) {
-      loadAuthorInfos();
-    }
-  }, [posts]);
 
   const loadPosts = async () => {
     try {
@@ -111,38 +102,38 @@ export default function CommunityPage() {
     }
   };
 
-  const loadAuthorInfos = useCallback(async () => {
-    const uniqueAuthorIds = [...new Set(posts.map(post => post.author_id))];
-    const authors: Record<string, any> = {};
+  // const loadAuthorInfos = useCallback(async () => { // 이 부분은 제거되었으므로 필요 없음
+  //   const uniqueAuthorIds = [...new Set(posts.map(post => post.author_id))];
+  //   const authors: Record<string, any> = {};
     
-    for (const authorId of uniqueAuthorIds) {
-      if (!authorCache[authorId]) {
-        try {
-          const memberData = await getMemberInfo(authorId);
-          if (memberData) {
-            authors[authorId] = memberData;
-          }
-        } catch (error) {
-          console.error(`작성자 ${authorId} 정보 로드 실패:`, error);
-        }
-      }
-    }
+  //   for (const authorId of uniqueAuthorIds) {
+  //     if (!authorCache[authorId]) {
+  //       try {
+  //         const memberData = await getMemberInfo(authorId);
+  //         if (memberData) {
+  //           authors[authorId] = memberData;
+  //         }
+  //       } catch (error) {
+  //         console.error(`작성자 ${authorId} 정보 로드 실패:`, error);
+  //       }
+  //     }
+  //   }
     
-    if (Object.keys(authors).length > 0) {
-      setAuthorCache(prev => ({
-        ...prev,
-        ...authors
-      }));
-    }
-  }, [posts, authorCache, getMemberInfo]);
+  //   if (Object.keys(authors).length > 0) {
+  //     setAuthorCache(prev => ({
+  //       ...prev,
+  //       ...authors
+  //     }));
+  //   }
+  // }, [posts, authorCache, getMemberInfo]);
 
-  const getAuthorDisplayName = (authorId: string) => {
-    const memberData = authorCache[authorId];
-    if (memberData) {
-      return `${memberData.gen}기 ${memberData.name}`;
-    }
-    return authorId; // 멤버 정보가 없으면 ID로 표시
-  };
+  // const getAuthorDisplayName = (authorId: string) => { // 이 부분은 제거되었으므로 필요 없음
+  //   const memberData = authorCache[authorId];
+  //   if (memberData) {
+  //     return `${memberData.gen}기 ${memberData.name}`;
+  //   }
+  //   return authorId; // 멤버 정보가 없으면 ID로 표시
+  // };
 
   // 검색 및 필터 적용
   const applyFilters = () => {
@@ -340,7 +331,7 @@ export default function CommunityPage() {
                   <div className="flex items-center space-x-4 text-sm text-gray-300 ml-4">
                     <span className="flex items-center">
                       <FontAwesomeIcon icon={faUser} className="mr-1" />
-                      작성자: {getAuthorDisplayName(post.author_id)}
+                      작성자: {post.author_name} {post.author_gen}기
                     </span>
                     <span className="flex items-center">
                       <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" />

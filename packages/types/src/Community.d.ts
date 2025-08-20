@@ -2,6 +2,8 @@
 export interface Post {
   id: number;
   author_id: string;
+  author_name: string;
+  author_gen: number;
   category: string;
   title: string;
   content: string;
@@ -18,6 +20,8 @@ export interface Comment {
   id: number;
   post_id: number;
   author_id: string;
+  author_name: string;
+  author_gen: number;
   content: string;
   is_deleted: boolean;
   created_at: string;

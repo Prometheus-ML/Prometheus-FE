@@ -38,15 +38,12 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
     deletePost,
     clearSelectedPost,
     clearComments,
-    getMemberInfo,
     toggleLike,
   } = useCommunity();
 
   const { user, canAccessAdministrator } = useAuthStore();
   const [newComment, setNewComment] = useState<any>({ content: '' });
   const [error, setError] = useState('');
-  const [authorInfo, setAuthorInfo] = useState<any>(null);
-  const [commentAuthors, setCommentAuthors] = useState<Record<string, any>>({});
 
   // 모달이 열릴 때 게시글 데이터 로드
   useEffect(() => {
@@ -55,20 +52,6 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
     }
   }, [isOpen, postId, fetchPost]);
 
-  // 게시글 작성자 정보 로드
-  useEffect(() => {
-    if (selectedPost?.author_id) {
-      loadAuthorInfo(selectedPost.author_id);
-    }
-  }, [selectedPost]);
-
-  // 댓글 작성자 정보 로드
-  useEffect(() => {
-    if (comments.length > 0) {
-      loadCommentAuthors();
-    }
-  }, [comments]);
-
   // 모달이 닫힐 때 상태 초기화
   useEffect(() => {
     if (!isOpen) {
@@ -76,43 +59,14 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
       clearComments();
       setNewComment({ content: '' });
       setError('');
-      setAuthorInfo(null);
-      setCommentAuthors({});
     }
   }, [isOpen, clearSelectedPost, clearComments]);
 
-  const loadAuthorInfo = async (authorId: string) => {
-    try {
-      const memberData = await getMemberInfo(authorId);
-      setAuthorInfo(memberData);
-    } catch (error) {
-      console.error('작성자 정보 로드 실패:', error);
+  const getAuthorDisplayName = (authorId: string) => {
+    if (selectedPost) {
+      return `${selectedPost.author_gen}기 ${selectedPost.author_name}`;
     }
-  };
-
-  const loadCommentAuthors = async () => {
-    const uniqueAuthorIds = [...new Set(comments.map(comment => comment.author_id))];
-    const authors: Record<string, any> = {};
-    
-    for (const authorId of uniqueAuthorIds) {
-      try {
-        const memberData = await getMemberInfo(authorId);
-        if (memberData) {
-          authors[authorId] = memberData;
-        }
-      } catch (error) {
-        console.error(`댓글 작성자 ${authorId} 정보 로드 실패:`, error);
-      }
-    }
-    
-    setCommentAuthors(authors);
-  };
-
-  const getAuthorDisplayName = (authorId: string, memberData: any) => {
-    if (memberData) {
-      return `${memberData.gen}기 ${memberData.name}`;
-    }
-    return authorId; // 멤버 정보가 없으면 ID로 표시
+    return authorId;
   };
 
   const handleCreateComment = async (e: React.FormEvent) => {
@@ -239,7 +193,7 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                       {getCategoryLabel(selectedPost.category)}
                     </span>
                     <span className="text-sm text-gray-300">
-                      작성자: {getAuthorDisplayName(selectedPost.author_id, authorInfo)}
+                      작성자: {getAuthorDisplayName(selectedPost.author_id)}
                     </span>
                     <span className="text-sm text-gray-300">
                       {new Date(selectedPost.created_at).toLocaleString('ko-KR')}
@@ -364,10 +318,10 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                                 <div className="flex-1">
                                   <div className="flex items-center space-x-2 mb-2">
                                     <span className="text-sm font-medium text-white">
-                                      {getAuthorDisplayName(comment.author_id, commentAuthors[comment.author_id])}
+                                      {comment.author_gen}기 {comment.author_name}
                                     </span>
                                     <span className="text-xs text-gray-300">
-                                      {comment.created_at ? new Date(comment.created_at).toLocaleString('ko-KR') : '날짜 없음'}
+                                      {new Date(comment.created_at).toLocaleString('ko-KR')}
                                     </span>
                                   </div>
                                   <p className="text-gray-300 whitespace-pre-wrap">
