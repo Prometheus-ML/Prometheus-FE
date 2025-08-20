@@ -8,7 +8,7 @@ import { useImage, useMember, useCoffeeChat } from '@prometheus-fe/hooks';
 import GlassCard from '../../src/components/GlassCard';
 import RedButton from '../../src/components/RedButton';
 import ProfileModal from '../../src/components/ProfileModal';
-import SearchBar from '../../src/components/SearchMemberBar';
+import QueryBar from '../../src/components/QueryBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faArrowLeft, 
@@ -38,6 +38,7 @@ export default function MemberPage() {
   // 상태 관리
   const [members, setMembers] = useState<(MemberPublicListItem | MemberPrivateListItem)[]>([]);
   const [total, setTotal] = useState<number>(0);
+  const [totalAll, setTotalAll] = useState<number>(0); // 전체 멤버 수 (필터링과 무관)
   const [page, setPage] = useState<number>(1);
   const [size] = useState<number>(20);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -104,6 +105,23 @@ export default function MemberPage() {
   const handleImageError = useCallback((memberId: string) => {
     setImageErrors(prev => ({ ...prev, [memberId]: true }));
   }, []);
+
+  // 전체 멤버 수 조회 (필터링과 무관)
+  const fetchTotalCount = useCallback(async () => {
+    try {
+      let params: any = { page: 1, size: 1 }; // 최소한의 데이터만 요청
+      let response;
+      if (isPrivate) {
+        response = await getPrivateMembers(params);
+      } else {
+        response = await getPublicMembers(params);
+      }
+      setTotalAll(response.total || 0);
+    } catch (err) {
+      console.error('Failed to fetch total count:', err);
+      setTotalAll(0);
+    }
+  }, [isPrivate, getPublicMembers, getPrivateMembers]);
 
   // 사용자 목록 조회
   const fetchMembers = useCallback(async (isSearch = false) => {
@@ -198,6 +216,11 @@ export default function MemberPage() {
     // setFilters(prev => ({ ...prev, [key]: value })); // This line was removed
   }, []);
 
+  // 초기 로딩 시 전체 멤버 수 조회
+  useEffect(() => {
+    fetchTotalCount();
+  }, [fetchTotalCount]);
+
   // 초기 로딩 및 페이지 변경 시 목록 다시 로드
   useEffect(() => {
     fetchMembers();
@@ -282,9 +305,9 @@ export default function MemberPage() {
               <p className="text-sm font-pretendard text-[#e0e0e0]">프로메테우스 멤버 목록</p>
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-[#e0e0e0]">전체 <span className="text-[#ffa282] font-bold">{total}</span>명</p>
-          </div>
+           <div className="text-right">
+             <p className="text-sm text-[#e0e0e0]">전체 <span className="text-[#ffa282] font-bold">{totalAll}</span>명</p>
+           </div>
         </div>
       </header>
 
@@ -292,7 +315,7 @@ export default function MemberPage() {
         {/* 검색 및 필터 */}
         <div className="mb-6 space-y-4">
           {/* 검색 바 */}
-          <SearchBar
+          <QueryBar
             searchTerm={searchTerm}
             onSearchTermChange={setSearchTerm}
             selects={[
@@ -313,7 +336,7 @@ export default function MemberPage() {
                 value: selectedStatus,
                 onChange: setSelectedStatus,
                 options: [
-                  { value: 'all', label: '전체 상태' },
+                  { value: 'all', label: '활동 상태' },
                   { value: 'active', label: '활동중' },
                   { value: 'alumni', label: '알럼나이' }
                 ]

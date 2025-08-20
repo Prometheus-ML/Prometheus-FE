@@ -7,7 +7,7 @@ import { useImage } from '@prometheus-fe/hooks';
 import { Project } from '@prometheus-fe/types';
 import GlassCard from '../../src/components/GlassCard';
 import RedButton from '../../src/components/RedButton';
-import SearchBar from '../../src/components/SearchMemberBar';
+import QueryBar from '../../src/components/QueryBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faFolder, 
@@ -28,8 +28,6 @@ interface ProjectFilters {
 
 export default function ProjectPage() {
   const {
-    projects,
-    isLoadingProjects,
     fetchProjects,
     addProjectLike,
     removeProjectLike,
@@ -37,87 +35,89 @@ export default function ProjectPage() {
 
   const { getThumbnailUrl, getDefaultImageUrl } = useImage();
 
+  // 상태 관리
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [total, setTotal] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
   const [size] = useState<number>(20);
-  const [filters, setFilters] = useState<ProjectFilters>({
-    search: '',
-    gen_filter: 'all'
-  });
-  const [appliedFilters, setAppliedFilters] = useState<ProjectFilters>({
-    search: '',
-    gen_filter: 'all'
-  });
-  const [error, setError] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const [likeLoading, setLikeLoading] = useState<Record<string, boolean>>({});
 
-  // 필터링된 프로젝트 목록
-  const filteredProjects = useMemo(() => {
-    let filtered = projects;
-    
-    // 완료된 프로젝트만 표시
-    filtered = filtered.filter(project => project.status === 'completed');
-    
-    if (appliedFilters.search) {
-      const searchLower = appliedFilters.search.toLowerCase();
-      filtered = filtered.filter(project => 
-        project.title.toLowerCase().includes(searchLower) ||
-        (project.description && project.description.toLowerCase().includes(searchLower)) ||
-        (project.keywords && project.keywords.some(keyword => 
-          keyword.toLowerCase().includes(searchLower)
-        ))
-      );
-    }
-    
-    if (appliedFilters.gen_filter && appliedFilters.gen_filter !== 'all') {
-      if (appliedFilters.gen_filter === 'previous') {
-        // 이전기수: 0기(창립멤버) ~ 4기
-        filtered = filtered.filter(project => project.gen <= 4);
+  // 검색 상태
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [selectedGen, setSelectedGen] = useState<string>('all');
+  const [isSearchLoading, setIsSearchLoading] = useState<boolean>(false);
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState<string>('');
+  const [appliedGen, setAppliedGen] = useState<string>('all');
+
+  // 계산된 값들
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(total / size)), [total, size]);
+
+  // 프로젝트 목록 조회
+  const fetchProjectList = useCallback(async (isSearch = false) => {
+    try {
+      if (isSearch) {
+        setIsSearchLoading(true);
       } else {
-        // 특정 기수
-        const genNum = parseInt(appliedFilters.gen_filter);
-        filtered = filtered.filter(project => project.gen === genNum);
+        setIsLoading(true);
+      }
+      
+      let params: any = {
+        page,
+        size,
+        status: 'completed' // 완료된 프로젝트만 조회
+      };
+
+      // 검색어 필터 적용
+      if (appliedSearchTerm.trim()) {
+        params.search = appliedSearchTerm.trim();
+      }
+
+      // 기수 필터 적용 (전체가 아닐 때만)
+      if (appliedGen !== 'all') {
+        params.gen = parseInt(appliedGen);
+      }
+
+      const response = await fetchProjects(params);
+      setProjects(response.projects || []);
+      setTotal(response.total || 0);
+      setImageErrors({});
+    } catch (err) {
+      console.error('Failed to fetch projects:', err);
+      setProjects([]);
+      setTotal(0);
+    } finally {
+      if (isSearch) {
+        setIsSearchLoading(false);
+      } else {
+        setIsLoading(false);
       }
     }
-    
-    return filtered;
-  }, [projects, appliedFilters]);
+  }, [page, size, appliedSearchTerm, appliedGen, fetchProjects]);
 
-  const totalProjects = filteredProjects.length;
-  const pages = useMemo(() => Math.max(1, Math.ceil(totalProjects / size)), [totalProjects, size]);
-
-  // 프로젝트 목록 로드
-  const loadProjects = async () => {
-    try {
-      setError('');
-      const params = { page, size, ...appliedFilters };
-      await fetchProjects(params);
-    } catch (error: any) {
-      console.error('Failed to load projects:', error);
-      setError(error.message || '프로젝트 목록을 불러오지 못했습니다.');
-    }
-  };
-
+  // 초기 로딩 및 페이지 변경 시 목록 다시 로드
   useEffect(() => {
-    loadProjects();
-  }, [page, appliedFilters]);
+    fetchProjectList();
+  }, [page, appliedSearchTerm, appliedGen, fetchProjectList]);
 
-  // 검색 및 필터 적용
-  const applyFilters = () => {
-    setAppliedFilters(filters);
-    setPage(1); // 첫 페이지로 이동
-  };
-
-  // 필터 초기화
-  const clearFilters = () => {
-    const emptyFilters: ProjectFilters = {
-      search: '',
-      gen_filter: 'all'
-    };
-    setFilters(emptyFilters);
-    setAppliedFilters(emptyFilters);
+  // 검색 핸들러
+  const handleSearch = useCallback(() => {
+    setAppliedSearchTerm(searchTerm);
+    setAppliedGen(selectedGen);
     setPage(1);
-  };
+    fetchProjectList(true);
+  }, [searchTerm, selectedGen, fetchProjectList]);
+
+  // 초기화 핸들러
+  const handleReset = useCallback(() => {
+    setSearchTerm('');
+    setSelectedGen('all');
+    setAppliedSearchTerm('');
+    setAppliedGen('all');
+    setPage(1);
+    fetchProjectList(true);
+  }, [fetchProjectList]);
 
   // 좋아요 토글 처리
   const handleLikeToggle = async (project: Project) => {
@@ -133,7 +133,7 @@ export default function ProjectPage() {
       }
       
       // 좋아요 상태 변경 후 프로젝트 목록을 다시 로드하여 상태 동기화
-      await loadProjects();
+      await fetchProjectList();
     } catch (error: any) {
       console.error('좋아요 처리 실패:', error);
       alert('좋아요 처리에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
@@ -153,8 +153,7 @@ export default function ProjectPage() {
     setImageErrors(prev => ({ ...prev, [projectId]: true }));
   };
 
-  // 검색 결과 수 계산
-  const searchResultCount = projects.length;
+
 
   // 현재 기수 계산 (2022년 3월부터 6개월 단위)
   const getCurrentGen = useCallback(() => {
@@ -164,12 +163,11 @@ export default function ProjectPage() {
     return Math.floor(monthsDiff / 6) + 1;
   }, []);
 
-  // 기수 옵션 생성 (날짜 기반)
+  // 기수 옵션 생성 (날짜 기반, 최신 기수부터 역순, 이전기수 맨 뒤)
   const genOptions = [
     { value: 'all', label: '전체 기수' },
-    { value: 'previous', label: '이전기수' },
     ...Array.from({ length: getCurrentGen() }, (_, i) => {
-      const gen = i + 1;
+      const gen = getCurrentGen() - i; // 최신 기수부터 역순으로
       if (gen > 4) {
         return {
           value: gen.toString(),
@@ -177,7 +175,8 @@ export default function ProjectPage() {
         };
       }
       return null;
-    }).filter((option): option is { value: string; label: string } => option !== null)
+    }).filter((option): option is { value: string; label: string } => option !== null),
+    { value: 'previous', label: '이전기수' }
   ];
 
   // Skeleton UI Component
@@ -208,7 +207,7 @@ export default function ProjectPage() {
   );
 
   // Loading state with skeleton
-  if (isLoadingProjects && !appliedFilters.search && appliedFilters.gen_filter === 'all') {
+  if (isLoading && !appliedSearchTerm && appliedGen === 'all') {
     return (
       <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
         {/* 헤더 */}
@@ -229,21 +228,21 @@ export default function ProjectPage() {
         <div className="px-4 py-6">
           {/* 검색 및 필터 */}
           <div className="mb-6 space-y-4">
-            <SearchBar
-              searchTerm={filters.search}
-              onSearchTermChange={(term) => setFilters(prev => ({ ...prev, search: term }))}
+            <QueryBar
+              searchTerm={searchTerm}
+              onSearchTermChange={setSearchTerm}
               selects={[
                 {
                   id: 'gen',
-                  value: filters.gen_filter,
-                  onChange: (value) => setFilters(prev => ({ ...prev, gen_filter: value })),
+                  value: selectedGen,
+                  onChange: setSelectedGen,
                   options: genOptions
                 }
               ]}
-              onSearch={applyFilters}
-              onReset={clearFilters}
-              isLoading={isLoadingProjects}
-              placeholder="프로젝트명, 설명, 키워드를 검색해보세요!"
+              onSearch={handleSearch}
+              onReset={handleReset}
+              isLoading={isSearchLoading}
+              placeholder="프로젝트명, 키워드를 검색해보세요!"
             />
           </div>
 
@@ -275,7 +274,7 @@ export default function ProjectPage() {
             </div>
           </div>
           <div className="text-right">
-            <p className="text-sm text-[#e0e0e0]">전체 <span className="text-[#ffa282] font-bold">{totalProjects}</span>개</p>
+            <p className="text-sm text-[#e0e0e0]">전체 <span className="text-[#ffa282] font-bold">{total}</span>개</p>
           </div>
         </div>
       </header>
@@ -283,46 +282,45 @@ export default function ProjectPage() {
       <div className="px-4 py-6">
         {/* 검색 및 필터 */}
         <div className="mb-6 space-y-4">
-          <SearchBar
-            searchTerm={filters.search}
-            onSearchTermChange={(term) => setFilters(prev => ({ ...prev, search: term }))}
+          <QueryBar
+            searchTerm={searchTerm}
+            onSearchTermChange={setSearchTerm}
             selects={[
               {
                 id: 'gen',
-                value: filters.gen_filter,
-                onChange: (value) => setFilters(prev => ({ ...prev, gen_filter: value })),
+                value: selectedGen,
+                onChange: setSelectedGen,
                 options: genOptions
               }
             ]}
-            onSearch={applyFilters}
-            onReset={clearFilters}
-            isLoading={isLoadingProjects}
-            placeholder="프로젝트명, 설명, 키워드를 검색해보세요!"
+            onSearch={handleSearch}
+            onReset={handleReset}
+            isLoading={isSearchLoading}
+            placeholder="프로젝트명, 키워드를 검색해보세요!"
           />
         </div>
 
         {/* 검색 결과 수 */}
-        {(appliedFilters.search || appliedFilters.gen_filter !== 'all') && (
+        {(appliedSearchTerm || appliedGen !== 'all') && (
           <div className="mb-4 text-sm text-[#e0e0e0]">
-            검색 결과: {totalProjects}개
-          </div>
-        )}
-
-        {/* 에러 메시지 */}
-        {error && (
-          <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400">
-            {error}
+            검색 결과: {total}개
           </div>
         )}
 
         {/* 프로젝트 목록 */}
-        {isLoadingProjects ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
-          </div>
-        ) : (
+        {isLoading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProjects.map((project: Project) => (
+            {Array.from({ length: 6 }).map((_, index) => (
+              <GlassCard key={index} className="overflow-hidden">
+                <SkeletonCard />
+              </GlassCard>
+            ))}
+          </div>
+        )}
+        
+        {!isLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projects.map((project: Project) => (
               <GlassCard 
                 key={project.id} 
                 className="overflow-hidden hover:bg-white/20 transition-colors border border-white/20 cursor-pointer group"
@@ -352,23 +350,23 @@ export default function ProjectPage() {
                   {/* 프로젝트 정보 */}
                   <div className="space-y-3">
                     {/* 제목과 기수 */}
-                    <div className="flex items-start justify-between">
+                                      <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2 flex-1 mr-2">
                         <h3 className="text-lg font-semibold text-white line-clamp-2">
                           {project.title}
-                        </h3>
+                    </h3>
                         <span className={`px-1.5 py-0.5 text-xs rounded-full font-medium flex font-semibold items-center gap-1 flex-shrink-0 ${getGenColor(project.gen)}`}>
                           {project.gen <= 4 ? '이전기수' : `${project.gen}기`}
                         </span>
                       </div>
-                    </div>
+                  </div>
 
                     {/* 설명 (두 줄 고정) */}
                     {project.description && (
                       <div className="h-10">
                         <p className="text-gray-300 text-sm line-clamp-2">
-                          {project.description}
-                        </p>
+                        {project.description}
+                      </p>
                       </div>
                     )}
 
@@ -377,12 +375,12 @@ export default function ProjectPage() {
                       <div className="flex flex-wrap gap-1 flex-1">
                         {project.keywords && project.keywords.length > 0 ? (
                           project.keywords.slice(0, 3).map((keyword, index) => (
-                            <span
-                              key={index}
-                              className="px-2 py-1 text-xs bg-white/20 text-white rounded-full"
-                            >
+                          <span
+                            key={index}
+                            className="px-2 py-1 text-xs bg-white/20 text-white rounded-full"
+                          >
                               #{keyword}
-                            </span>
+                          </span>
                           ))
                         ) : (
                           <span className="text-xs text-gray-500">키워드 없음</span>
@@ -393,7 +391,7 @@ export default function ProjectPage() {
                           </span>
                         )}
                       </div>
-                      <button
+                        <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleLikeToggle(project);
@@ -406,19 +404,19 @@ export default function ProjectPage() {
                           e.stopPropagation();
                           e.currentTarget.closest('.group')?.classList.add('hover:bg-white/20');
                         }}
-                        disabled={likeLoading[project.id]}
+                          disabled={likeLoading[project.id]}
                         className={`inline-flex items-center px-2 py-1 text-sm transition-colors pointer-events-auto ${
-                          project.is_liked
+                            project.is_liked
                             ? 'text-red-300 hover:text-red-200'
                             : 'text-white hover:text-gray-300'
-                        } ${likeLoading[project.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      >
-                        <FontAwesomeIcon 
+                          } ${likeLoading[project.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          <FontAwesomeIcon 
                           icon={faHeart} 
                           className={`mr-1 h-3 w-3 ${project.is_liked ? 'text-red-300' : 'text-white'}`}
-                        />
-                        {project.like_count || 0}
-                      </button>
+                          />
+                          {project.like_count || 0}
+                        </button>
                     </div>
                   </div>
                 </div>
@@ -428,22 +426,22 @@ export default function ProjectPage() {
         )}
 
         {/* 빈 상태 */}
-        {!isLoadingProjects && filteredProjects.length === 0 && (
+        {!isLoading && !isSearchLoading && projects.length === 0 && (
           <div className="px-4 py-5 sm:p-6">
             <div className="text-center">
               <FontAwesomeIcon icon={faFolder} className="mx-auto h-12 w-12 text-gray-400 mb-4" />
               <h3 className="mt-2 text-sm font-medium text-white">프로젝트가 없습니다.</h3>
               <p className="mt-1 text-sm text-gray-300">
-                {(appliedFilters.search || appliedFilters.gen_filter !== 'all') ? '검색 결과가 없습니다.' : '아직 등록된 프로젝트가 없습니다.'}
+                {(appliedSearchTerm || appliedGen !== 'all') ? '검색 결과가 없습니다.' : '아직 등록된 프로젝트가 없습니다.'}
               </p>
             </div>
           </div>
         )}
 
         {/* 페이지네이션 */}
-        {pages > 1 && (
+        {totalPages > 1 && (
           <div className="flex justify-center space-x-2 mt-6">
-            {Array.from({ length: pages }, (_, i) => i + 1).map((pageNum) => (
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
               <button
                 key={pageNum}
                 onClick={() => setPage(pageNum)}

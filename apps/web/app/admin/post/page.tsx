@@ -7,7 +7,7 @@ import PostModal from '../../../src/components/PostModal';
 import PostForm from '../../../src/components/PostForm';
 import GlassCard from '../../../src/components/GlassCard';
 import RedButton from '../../../src/components/RedButton';
-import { SearchBar } from '../../../src/components/SearchMemberBar';
+import QueryBar from '../../../src/components/QueryBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faTrash, faHeart, faComments, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
@@ -110,7 +110,7 @@ export default function AdminPostPage() {
     return post.author_id; // 멤버 정보가 없으면 ID로 표시
   };
 
-  // 탭 변경 핸들러 (기존 필터에 추가)
+  // 탭 변경 핸들러 (기존 필터에 추가하고 바로 검색 실행)
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
     const category = tabId === 'all' ? '' : tabId;
@@ -190,7 +190,7 @@ export default function AdminPostPage() {
   };
 
   // Hydration이 완료되지 않았거나 권한이 없는 경우
-  if (!isMounted || !isAuthenticated() || !canAccessAdministrator()) {
+      if (!isMounted || !isAuthenticated() || !canAccessAdministrator()) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-lg text-gray-600">
@@ -215,16 +215,16 @@ export default function AdminPostPage() {
             </div>
           </div>
           <div className="text-right">
-            <RedButton
-              onClick={() => setShowCreateForm(!showCreateForm)}
+          <RedButton
+            onClick={() => setShowCreateForm(!showCreateForm)}
               className="inline-flex items-center text-sm font-medium mb-2"
-            >
-              <FontAwesomeIcon icon={faPlus} className="mr-2 h-4 w-4" />
-              게시글 작성
-            </RedButton>
+          >
+            <FontAwesomeIcon icon={faPlus} className="mr-2 h-4 w-4" />
+            게시글 작성
+          </RedButton>
             <p className="text-sm text-[#e0e0e0]">전체 <span className="text-[#ffa282] font-bold">{totalPosts}</span>개</p>
-          </div>
         </div>
+      </div>
       </header>
 
       <div className="px-4 py-6">
@@ -257,30 +257,30 @@ export default function AdminPostPage() {
           />
         </div>
 
-        {/* 게시글 작성 폼 */}
-        {showCreateForm && (
-          <GlassCard className="mb-6">
-            <PostForm
-              onSubmit={handleCreatePost}
-              onCancel={() => setShowCreateForm(false)}
-              isSubmitting={isCreatingPost}
-            />
-          </GlassCard>
-        )}
+      {/* 게시글 작성 폼 */}
+      {showCreateForm && (
+        <GlassCard className="mb-6">
+          <PostForm
+            onSubmit={handleCreatePost}
+            onCancel={() => setShowCreateForm(false)}
+            isSubmitting={isCreatingPost}
+          />
+        </GlassCard>
+      )}
 
-        {/* 에러 메시지 */}
-        {error && (
-          <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400">
-            {error}
-          </div>
-        )}
+      {/* 에러 메시지 */}
+      {error && (
+        <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400">
+          {error}
+        </div>
+      )}
 
-        {/* 게시글 목록 */}
-        {isLoadingPosts ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
-          </div>
-        ) : (
+      {/* 게시글 목록 */}
+      {isLoadingPosts ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
+        </div>
+      ) : (
           <div className="space-y-4">
             {posts.map((post: any) => (
               <GlassCard 
@@ -332,25 +332,25 @@ export default function AdminPostPage() {
               </GlassCard>
             ))}
           </div>
-        )}
+      )}
 
-        {!isLoadingPosts && posts.length === 0 && (
-          <div className="px-4 py-5 sm:p-6">
-            <div className="text-center">
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <h3 className="mt-2 text-sm font-medium text-white">게시글이 없습니다.</h3>
-            </div>
+      {!isLoadingPosts && posts.length === 0 && (
+        <div className="px-4 py-5 sm:p-6">
+          <div className="text-center">
+            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h3 className="mt-2 text-sm font-medium text-white">게시글이 없습니다.</h3>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* PostModal */}
-        <PostModal
-          postId={selectedPostId}
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-        />
+      {/* PostModal */}
+      <PostModal
+        postId={selectedPostId}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
       </div>
     </div>
   );

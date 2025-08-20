@@ -58,19 +58,19 @@ export function useProject() {
     if (!project) {
       console.warn('project is not available. Ensure useProject is used within ApiProvider.');
       setIsLoadingProjects(false);
-      return;
+      return { projects: [], total: 0, page: 1, size: 20 };
     }
     try {
       setIsLoadingProjects(true);
-      // 백엔드에서 모든 프로젝트를 가져옴 (클라이언트 사이드 필터링을 위해)
-      const data = await project.list({ size: 100 }); // 충분히 큰 사이즈로 설정
+      const data = await project.list(params);
       setAllProjects(data.projects || []);
-      console.log('data.projects', data.projects);
-
+      setFilteredProjects(data.projects || []);
+      return data;
     } catch (error) {
       console.error('프로젝트 목록 조회 실패:', error);
       setAllProjects([]);
       setFilteredProjects([]);
+      throw error;
     } finally {
       setIsLoadingProjects(false);
     }

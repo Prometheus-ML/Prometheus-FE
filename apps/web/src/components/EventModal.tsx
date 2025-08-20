@@ -306,201 +306,201 @@ export default function EventModal({
                 <form onSubmit={handleFormSubmit} className="mt-6 space-y-4">
                   <div className="grid grid-cols-1 gap-4">
                     {/* 제목 */}
-                    <div>
+                  <div>
                       <label htmlFor="title" className="block text-sm font-medium text-white mb-1">
                         제목 <span className="text-red-400">*</span>
                       </label>
-                      <input
+                    <input
                         id="title"
-                        type="text"
-                        value={formData.title}
-                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      type="text"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                         className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
+                      required
+                    />
+                  </div>
+
+                    {/* 설명 */}
+                  <div>
+                      <label htmlFor="description" className="block text-sm font-medium text-white mb-1">
+                        설명
+                      </label>
+                    <textarea
+                        id="description"
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                      {/* 이벤트 타입 */}
+                    <div>
+                        <label htmlFor="eventType" className="block text-sm font-medium text-white mb-1">
+                          이벤트 타입 <span className="text-red-400">*</span>
+                        </label>
+                      <select
+                          id="eventType"
+                        value={formData.eventType}
+                        onChange={(e) => setFormData({ ...formData, eventType: e.target.value as EventType })}
+                          className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
+                      >
+                        <option value="study">스터디</option>
+                        <option value="project">프로젝트</option>
+                        <option value="hackathon">해커톤</option>
+                        <option value="seminar">세미나</option>
+                        <option value="meeting">회의</option>
+                        <option value="other">기타</option>
+                      </select>
+                    </div>
+
+                      {/* 기수 */}
+                    <div>
+                        <label htmlFor="currentGen" className="block text-sm font-medium text-white mb-1">
+                          기수 <span className="text-red-400">*</span>
+                        </label>
+                      <input
+                          id="currentGen"
+                        type="number"
+                        value={formData.currentGen}
+                        onChange={(e) => setFormData({ ...formData, currentGen: parseInt(e.target.value) })}
+                          className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
+                        min="0"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                      {/* 시작 시간 */}
+                    <div>
+                        <label htmlFor="startTime" className="block text-sm font-medium text-white mb-1">
+                          시작 시간 <span className="text-red-400">*</span>
+                        </label>
+                      <input
+                          id="startTime"
+                        type="datetime-local"
+                        value={formatDateForInput(formData.startTime)}
+                        onChange={(e) => setFormData({ ...formData, startTime: new Date(e.target.value) })}
+                          className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
                         required
                       />
                     </div>
 
-                    {/* 설명 */}
-                    <div>
-                      <label htmlFor="description" className="block text-sm font-medium text-white mb-1">
-                        설명
-                      </label>
-                      <textarea
-                        id="description"
-                        value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
-                        rows={3}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* 이벤트 타입 */}
-                      <div>
-                        <label htmlFor="eventType" className="block text-sm font-medium text-white mb-1">
-                          이벤트 타입 <span className="text-red-400">*</span>
-                        </label>
-                        <select
-                          id="eventType"
-                          value={formData.eventType}
-                          onChange={(e) => setFormData({ ...formData, eventType: e.target.value as EventType })}
-                          className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
-                        >
-                          <option value="study">스터디</option>
-                          <option value="project">프로젝트</option>
-                          <option value="hackathon">해커톤</option>
-                          <option value="seminar">세미나</option>
-                          <option value="meeting">회의</option>
-                          <option value="other">기타</option>
-                        </select>
-                      </div>
-
-                      {/* 기수 */}
-                      <div>
-                        <label htmlFor="currentGen" className="block text-sm font-medium text-white mb-1">
-                          기수 <span className="text-red-400">*</span>
-                        </label>
-                        <input
-                          id="currentGen"
-                          type="number"
-                          value={formData.currentGen}
-                          onChange={(e) => setFormData({ ...formData, currentGen: parseInt(e.target.value) })}
-                          className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
-                          min="0"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* 시작 시간 */}
-                      <div>
-                        <label htmlFor="startTime" className="block text-sm font-medium text-white mb-1">
-                          시작 시간 <span className="text-red-400">*</span>
-                        </label>
-                        <input
-                          id="startTime"
-                          type="datetime-local"
-                          value={formatDateForInput(formData.startTime)}
-                          onChange={(e) => setFormData({ ...formData, startTime: new Date(e.target.value) })}
-                          className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
-                          required
-                        />
-                      </div>
-
                       {/* 종료 시간 */}
-                      <div>
+                    <div>
                         <label htmlFor="endTime" className="block text-sm font-medium text-white mb-1">
                           종료 시간 <span className="text-red-400">*</span>
                         </label>
-                        <input
+                      <input
                           id="endTime"
-                          type="datetime-local"
-                          value={formatDateForInput(formData.endTime)}
-                          onChange={(e) => setFormData({ ...formData, endTime: new Date(e.target.value) })}
+                        type="datetime-local"
+                        value={formatDateForInput(formData.endTime)}
+                        onChange={(e) => setFormData({ ...formData, endTime: new Date(e.target.value) })}
                           className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
-                          required
-                        />
-                      </div>
+                        required
+                      />
                     </div>
+                  </div>
 
                     {/* 장소 */}
-                    <div>
+                  <div>
                       <label htmlFor="location" className="block text-sm font-medium text-white mb-1">
                         장소
                       </label>
-                      <input
+                    <input
                         id="location"
-                        type="text"
-                        value={formData.location}
-                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      type="text"
+                      value={formData.location}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                         className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
-                      />
-                    </div>
+                    />
+                  </div>
 
                     {/* 출석 관련 설정 */}
-                    <div className="space-y-3">
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          id="isAttendanceRequired"
-                          checked={formData.isAttendanceRequired}
-                          onChange={(e) => setFormData({ ...formData, isAttendanceRequired: e.target.checked })}
-                          className="mr-2"
-                        />
-                        <label htmlFor="isAttendanceRequired" className="text-sm text-white">
-                          출석 필수
-                        </label>
-                      </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="isAttendanceRequired"
+                        checked={formData.isAttendanceRequired}
+                        onChange={(e) => setFormData({ ...formData, isAttendanceRequired: e.target.checked })}
+                        className="mr-2"
+                      />
+                      <label htmlFor="isAttendanceRequired" className="text-sm text-white">
+                        출석 필수
+                      </label>
+                    </div>
 
-                      {formData.isAttendanceRequired && (
-                        <div className="ml-6 space-y-3">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
+                    {formData.isAttendanceRequired && (
+                      <div className="ml-6 space-y-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
                               <label htmlFor="attendanceStartTime" className="block text-sm font-medium text-white mb-1">
                                 출석 시작 시간
                               </label>
-                              <input
+                            <input
                                 id="attendanceStartTime"
-                                type="datetime-local"
-                                value={formData.attendanceStartTime ? formatDateForInput(formData.attendanceStartTime) : ''}
-                                onChange={(e) => setFormData({ ...formData, attendanceStartTime: new Date(e.target.value) })}
+                              type="datetime-local"
+                              value={formData.attendanceStartTime ? formatDateForInput(formData.attendanceStartTime) : ''}
+                              onChange={(e) => setFormData({ ...formData, attendanceStartTime: new Date(e.target.value) })}
                                 className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
-                              />
-                            </div>
-
-                            <div>
-                              <label htmlFor="attendanceEndTime" className="block text-sm font-medium text-white mb-1">
-                                출석 종료 시간
-                              </label>
-                              <input
-                                id="attendanceEndTime"
-                                type="datetime-local"
-                                value={formData.attendanceEndTime ? formatDateForInput(formData.attendanceEndTime) : ''}
-                                onChange={(e) => setFormData({ ...formData, attendanceEndTime: new Date(e.target.value) })}
-                                className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
-                              />
-                            </div>
+                            />
                           </div>
 
                           <div>
+                              <label htmlFor="attendanceEndTime" className="block text-sm font-medium text-white mb-1">
+                                출석 종료 시간
+                              </label>
+                            <input
+                                id="attendanceEndTime"
+                              type="datetime-local"
+                              value={formData.attendanceEndTime ? formatDateForInput(formData.attendanceEndTime) : ''}
+                              onChange={(e) => setFormData({ ...formData, attendanceEndTime: new Date(e.target.value) })}
+                                className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
                             <label htmlFor="lateThresholdMinutes" className="block text-sm font-medium text-white mb-1">
                               지각 기준 (분)
                             </label>
-                            <input
+                          <input
                               id="lateThresholdMinutes"
-                              type="number"
-                              value={formData.lateThresholdMinutes}
-                              onChange={(e) => setFormData({ ...formData, lateThresholdMinutes: parseInt(e.target.value) })}
+                            type="number"
+                            value={formData.lateThresholdMinutes}
+                            onChange={(e) => setFormData({ ...formData, lateThresholdMinutes: parseInt(e.target.value) })}
                               className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
-                              min="1"
-                            />
-                          </div>
-
-                          <div className="flex items-center">
-                            <input
-                              type="checkbox"
-                              id="isAttendanceCodeRequired"
-                              checked={formData.isAttendanceCodeRequired}
-                              onChange={(e) => setFormData({ ...formData, isAttendanceCodeRequired: e.target.checked })}
-                              className="mr-2"
-                            />
-                            <label htmlFor="isAttendanceCodeRequired" className="text-sm text-white">
-                              출석 코드 필수
-                            </label>
-                          </div>
+                            min="1"
+                          />
                         </div>
-                      )}
-                    </div>
 
-                    {/* 검증 오류 메시지 */}
-                    {validationError && (
-                      <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-lg text-red-400 text-sm">
-                        ⚠️ {validationError}
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            id="isAttendanceCodeRequired"
+                            checked={formData.isAttendanceCodeRequired}
+                            onChange={(e) => setFormData({ ...formData, isAttendanceCodeRequired: e.target.checked })}
+                            className="mr-2"
+                          />
+                          <label htmlFor="isAttendanceCodeRequired" className="text-sm text-white">
+                            출석 코드 필수
+                          </label>
+                        </div>
                       </div>
                     )}
+                  </div>
 
-                    <div className="flex space-x-3 pt-4">
+                  {/* 검증 오류 메시지 */}
+                  {validationError && (
+                      <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-lg text-red-400 text-sm">
+                      ⚠️ {validationError}
+                    </div>
+                  )}
+
+                  <div className="flex space-x-3 pt-4">
                       <button
                         type="submit"
                         disabled={!!validationError}
@@ -512,13 +512,13 @@ export default function EventModal({
                       >
                         {event ? '수정 완료' : '이벤트 생성'}
                       </button>
-                      <button
-                        type="button"
-                        onClick={onClose}
+                    <button
+                      type="button"
+                      onClick={onClose}
                         className="inline-flex justify-center rounded-lg border border-white/30 shadow-sm px-4 py-2 bg-white/10 text-sm font-medium text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                      >
-                        취소
-                      </button>
+                    >
+                      취소
+                    </button>
                     </div>
                   </div>
                 </form>
@@ -527,96 +527,96 @@ export default function EventModal({
                 <div className="mt-6">
                   {activeTab === 'detail' && (
                     <div className="space-y-4">
+                  <div>
+                    <h4 className="text-lg font-semibold text-white">{event.title}</h4>
+                    <p className="text-gray-300 mt-2">{event.description}</p>
+                  </div>
+                  
+                  {/* 이벤트 기본 정보 */}
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-400">이벤트 타입:</span>
+                      <p className="text-white">{event.eventType}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">기수:</span>
+                      <p className="text-white">{event.currentGen}기</p>
+                    </div>
+                  </div>
+
+                  {/* 날짜 및 시간 정보 */}
+                  <div className="space-y-3">
+                    <h5 className="text-md font-medium text-white">📅 날짜 및 시간</h5>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <h4 className="text-lg font-semibold text-white">{event.title}</h4>
-                        <p className="text-gray-300 mt-2">{event.description}</p>
+                        <span className="text-gray-400">시작 시간:</span>
+                        <p className="text-white">{event.startTime.toLocaleString()}</p>
                       </div>
-                      
-                      {/* 이벤트 기본 정보 */}
+                      <div>
+                        <span className="text-gray-400">종료 시간:</span>
+                        <p className="text-white">{event.endTime.toLocaleString()}</p>
+                      </div>
+                    </div>
+                    
+                    {event.location && (
+                      <div>
+                        <span className="text-gray-400">📍 장소:</span>
+                        <p className="text-white">{event.location}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 출석 관련 정보 */}
+                  {event.isAttendanceRequired && (
+                    <div className="space-y-3">
+                      <h5 className="text-md font-medium text-white">✅ 출석 관리</h5>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <span className="text-gray-400">이벤트 타입:</span>
-                          <p className="text-white">{event.eventType}</p>
+                          <span className="text-gray-400">출석 시작:</span>
+                          <p className="text-white">{event.attendanceStartTime?.toLocaleString() || '미설정'}</p>
                         </div>
                         <div>
-                          <span className="text-gray-400">기수:</span>
-                          <p className="text-white">{event.currentGen}기</p>
+                          <span className="text-gray-400">출석 종료:</span>
+                          <p className="text-white">{event.attendanceEndTime?.toLocaleString() || '미설정'}</p>
                         </div>
                       </div>
-
-                      {/* 날짜 및 시간 정보 */}
-                      <div className="space-y-3">
-                        <h5 className="text-md font-medium text-white">📅 날짜 및 시간</h5>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="text-gray-400">시작 시간:</span>
-                            <p className="text-white">{event.startTime.toLocaleString()}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-400">종료 시간:</span>
-                            <p className="text-white">{event.endTime.toLocaleString()}</p>
-                          </div>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-400">지각 기준:</span>
+                          <p className="text-white">{event.lateThresholdMinutes || 15}분</p>
                         </div>
-                        
-                        {event.location && (
-                          <div>
-                            <span className="text-gray-400">📍 장소:</span>
-                            <p className="text-white">{event.location}</p>
-                          </div>
-                        )}
+                        <div>
+                          <span className="text-gray-400">출석 코드:</span>
+                          <p className="text-white">{event.isAttendanceCodeRequired ? '필수' : '선택'}</p>
+                        </div>
                       </div>
+                    </div>
+                  )}
 
-                      {/* 출석 관련 정보 */}
+                  {/* 이벤트 상태 */}
+                  <div className="space-y-2">
+                    <h5 className="text-md font-medium text-white">📊 이벤트 상태</h5>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-2 py-1 bg-red-500/20 text-red-300 text-xs rounded-full">
+                        {event.eventType}
+                      </span>
                       {event.isAttendanceRequired && (
-                        <div className="space-y-3">
-                          <h5 className="text-md font-medium text-white">✅ 출석 관리</h5>
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <span className="text-gray-400">출석 시작:</span>
-                              <p className="text-white">{event.attendanceStartTime?.toLocaleString() || '미설정'}</p>
-                            </div>
-                            <div>
-                              <span className="text-gray-400">출석 종료:</span>
-                              <p className="text-white">{event.attendanceEndTime?.toLocaleString() || '미설정'}</p>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <span className="text-gray-400">지각 기준:</span>
-                              <p className="text-white">{event.lateThresholdMinutes || 15}분</p>
-                            </div>
-                            <div>
-                              <span className="text-gray-400">출석 코드:</span>
-                              <p className="text-white">{event.isAttendanceCodeRequired ? '필수' : '선택'}</p>
-                            </div>
-                          </div>
-                        </div>
+                        <span className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded-full">
+                          출석필수
+                        </span>
                       )}
-
-                      {/* 이벤트 상태 */}
-                      <div className="space-y-2">
-                        <h5 className="text-md font-medium text-white">📊 이벤트 상태</h5>
-                        <div className="flex flex-wrap gap-2">
-                          <span className="px-2 py-1 bg-red-500/20 text-red-300 text-xs rounded-full">
-                            {event.eventType}
-                          </span>
-                          {event.isAttendanceRequired && (
-                            <span className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded-full">
-                              출석필수
-                            </span>
-                          )}
-                          {event.isAttendanceCodeRequired && (
-                            <span className="px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full">
-                              코드필수
-                            </span>
-                          )}
-                          {event.hasAttendanceCode && (
-                            <span className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded-full">
-                              코드생성됨
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                      {event.isAttendanceCodeRequired && (
+                        <span className="px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full">
+                          코드필수
+                        </span>
+                      )}
+                      {event.hasAttendanceCode && (
+                        <span className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded-full">
+                          코드생성됨
+                        </span>
+                      )}
+                    </div>
+                  </div>
                     </div>
                   )}
 

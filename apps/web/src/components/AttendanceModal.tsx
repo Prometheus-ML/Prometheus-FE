@@ -347,50 +347,50 @@ export default function AttendanceModal({
                 // 내 출석 목록 모드
                 <div className="mt-6 flex justify-center">
                   <div className="w-full max-w-2xl space-y-4">
-                    {myAttendances.length === 0 ? (
-                      <div className="text-center py-12">
-                        <FontAwesomeIcon icon={faList} className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                        <h3 className="text-lg font-medium text-white mb-2">출석 기록이 없습니다</h3>
-                        <p className="text-gray-300">아직 참여한 이벤트가 없거나 출석 체크를 하지 않았습니다.</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {myAttendances.map((attendance) => (
-                          <div key={attendance.id} className="bg-white/10 rounded-lg p-4 border border-white/20">
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="flex items-center space-x-3">
-                                <span className={`px-3 py-1 text-sm rounded-full border ${getStatusColor(attendance.status)}`}>
-                                  {getStatusText(attendance.status)}
-                                </span>
-                                <span className="text-white font-medium">
-                                  {attendance.eventTitle}
-                                </span>
-                              </div>
-                              <div className="text-sm text-gray-300">
-                                {attendance.checkedInAt && (
-                                  <span>
-                                    출석 시간: {new Date(attendance.checkedInAt).toLocaleString()}
-                                  </span>
-                                )}
-                              </div>
+                  {myAttendances.length === 0 ? (
+                    <div className="text-center py-12">
+                      <FontAwesomeIcon icon={faList} className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                      <h3 className="text-lg font-medium text-white mb-2">출석 기록이 없습니다</h3>
+                      <p className="text-gray-300">아직 참여한 이벤트가 없거나 출석 체크를 하지 않았습니다.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {myAttendances.map((attendance) => (
+                        <div key={attendance.id} className="bg-white/10 rounded-lg p-4 border border-white/20">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center space-x-3">
+                              <span className={`px-3 py-1 text-sm rounded-full border ${getStatusColor(attendance.status)}`}>
+                                {getStatusText(attendance.status)}
+                              </span>
+                              <span className="text-white font-medium">
+                                {attendance.eventTitle}
+                              </span>
                             </div>
-                            
                             <div className="text-sm text-gray-300">
-                              <div className="flex items-center space-x-2 mb-1">
-                                <FontAwesomeIcon icon={faCalendarAlt} className="w-4 h-4" />
-                                <span>{attendance.eventTitle} ({attendance.eventGen}기)</span>
-                              </div>
-                              {attendance.reason && (
-                                <div className="flex items-center space-x-2">
-                                  <FontAwesomeIcon icon={faComment} className="w-4 h-4" />
-                                  <span>사유: {attendance.reason}</span>
-                                </div>
+                              {attendance.checkedInAt && (
+                                <span>
+                                  출석 시간: {new Date(attendance.checkedInAt).toLocaleString()}
+                                </span>
                               )}
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    )}
+                          
+                          <div className="text-sm text-gray-300">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <FontAwesomeIcon icon={faCalendarAlt} className="w-4 h-4" />
+                              <span>{attendance.eventTitle} ({attendance.eventGen}기)</span>
+                            </div>
+                            {attendance.reason && (
+                              <div className="flex items-center space-x-2">
+                                <FontAwesomeIcon icon={faComment} className="w-4 h-4" />
+                                <span>사유: {attendance.reason}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   </div>
                 </div>
               ) : (

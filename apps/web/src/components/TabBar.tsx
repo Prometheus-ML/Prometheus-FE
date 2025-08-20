@@ -28,7 +28,7 @@ export default function TabBar({
   className = '' 
 }: TabBarProps) {
   return (
-    <div className={`border-b border-gray-200/20 ${className}`}>
+    <div className={`border-b border-white/20 ${className}`}>
       <div className="flex w-full overflow-x-auto scrollbar-hide">
         {tabs.map((tab) => (
           <button

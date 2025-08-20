@@ -8,7 +8,7 @@ import PostModal from '../../src/components/PostModal';
 import PostForm from '../../src/components/PostForm';
 import RedButton from '../../src/components/RedButton';
 import GlassCard from '../../src/components/GlassCard';
-import { SearchBar } from '../../src/components/SearchMemberBar';
+import QueryBar from '../../src/components/QueryBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faTrash, faUser, faCalendarAlt, faComments, faSearch, faUndo, faArrowLeft, faHeart } from '@fortawesome/free-solid-svg-icons';
 
@@ -72,7 +72,6 @@ export default function CommunityPage() {
     };
     setFilters(newFilters);
     setAppliedFilters(newFilters);
-    loadPostsWithFilters(newFilters);
   };
 
   // 초기 게시글 목록 로드
@@ -262,18 +261,18 @@ export default function CommunityPage() {
       <div className="px-4 py-6">
         {/* 검색 및 필터 */}
         <div className="mb-6 space-y-4">
-          <SearchBar
-            searchTerm={filters.search}
-            onSearchTermChange={(term) => setFilters(prev => ({ ...prev, search: term }))}
-            tabs={TAB_ITEMS}
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-            selects={[]}
-            onSearch={applyFilters}
-            onReset={clearFilters}
-            isLoading={isLoadingPosts}
-            placeholder="제목, 내용을 검색해보세요!"
-          />
+                     <QueryBar
+             searchTerm={filters.search}
+             onSearchTermChange={(term) => setFilters(prev => ({ ...prev, search: term }))}
+             tabs={TAB_ITEMS}
+             activeTab={activeTab}
+             onTabChange={handleTabChange}
+             selects={[]}
+             onSearch={applyFilters}
+             onReset={clearFilters}
+             isLoading={isLoadingPosts}
+              placeholder="제목, 내용을 검색해보세요!"
+           />
         </div>
 
         {/* 검색 결과 수 */}
