@@ -1,9 +1,31 @@
 {
-  "extends": "../../packages/config/typescript/tsconfig.base.json",
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "baseUrl": "."
+    "strict": true,
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "@prometheus-fe/api": [
+        "../../packages/api/src/index.ts"
+      ],
+      "@prometheus-fe/hooks": [
+        "../../packages/hooks/src/index.ts"
+      ],
+      "@prometheus-fe/stores": [
+        "../../packages/stores/src/index.ts"
+      ],
+      "@prometheus-fe/types": [
+        "../../packages/types/src/index.ts"
+      ],
+      "@prometheus-fe/context": [
+        "../../packages/context/src/index.ts"
+      ]
+    }
   },
-  "include": ["**/*.ts", "**/*.tsx", "nativewind-env.d.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "nativewind-env.d.ts"
+  ]
 }
-

@@ -4,15 +4,16 @@
     "slug": "prometheus",
     "version": "0.1.0",
     "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
     "scheme": "prometheus",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.prometheus.app"
     },
     "android": {
-      "package": "com.prometheus.app",
-      "versionCode": 1
+      "package": "com.prometheus.app"
     },
     "web": {
       "bundler": "metro"

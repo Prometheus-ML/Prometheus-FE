@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, ReactNode, useContext, useMemo } from 'react';
 import {
   ApiClient,
   createApiClient,
@@ -25,6 +25,11 @@ import {
 } from '@prometheus-fe/api';
 import { useAuthStore } from '@prometheus-fe/stores';
 
+// 라우터 타입: 최소한의 push 메서드만 요구
+export interface RouterLike {
+  push: (...args: any[]) => void;
+}
+
 type ApiInstances = {
   client: ApiClient;
   auth: AuthApi;
@@ -46,7 +51,18 @@ export const useApi = (): ApiInstances => {
   return ctx;
 };
 
-export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
+// API Provider Props 타입 정의
+interface ApiProviderProps {
+  children: ReactNode;
+  router?: RouterLike;
+}
+
+/**
+ * ApiProvider는 라우터를 직접 import/use하지 않고,
+ * 반드시 router prop으로만 받습니다.
+ * router가 없으면 라우팅 없이 동작합니다.
+ */
+export const ApiProvider = ({ children, router }: ApiProviderProps) => {
   const api = useMemo<ApiInstances>(() => {
     const client = createApiClient({
       onUnauthorized: async (responseText: string) => {
@@ -76,9 +92,8 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
       },
       onRefreshFailed: () => {
         console.log('Token refresh failed, redirecting to main page');
-        // 토큰 클리어는 유지하되 메인 페이지로 이동
+        // 토큰 클리어는 유지하되 메인 페이지로 이동 (구현 필요)
         useAuthStore.getState().clearTokens();
-        window.location.href = '/';
       },
     });
 
