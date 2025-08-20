@@ -86,10 +86,10 @@ export default function GroupPage() {
     setFilters(newFilters);
   };
 
-  // 초기 그룹 목록 로드
+  // 초기 로딩 및 필터 변경 시 목록 다시 로드
   useEffect(() => {
     loadGroups();
-  }, []);
+  }, [filters.search, filters.category_filter]);
 
   const loadGroups = async () => {
     try {
@@ -100,18 +100,7 @@ export default function GroupPage() {
       setError('그룹 목록을 불러오지 못했습니다.');
     }
   };
-
-  // 그룹 목록이 로드된 후 사용자의 좋아요 상태 확인
-  useEffect(() => {
-    if (groups.length > 0 && user) {
-      const checkAllGroupLikes = async () => {
-        const likeChecks = groups.map(group => checkUserLikedGroup(group.id).catch(() => false));
-        await Promise.all(likeChecks);
-      };
-      checkAllGroupLikes();
-    }
-  }, [groups, user, checkUserLikedGroup]);
-
+  
   // 클라이언트 사이드 필터링
   const filteredGroups = useMemo(() => {
     return groups.filter((group: any) => {
@@ -206,6 +195,8 @@ export default function GroupPage() {
     }
     try {
       await toggleGroupLike(groupId);
+      // 좋아요 상태 변경 후 그룹 목록 다시 로드
+      await loadGroups();
     } catch (err) {
       console.error('좋아요 토글 실패:', err);
       setError('좋아요 처리에 실패했습니다.');
@@ -475,7 +466,8 @@ export default function GroupPage() {
                     <div className="flex items-center space-x-4 text-sm text-gray-300">
                       <span className="flex items-center">
                         <FontAwesomeIcon icon={faUsers} className="mr-1" />
-                        멤버 수는 상세보기에서 확인 가능
+                        {group.current_member_count || 0}
+                        {group.max_members ? `/${group.max_members}` : ''}명
                       </span>
                       <span className="flex items-center">
                         <FontAwesomeIcon icon={faHeart} className="mr-1" />
@@ -550,7 +542,11 @@ export default function GroupPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-white">{selectedGroup.name}</h2>
               <button
-                onClick={() => setShowGroupDetail(false)}
+                onClick={async () => {
+                  setShowGroupDetail(false);
+                  // 모달을 닫을 때 그룹 목록 다시 로드
+                  await loadGroups();
+                }}
                 className="text-white/70 hover:text-white"
               >
                 ✕
@@ -570,7 +566,7 @@ export default function GroupPage() {
               
               <div className="text-sm text-gray-300">
                 <p>소유자: {selectedGroup.owner_gen}기 {selectedGroup.owner_name}</p>
-                <p>멤버 수: {members.length}명</p>
+                <p>멤버 수: {selectedGroup.current_member_count || 0}명</p>
                 {selectedGroup.max_members && (
                   <p>최대 인원: {selectedGroup.max_members}명</p>
                 )}
