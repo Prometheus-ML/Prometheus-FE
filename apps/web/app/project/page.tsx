@@ -120,6 +120,9 @@ export default function ProjectPage() {
       } else {
         await addProjectLike(project.id);
       }
+      
+      // 좋아요 상태 변경 후 프로젝트 목록을 다시 로드하여 상태 동기화
+      await loadProjects();
     } catch (error: any) {
       console.error('좋아요 처리 실패:', error);
       alert('좋아요 처리에 실패했습니다: ' + (error.message || '알 수 없는 오류'));

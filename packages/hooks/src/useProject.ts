@@ -1,6 +1,7 @@
 import { useApi } from '@prometheus-fe/context';
 import { Project, ProjectMember } from '@prometheus-fe/types';
 import { useState, useCallback, useEffect } from 'react';
+import { useAuthStore } from '@prometheus-fe/stores';
 
 export function useProject() {
   const { project } = useApi();
@@ -84,6 +85,8 @@ export function useProject() {
     try {
       setIsLoadingProject(true);
       const data = await project.get(projectId);
+      
+      // 백엔드에서 받은 상태를 그대로 사용 (좋아요 상태 포함)
       setSelectedProject(data);
 
     } catch (error) {
@@ -216,15 +219,20 @@ export function useProject() {
     try {
       const response = await project.addLike(projectId);
       
-      // 로컬 상태 업데이트
+      // 로컬 상태 업데이트 - 응답에서 받은 정확한 값 사용
       setAllProjects(prev => prev.map(p => 
         p.id === projectId 
           ? { ...p, like_count: response.like_count, is_liked: response.is_liked }
           : p
       ));
       
+      // selectedProject 상태도 업데이트 - 응답에서 받은 정확한 값 사용
       if (selectedProject?.id === projectId) {
-        setSelectedProject(prev => prev ? { ...prev, like_count: response.like_count, is_liked: response.is_liked } : null);
+        setSelectedProject(prev => prev ? { 
+          ...prev, 
+          like_count: response.like_count, 
+          is_liked: response.is_liked 
+        } : null);
       }
       
       return response;
@@ -242,15 +250,20 @@ export function useProject() {
     try {
       const response = await project.removeLike(projectId);
       
-      // 로컬 상태 업데이트
+      // 로컬 상태 업데이트 - 응답에서 받은 정확한 값 사용
       setAllProjects(prev => prev.map(p => 
         p.id === projectId 
           ? { ...p, like_count: response.like_count, is_liked: response.is_liked }
           : p
       ));
       
+      // selectedProject 상태도 업데이트 - 응답에서 받은 정확한 값 사용
       if (selectedProject?.id === projectId) {
-        setSelectedProject(prev => prev ? { ...prev, like_count: response.like_count, is_liked: response.is_liked } : null);
+        setSelectedProject(prev => prev ? { 
+          ...prev, 
+          like_count: response.like_count, 
+          is_liked: response.is_liked 
+        } : null);
       }
       
       return response;
@@ -316,6 +329,32 @@ export function useProject() {
     return text.replace(regex, '<mark>$1</mark>');
   }, []);
 
+      // 현재 사용자가 프로젝트 리더인지 확인하는 함수
+    const isProjectLeader = useCallback((projectId: number | string) => {
+      if (!selectedProject || !projectMembers.length) return false;
+      
+      // 현재 사용자 ID 가져오기 (useAuthStore에서)
+      const currentUserId = useAuthStore.getState().user?.id;
+      if (!currentUserId) return false;
+      
+      // 프로젝트 멤버 중에서 현재 사용자가 팀장인지 확인
+      const currentUserMember = projectMembers.find(member => member.member_id === currentUserId);
+      return currentUserMember?.role === 'team_leader';
+    }, [selectedProject, projectMembers]);
+
+    // 현재 사용자가 프로젝트 멤버인지 확인하는 함수
+    const isProjectMember = useCallback((projectId: number | string) => {
+      if (!selectedProject || !projectMembers.length) return false;
+      
+      // 현재 사용자 ID 가져오기 (useAuthStore에서)
+      const currentUserId = useAuthStore.getState().user?.id;
+      if (!currentUserId) return false;
+      
+      // 프로젝트 멤버 중에서 현재 사용자가 포함되어 있는지 확인
+      const currentUserMember = projectMembers.find(member => member.member_id === currentUserId);
+      return currentUserMember !== undefined;
+    }, [selectedProject, projectMembers]);
+
   return {
     // 상태
     projects: filteredProjects, // 필터링된 프로젝트 반환
@@ -355,5 +394,11 @@ export function useProject() {
     
     // Admin용 함수
     fetchAllProjectsForAdmin,
+    
+    // 프로젝트 리더 확인 함수
+    isProjectLeader,
+    
+    // 프로젝트 멤버 확인 함수
+    isProjectMember,
   };
 }

@@ -24,7 +24,7 @@ import {
 
 export default function Page() {
   const isAuthenticated = useAuthStore((s: any) => s.isAuthenticated);
-  const canAccessManager = useAuthStore((s: any) => s.canAccessManager);
+  const canAccessAdministrator = useAuthStore((s: any) => s.canAccessAdministrator);
   const logout = useAuthStore((s: any) => s.logout);
   const [daysCount, setDaysCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -151,7 +151,7 @@ export default function Page() {
 
           {/* Right: Icons */}
           <div className="flex items-center gap-4">
-            {canAccessManager() && (
+            {canAccessAdministrator() && (
               <RedButton href="/admin" className="text-sm px-3 py-1">
                 Admin
               </RedButton>

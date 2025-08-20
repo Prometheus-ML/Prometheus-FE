@@ -42,7 +42,7 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
     toggleLike,
   } = useCommunity();
 
-  const { user, canAccessManager } = useAuthStore();
+  const { user, canAccessAdministrator } = useAuthStore();
   const [newComment, setNewComment] = useState<any>({ content: '' });
   const [error, setError] = useState('');
   const [authorInfo, setAuthorInfo] = useState<any>(null);
@@ -374,7 +374,7 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                                     {comment.content || '내용 없음'}
                                   </p>
                                 </div>
-                                {user && (user.id === comment.author_id || canAccessManager()) && (
+                                {user && (user.id === comment.author_id || canAccessAdministrator()) && (
                                   <button
                                     onClick={() => handleDeleteComment(comment.id)}
                                     className="text-red-400 hover:text-red-300 text-sm ml-4"

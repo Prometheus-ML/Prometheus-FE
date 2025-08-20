@@ -24,12 +24,20 @@ export default function EditProjectPage() {
     selectedProject,
     isLoadingProject,
     fetchProject,
-    updateProject
+    updateProject,
+    isProjectLeader,
+    isProjectMember
   } = useProject();
   
   // 권한 확인
-  const { canAccessManager } = useAuthStore();
-  const canManage = canAccessManager(); // Manager 이상만 수정 가능
+  const { canAccessAdministrator } = useAuthStore();
+  const canManage = canAccessAdministrator(); // Administrator 이상만 수정 가능
+  const isLeader = isProjectLeader(parseInt(projectId)); // 프로젝트 팀장인지 확인
+  const isMember = isProjectMember(parseInt(projectId)); // 프로젝트 멤버인지 확인
+  const isActiveProject = selectedProject?.status === 'active'; // 프로젝트가 active 상태인지
+  
+  // Administrator 이상이거나, 프로젝트 멤버이면서 active 상태일 때만 수정 가능
+  const canEdit = canManage || (isMember && isActiveProject);
 
   const loadProject = async () => {
     try {
@@ -69,19 +77,26 @@ export default function EditProjectPage() {
 
   // 권한이 없는 경우 처리
   useEffect(() => {
-    if (!canManage) {
+    if (!canEdit) {
       console.warn('수정 권한이 없습니다.');
       // 즉시 리다이렉트하지 않고 UI에서 처리
     }
-  }, [canManage]);
+  }, [canEdit]);
 
   // Check permissions
-  if (!canManage) {
+  if (!canEdit) {
     return (
       <div className="py-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-4">접근 권한 없음</h1>
-          <p className="text-gray-300 mb-4">수정 권한이 없습니다.</p>
+          <p className="text-gray-300 mb-4">
+            {!isMember 
+              ? '프로젝트 멤버만 수정할 수 있습니다.' 
+              : !isActiveProject 
+                ? '완료되거나 중지된 프로젝트는 수정할 수 없습니다.' 
+                : '수정 권한이 없습니다.'
+            }
+          </p>
           <Link 
             href={`/project/${projectId}`} 
             className="text-red-400 hover:text-red-300 inline-flex items-center"

@@ -93,6 +93,8 @@ export default function ProjectDetailPage() {
     removeProjectMember,
     addProjectLike,
     removeProjectLike,
+    isProjectLeader,
+    isProjectMember,
   } = useProject();
 
   const { getMember } = useMember();
@@ -107,10 +109,14 @@ export default function ProjectDetailPage() {
 
 
   // 실제 인증 상태 사용
-  const { canAccessManager, isAuthenticated } = useAuthStore();
-  const canManage = canAccessManager(); // Manager 이상
-  const isLeader = false; // 현재 사용자가 리더인지 (추후 구현 필요)
-  const canEdit = canManage || isLeader;
+  const { canAccessAdministrator, isAuthenticated } = useAuthStore();
+  const canManage = canAccessAdministrator(); // Administrator 이상
+  const isLeader = isProjectLeader(parseInt(projectId)); // 현재 사용자가 프로젝트 팀장인지
+  const isMember = isProjectMember(parseInt(projectId)); // 현재 사용자가 프로젝트 멤버인지
+  const isActiveProject = selectedProject?.status === 'active'; // 프로젝트가 active 상태인지
+  
+  // Administrator 이상이거나, 프로젝트 멤버이면서 active 상태일 때만 수정 가능
+  const canEdit = canManage || (isMember && isActiveProject);
   const canEditMembers = canEdit;
   
   // useImage 훅 사용
@@ -155,6 +161,10 @@ export default function ProjectDetailPage() {
       } else {
         await addProjectLike(selectedProject.id);
       }
+      
+      // 좋아요 상태 변경 후 프로젝트 정보를 다시 로드하여 상태 동기화
+      // 백엔드에서 업데이트된 is_liked 상태를 가져오기 위해 새로고침
+      await loadProject();
     } catch (error: any) {
       console.error('좋아요 처리 실패:', error);
       alert('좋아요 처리에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
@@ -356,6 +366,12 @@ export default function ProjectDetailPage() {
               <FontAwesomeIcon icon={faEdit} className="mr-1 h-3 w-3" />
               수정
             </Link>
+          )}
+          {isMember && !isActiveProject && (
+            <div className="inline-flex items-center px-3 py-1.5 rounded bg-gray-500/20 border border-gray-500/30 text-gray-300 cursor-not-allowed" title="완료되거나 중지된 프로젝트는 수정할 수 없습니다">
+              <FontAwesomeIcon icon={faEdit} className="mr-1 h-3 w-3" />
+              수정 불가
+            </div>
           )}
           {canManage && (
             <RedButton

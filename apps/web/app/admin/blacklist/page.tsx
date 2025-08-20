@@ -194,7 +194,7 @@ function EditBlacklistModal({
 }
 
 export default function AdminBlacklistPage() {
-  const canAccessManager = useAuthStore((s) => s.canAccessManager);
+  const canAccessAdministrator = useAuthStore((s) => s.canAccessAdministrator);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const user = useAuthStore((s) => s.user);
   
@@ -268,12 +268,12 @@ export default function AdminBlacklistPage() {
       return;
     }
 
-    if (!canAccessManager()) {
+    if (!canAccessAdministrator()) {
       alert('관리자가 아닙니다.');
       window.location.href = '/';
       return;
     }
-  }, [isMounted, isAuthenticated, canAccessManager]);
+  }, [isMounted, isAuthenticated, canAccessAdministrator]);
 
   // 블랙리스트 멤버 목록 로드
   const loadMembers = useCallback(async () => {
@@ -433,19 +433,19 @@ export default function AdminBlacklistPage() {
 
   // 멤버 목록 로드
   useEffect(() => {
-    if (!isMounted || !isAuthenticated() || !canAccessManager()) return;
+    if (!isMounted || !isAuthenticated() || !canAccessAdministrator()) return;
     loadMembers();
-  }, [isMounted, loadMembers, isAuthenticated, canAccessManager]);
+      }, [isMounted, loadMembers, isAuthenticated, canAccessAdministrator]);
 
   // 페이지 변경 시 목록 다시 로드
   useEffect(() => {
-    if (isMounted && isAuthenticated() && canAccessManager()) {
+    if (isMounted && isAuthenticated() && canAccessAdministrator()) {
       loadMembers();
     }
   }, [currentPage, loadMembers]);
 
   // Hydration이 완료되지 않았거나 권한이 없는 경우
-  if (!isMounted || !isAuthenticated() || !canAccessManager()) {
+      if (!isMounted || !isAuthenticated() || !canAccessAdministrator()) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-lg text-gray-600">
