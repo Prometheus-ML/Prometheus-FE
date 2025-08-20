@@ -24,7 +24,8 @@ import {
   ParticipantRequest,
   ParticipantResult,
   ExcusedAbsenceRequest,
-  UpdateExcusedAbsenceRequest
+  UpdateExcusedAbsenceRequest,
+  MyAttendance
 } from '@prometheus-fe/types';
 
 /**
@@ -501,7 +502,7 @@ export function useAttendanceManagement() {
  */
 export function useMyAttendance() {
   const { event } = useApi();
-  const [myAttendances, setMyAttendances] = useState<Attendance[]>([]);
+  const [myAttendances, setMyAttendances] = useState<MyAttendance[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -527,7 +528,7 @@ export function useMyAttendance() {
 
   const getMyAttendanceForEvent = useCallback(async (
     eventId: number
-  ): Promise<Attendance | null> => {
+  ): Promise<MyAttendance | null> => {
     try {
       const result = await event.getMyAttendanceForEvent(eventId);
       return result;
@@ -540,7 +541,7 @@ export function useMyAttendance() {
   const checkInAttendance = useCallback(async (
     eventId: number,
     data?: CheckInAttendanceData
-  ): Promise<Attendance> => {
+  ): Promise<MyAttendance> => {
     try {
       setIsLoading(true);
       setError(null);

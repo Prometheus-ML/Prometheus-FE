@@ -25,7 +25,8 @@ import {
   ParticipantRequest,
   ParticipantResult,
   ExcusedAbsenceRequest,
-  UpdateExcusedAbsenceRequest
+  UpdateExcusedAbsenceRequest,
+  MyAttendance
 } from '@prometheus-fe/types';
 import {
   CreateEventRequest,
@@ -53,7 +54,9 @@ import {
   ParticipantListResponseDto,
   ParticipantDto,
   ExcusedAbsenceRequestDto,
-  UpdateExcusedAbsenceRequestDto
+  UpdateExcusedAbsenceRequestDto,
+  MyAttendanceDto,
+  MyAttendanceListResponseDto
 } from './dto/event.dto';
 
 export class EventApi {
@@ -61,7 +64,7 @@ export class EventApi {
 
   /**
    * 백엔드에서 처리할 수 있도록 날짜를 포맷팅
-   * 타임존 정보를 제거하고 로컬 시간으로 변환
+   * 타임존 정보를 제거하고 로컬 시간으로 변환  
    */
   private formatDateTimeForBackend(date: Date): string {
     // 로컬 시간대를 고려하여 YYYY-MM-DDTHH:mm:ss 형식으로 변환
@@ -317,19 +320,19 @@ export class EventApi {
   /**
    * 내 출석 체크 (일반 사용자용)
    */
-  async checkInAttendance(eventId: number, data?: CheckInAttendanceData): Promise<Attendance> {
+  async checkInAttendance(eventId: number, data?: CheckInAttendanceData): Promise<MyAttendance> {
     const requestData: CheckInAttendanceRequest = {};
     
     if (data?.attendanceCode) {
       requestData.attendance_code = data.attendanceCode;
     }
 
-    const response = await this.apiClient.post<AttendanceResponseDto>(
+    const response = await this.apiClient.post<MyAttendanceDto>(
       `/event/${eventId}/attendance/check-in`,
       requestData
     );
 
-    return this.transformAttendanceResponse(response);
+    return this.transformMyAttendanceResponse(response);
   }
 
   /**
@@ -418,7 +421,7 @@ export class EventApi {
   async getMyAttendances(
     eventId?: number,
     statusFilter?: AttendanceStatus
-  ): Promise<Attendance[]> {
+  ): Promise<MyAttendance[]> {
     const params: AttendanceQueryParams = {
       ...(eventId && { event_id: eventId }),
       ...(statusFilter && { status_filter: statusFilter })
@@ -430,23 +433,23 @@ export class EventApi {
         .map(([key, value]) => [key, String(value)])
     ).toString();
 
-    const response = await this.apiClient.get<AttendanceResponseDto[]>(
+    const response = await this.apiClient.get<MyAttendanceDto[]>(
       `/event/attendance/my?${queryString}`
     );
 
-    return response.map(dto => this.transformAttendanceResponse(dto));
+    return response.map(dto => this.transformMyAttendanceResponse(dto));
   }
 
   /**
    * 특정 이벤트에서 내 출석 정보 조회
    */
-  async getMyAttendanceForEvent(eventId: number): Promise<Attendance | null> {
+  async getMyAttendanceForEvent(eventId: number): Promise<MyAttendance | null> {
     try {
-      const response = await this.apiClient.get<AttendanceResponseDto | null>(
+      const response = await this.apiClient.get<MyAttendanceDto | null>(
         `/event/${eventId}/attendance/my`
       );
 
-      return response ? this.transformAttendanceResponse(response) : null;
+      return response ? this.transformMyAttendanceResponse(response) : null;
     } catch (error: any) {
       if (error.status === 404) {
         return null;
@@ -618,10 +621,28 @@ export class EventApi {
         eventId: participant.event_id,
         memberId: participant.member_id,
         memberName: participant.member_name,
+        memberGen: participant.member_gen,
         status: participant.status as AttendanceStatus,
         addedAt: new Date(participant.added_at)
       })),
       total: dto.total
+    };
+  }
+
+  /**
+   * MyAttendanceDto를 MyAttendance 도메인 타입으로 변환
+   */
+  private transformMyAttendanceResponse(dto: MyAttendanceDto): MyAttendance {
+    return {
+      id: dto.id,
+      eventId: dto.event_id,
+      eventTitle: dto.event_title,
+      eventGen: dto.event_gen,
+      memberId: dto.member_id,
+      memberName: dto.member_name,
+      status: dto.status as AttendanceStatus,
+      reason: dto.reason,
+      checkedInAt: dto.checked_in_at ? new Date(dto.checked_in_at) : undefined
     };
   }
 }

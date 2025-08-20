@@ -61,7 +61,7 @@ export default function EventCard({ event, onEdit, onDelete, onClick, onAttendan
             )}
             {event.hasAttendanceCode && (
               <span className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded-full">
-                코드생성
+                코드존재
               </span>
             )}
           </div>
@@ -86,11 +86,6 @@ export default function EventCard({ event, onEdit, onDelete, onClick, onAttendan
             <span>{event.location}</span>
           </div>
         )}
-
-        <div className="flex items-center space-x-2">
-          <FontAwesomeIcon icon={faUserGraduate} className="w-4 h-4" />
-          <span>{event.currentGen}기 대상</span>
-        </div>
       </div>
 
       <div className="flex items-center justify-between">

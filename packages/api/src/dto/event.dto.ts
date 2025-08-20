@@ -212,6 +212,7 @@ export interface ParticipantDto {
   event_id: number;
   member_id: string;
   member_name?: string;
+  member_gen?: number;
   status: string;
   added_at: string; // ISO 8601 형식
 }
@@ -274,4 +275,27 @@ export interface ExcusedAbsenceRequestDto {
  */
 export interface UpdateExcusedAbsenceRequestDto {
   reason: string;
+}
+
+/**
+ * 내 출석 목록 항목 DTO
+ */
+export interface MyAttendanceDto {
+  id: number;
+  event_id: number;
+  event_title: string;
+  event_gen: number;
+  member_id: string;
+  member_name: string;
+  status: string;
+  reason?: string;
+  checked_in_at?: string; // ISO 8601 형식
+}
+
+/**
+ * 내 출석 목록 응답 DTO
+ */
+export interface MyAttendanceListResponseDto {
+  attendances: MyAttendanceDto[];
+  total: number;
 }

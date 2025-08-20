@@ -40,6 +40,8 @@ export default function EventPage() {
   const [showEventModal, setShowEventModal] = useState(false);
   const [filter, setFilter] = useState<EventFilter>({});
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(12); // 한 페이지당 12개 (3x4 그리드)
 
   const user = useAuthStore((s) => s.user);
 
@@ -50,8 +52,8 @@ export default function EventPage() {
       initialFilter.gen = user.gen;
     }
     setFilter(initialFilter);
-    fetchEvents(1, 20, initialFilter);
-  }, [fetchEvents, user]);
+    fetchEvents(currentPage, pageSize, initialFilter);
+  }, [fetchEvents, user, currentPage, pageSize]);
 
   const handleEventClick = (event: Event) => {
     setSelectedEvent(event);
@@ -70,6 +72,75 @@ export default function EventPage() {
 
   const currentAttendanceEvents = getCurrentAttendanceEvents();
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const renderPagination = () => {
+    if (!pagination) return null;
+    
+    const totalPages = Math.ceil(pagination.total / pageSize);
+    if (totalPages <= 1) return null;
+
+    const pages = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // 이전 페이지 버튼
+    if (currentPage > 1) {
+      pages.push(
+        <button
+          key="prev"
+          onClick={() => handlePageChange(currentPage - 1)}
+          className="px-3 py-2 text-sm bg-white/10 border border-white/20 rounded-md text-white hover:bg-white/20 transition-colors"
+        >
+          이전
+        </button>
+      );
+    }
+
+    // 페이지 번호들
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`px-3 py-2 text-sm border rounded-md transition-colors ${
+            i === currentPage
+              ? 'bg-red-500/20 border-red-500/30 text-red-300'
+              : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+          }`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    // 다음 페이지 버튼
+    if (currentPage < totalPages) {
+      pages.push(
+        <button
+          key="next"
+          onClick={() => handlePageChange(currentPage + 1)}
+          className="px-3 py-2 text-sm bg-white/10 border border-white/20 rounded-md text-white hover:bg-white/20 transition-colors"
+        >
+          다음
+        </button>
+      );
+    }
+
+    return (
+      <div className="flex justify-center items-center space-x-2 mt-8">
+        {pages}
+      </div>
+    );
+  };
+
   return (
     <div className="md:max-w-4xl max-w-lg mx-auto min-h-screen font-pretendard">
       {/* 헤더 */}
@@ -86,7 +157,14 @@ export default function EventPage() {
           </div>
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <p className="text-sm text-[#e0e0e0]">전체 <span className="text-[#ffa282] font-bold">{events.length}</span>개</p>
+              <p className="text-sm text-[#e0e0e0]">
+                전체 <span className="text-[#ffa282] font-bold">{pagination?.total || events.length}</span>개
+                {pagination && Math.ceil((pagination.total || events.length) / pageSize) > 1 && (
+                  <span className="ml-2 text-gray-400">
+                    ({currentPage}/{Math.ceil((pagination.total || events.length) / pageSize)} 페이지)
+                  </span>
+                )}
+              </p>
             </div>
             <RedButton 
               onClick={() => setShowAttendanceModal(true)}
@@ -176,6 +254,9 @@ export default function EventPage() {
             </div>
           </div>
         )}
+
+        {/* 페이지네이션 */}
+        {!isLoadingEvents && !eventListError && events.length > 0 && renderPagination()}
 
         {/* 이벤트 상세 모달 */}
         <EventModal

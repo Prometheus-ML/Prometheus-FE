@@ -201,6 +201,49 @@ export interface AttendanceList {
 }
 
 /**
+ * 내 출석 목록 항목 타입
+ */
+export interface MyAttendance {
+  /** 출석 ID */
+  id: number;
+  
+  /** 이벤트 ID */
+  eventId: number;
+  
+  /** 이벤트 제목 */
+  eventTitle: string;
+  
+  /** 이벤트 기수 */
+  eventGen: number;
+  
+  /** 멤버 ID */
+  memberId: string;
+  
+  /** 멤버 이름 */
+  memberName: string;
+  
+  /** 출석 상태 */
+  status: AttendanceStatus;
+  
+  /** 결석 사유 */
+  reason?: string;
+  
+  /** 출석 체크 시간 */
+  checkedInAt?: Date;
+}
+
+/**
+ * 내 출석 목록 응답 타입
+ */
+export interface MyAttendanceList {
+  /** 내 출석 목록 */
+  attendances: MyAttendance[];
+  
+  /** 전체 출석 기록 수 */
+  total: number;
+}
+
+/**
  * 참여자 정보 도메인 타입
  */
 export interface Participant {
@@ -212,6 +255,9 @@ export interface Participant {
   
   /** 멤버 이름 */
   memberName?: string;
+  
+  /** 멤버 기수 */
+  memberGen?: number;
   
   /** 출석 상태 */
   status: AttendanceStatus;

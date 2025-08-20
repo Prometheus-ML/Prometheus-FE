@@ -46,17 +46,20 @@ export default function AdminEventPage() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(12); // 한 페이지당 12개 (3x4 그리드)
 
   useEffect(() => {
-    fetchEvents(1, 50);
-  }, [fetchEvents]);
+    fetchEvents(currentPage, pageSize);
+  }, [fetchEvents, currentPage, pageSize]);
 
   const handleCreateEvent = async (data: EventFormData) => {
     try {
       await createEvent(data);
       setIsEditing(false);
       setEditingEvent(null);
-      fetchEvents(1, 50);
+      setShowEventModal(false); // 모달 닫기
+      fetchEvents(currentPage, pageSize);
     } catch (error: any) {
       alert(`이벤트 생성 실패: ${error.message}`);
     }
@@ -69,7 +72,8 @@ export default function AdminEventPage() {
       await updateEvent(editingEvent.id, data);
       setIsEditing(false);
       setEditingEvent(null);
-      fetchEvents(1, 50);
+      setShowEventModal(false); // 모달 닫기
+      fetchEvents(currentPage, pageSize);
     } catch (error: any) {
       alert(`이벤트 수정 실패: ${error.message}`);
     }
@@ -80,7 +84,7 @@ export default function AdminEventPage() {
     
     try {
       await deleteEvent(eventId);
-      fetchEvents(1, 50);
+      fetchEvents(currentPage, pageSize);
     } catch (error: any) {
       alert(`이벤트 삭제 실패: ${error.message}`);
     }
@@ -110,6 +114,75 @@ export default function AdminEventPage() {
     return { text: '진행중', color: 'bg-green-500/20 text-green-300' };
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const renderPagination = () => {
+    if (!pagination) return null;
+    
+    const totalPages = Math.ceil(pagination.total / pageSize);
+    if (totalPages <= 1) return null;
+
+    const pages = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // 이전 페이지 버튼
+    if (currentPage > 1) {
+      pages.push(
+        <button
+          key="prev"
+          onClick={() => handlePageChange(currentPage - 1)}
+          className="px-3 py-2 text-sm bg-white/10 border border-white/20 rounded-md text-white hover:bg-white/20 transition-colors"
+        >
+          이전
+        </button>
+      );
+    }
+
+    // 페이지 번호들
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`px-3 py-2 text-sm border rounded-md transition-colors ${
+            i === currentPage
+              ? 'bg-red-500/20 border-red-500/30 text-red-300'
+              : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+          }`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    // 다음 페이지 버튼
+    if (currentPage < totalPages) {
+      pages.push(
+        <button
+          key="next"
+          onClick={() => handlePageChange(currentPage + 1)}
+          className="px-3 py-2 text-sm bg-white/10 border border-white/20 rounded-md text-white hover:bg-white/20 transition-colors"
+        >
+          다음
+        </button>
+      );
+    }
+
+    return (
+      <div className="flex justify-center items-center space-x-2 mt-8">
+        {pages}
+      </div>
+    );
+  };
+
   return (
     <div className="md:max-w-4xl max-w-lg mx-auto min-h-screen font-pretendard">
       {/* 헤더 */}
@@ -124,10 +197,17 @@ export default function AdminEventPage() {
               <p className="text-sm font-pretendard text-[#e0e0e0]">프로메테우스 이벤트 관리</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <p className="text-sm text-[#e0e0e0]">전체 <span className="text-[#ffa282] font-bold">{events.length}</span>개</p>
-            </div>
+                     <div className="flex items-center gap-3">
+             <div className="text-right">
+               <p className="text-sm text-[#e0e0e0]">
+                 전체 <span className="text-[#ffa282] font-bold">{pagination?.total || events.length}</span>개
+                 {pagination && Math.ceil((pagination.total || events.length) / pageSize) > 1 && (
+                   <span className="ml-2 text-gray-400">
+                     ({currentPage}/{Math.ceil((pagination.total || events.length) / pageSize)} 페이지)
+                   </span>
+                 )}
+               </p>
+             </div>
             <RedButton 
               onClick={() => {
                 setSelectedEvent(null);
@@ -171,16 +251,19 @@ export default function AdminEventPage() {
           </div>
         )}
 
-        {!isLoadingEvents && !eventListError && events.length === 0 && (
-          <div className="px-4 py-5 sm:p-6">
-            <div className="text-center">
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <h3 className="mt-2 text-sm font-medium text-white">이벤트가 없습니다.</h3>
-            </div>
-          </div>
-        )}
+                 {!isLoadingEvents && !eventListError && events.length === 0 && (
+           <div className="px-4 py-5 sm:p-6">
+             <div className="text-center">
+               <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+               </svg>
+               <h3 className="mt-2 text-sm font-medium text-white">이벤트가 없습니다.</h3>
+             </div>
+           </div>
+         )}
+
+         {/* 페이지네이션 */}
+         {!isLoadingEvents && !eventListError && events.length > 0 && renderPagination()}
 
         {/* 모달들 */}
         <Portal>
@@ -193,6 +276,10 @@ export default function AdminEventPage() {
               setIsEditing(false);
             }}
             event={isEditing ? editingEvent : selectedEvent}
+            isAdmin={true}
+            onEdit={handleEditEvent}
+            onSave={isEditing ? (editingEvent ? handleUpdateEvent : handleCreateEvent) : undefined}
+            isEditing={isEditing}
           />
 
           <AttendanceModal
