@@ -216,8 +216,6 @@ export default function GroupPage() {
     }
     try {
       await toggleGroupLike(groupId);
-      // 좋아요 상태 변경 후 그룹 목록 다시 로드
-      await loadGroups();
     } catch (err) {
       console.error('좋아요 토글 실패:', err);
       setError('좋아요 처리에 실패했습니다.');
@@ -674,8 +672,6 @@ export default function GroupPage() {
               <button
                 onClick={async () => {
                   setShowGroupDetail(false);
-                  // 모달을 닫을 때 그룹 목록 다시 로드
-                  await loadGroups();
                 }}
                 className="text-white/70 hover:text-white"
               >

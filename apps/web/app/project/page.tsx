@@ -28,6 +28,7 @@ interface ProjectFilters {
 
 export default function ProjectPage() {
   const {
+    allProjects,
     fetchProjects,
     addProjectLike,
     removeProjectLike,
@@ -36,7 +37,6 @@ export default function ProjectPage() {
   const { getThumbnailUrl, getDefaultImageUrl } = useImage();
 
   // 상태 관리
-  const [projects, setProjects] = useState<Project[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
   const [size] = useState<number>(15);
@@ -53,6 +53,36 @@ export default function ProjectPage() {
 
   // 계산된 값들
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / size)), [total, size]);
+
+  // 필터링된 프로젝트 목록
+  const filteredProjects = useMemo(() => {
+    let filtered = [...allProjects];
+
+    // 검색어 필터 적용
+    if (appliedSearchTerm.trim()) {
+      const searchLower = appliedSearchTerm.toLowerCase().trim();
+      filtered = filtered.filter(project => {
+        const titleMatch = project.title?.toLowerCase().includes(searchLower);
+        const descriptionMatch = project.description?.toLowerCase().includes(searchLower);
+        const keywordMatch = project.keywords?.some(keyword => 
+          keyword.toLowerCase().includes(searchLower)
+        );
+        return titleMatch || descriptionMatch || keywordMatch;
+      });
+    }
+
+    // 기수 필터 적용 (전체가 아닐 때만)
+    if (appliedGen !== 'all') {
+      if (appliedGen === 'previous') {
+        filtered = filtered.filter(project => project.gen <= 4);
+      } else {
+        const genNum = parseInt(appliedGen);
+        filtered = filtered.filter(project => project.gen === genNum);
+      }
+    }
+
+    return filtered;
+  }, [allProjects, appliedSearchTerm, appliedGen]);
 
   // 프로젝트 목록 조회
   const fetchProjectList = useCallback(async (isSearch = false) => {
@@ -76,16 +106,19 @@ export default function ProjectPage() {
 
       // 기수 필터 적용 (전체가 아닐 때만)
       if (appliedGen !== 'all') {
-        params.gen = parseInt(appliedGen);
+        if (appliedGen === 'previous') {
+          // 이전기수는 4기 이하
+          params.gen = '4';
+        } else {
+          params.gen = parseInt(appliedGen);
+        }
       }
 
       const response = await fetchProjects(params);
-      setProjects(response.projects || []);
       setTotal(response.total || 0);
       setImageErrors({});
     } catch (err) {
       console.error('Failed to fetch projects:', err);
-      setProjects([]);
       setTotal(0);
     } finally {
       if (isSearch) {
@@ -132,8 +165,8 @@ export default function ProjectPage() {
         await addProjectLike(project.id);
       }
       
-      // 좋아요 상태 변경 후 프로젝트 목록을 다시 로드하여 상태 동기화
-      await fetchProjectList();
+      // 로컬 상태 업데이트 - useProject 훅에서 이미 처리됨
+      // fetchProjectList() 호출 제거
     } catch (error: any) {
       console.error('좋아요 처리 실패:', error);
       alert('좋아요 처리에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
@@ -303,7 +336,7 @@ export default function ProjectPage() {
         {/* 검색 결과 수 */}
         {(appliedSearchTerm || appliedGen !== 'all') && (
           <div className="mb-4 text-sm text-[#e0e0e0]">
-            검색 결과: {total}개
+            검색 결과: {filteredProjects.length}개
           </div>
         )}
 
@@ -320,7 +353,7 @@ export default function ProjectPage() {
         
         {!isLoading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project: Project) => (
+            {filteredProjects.map((project: Project) => (
               <GlassCard 
                 key={project.id} 
                 className="overflow-hidden hover:bg-white/20 transition-colors border border-white/20 cursor-pointer group"
@@ -426,7 +459,7 @@ export default function ProjectPage() {
         )}
 
         {/* 빈 상태 */}
-        {!isLoading && !isSearchLoading && projects.length === 0 && (
+        {!isLoading && !isSearchLoading && filteredProjects.length === 0 && (
           <div className="px-4 py-5 sm:p-6">
             <div className="text-center">
               <FontAwesomeIcon icon={faFolder} className="mx-auto h-12 w-12 text-gray-400 mb-4" />
@@ -439,7 +472,7 @@ export default function ProjectPage() {
         )}
 
         {/* 페이지네이션 */}
-        {!isLoading && !isSearchLoading && projects.length > 0 && totalPages > 1 && (
+        {!isLoading && !isSearchLoading && filteredProjects.length > 0 && totalPages > 1 && (
           <div className="flex justify-center mt-8">
             <div className="flex items-center space-x-2">
               <button
