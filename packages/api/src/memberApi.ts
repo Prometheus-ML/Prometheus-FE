@@ -90,6 +90,7 @@ export class MemberApi {
     if (params?.page) searchParams.set('page', String(params.page));
     if (params?.size) searchParams.set('size', String(params.size));
     if (params?.search) searchParams.set('search', params.search);
+    if (params?.status) searchParams.set('status', params.status);
     if (params?.executive !== undefined) searchParams.set('executive', String(params.executive));
     if (params?.gen !== undefined) searchParams.set('gen', String(params.gen));
     if (params?.mbti) searchParams.set('mbti', params.mbti);
@@ -105,6 +106,7 @@ export class MemberApi {
     if (params?.page) searchParams.set('page', String(params.page));
     if (params?.size) searchParams.set('size', String(params.size));
     if (params?.search) searchParams.set('search', params.search);
+    if (params?.status) searchParams.set('status', params.status);
     if (params?.executive !== undefined) searchParams.set('executive', String(params.executive));
     if (params?.gen !== undefined) searchParams.set('gen', String(params.gen));
     if (params?.mbti) searchParams.set('mbti', params.mbti);

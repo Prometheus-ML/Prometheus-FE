@@ -15,9 +15,21 @@ export interface CreatePostRequest {
   category: 'free' | 'activity' | 'career' | 'promotion' | 'study_group' | 'casual_group' | 'announcement';
   title: string;
   content: string;
+  images?: string[];  // 이미지 URL 리스트
 }
 
 export interface CreatePostResponse extends BaseResponse {
+  post: Post;
+}
+
+// 포스트 수정
+export interface UpdatePostRequest {
+  title?: string;
+  content?: string;
+  images?: string[];  // 이미지 URL 리스트
+}
+
+export interface UpdatePostResponse extends BaseResponse {
   post: Post;
 }
 
@@ -26,6 +38,7 @@ export interface GetPostsRequest {
   page?: number;
   size?: number;
   category?: string;
+  search?: string;
 }
 
 export interface GetPostsResponse {
@@ -43,8 +56,10 @@ export interface CreateCommentResponse extends BaseResponse {
 }
 
 // 좋아요 관련
-export interface LikeStatusResponse extends LikeStatus {
-  // LikeStatus 타입을 그대로 사용
+export interface LikeStatusResponse {
+  post_id: number;
+  is_liked: boolean;
+  like_count: number;
 }
 
 

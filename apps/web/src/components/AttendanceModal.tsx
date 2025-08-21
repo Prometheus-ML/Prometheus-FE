@@ -314,10 +314,10 @@ export default function AttendanceModal({
   return (
     <Portal>
       <div className="fixed inset-0 z-50 overflow-y-auto">
-        <div className="flex items-start justify-center min-h-screen pt-16 px-4 pb-20 text-center sm:block sm:p-0 relative z-10">
+        <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0 relative z-10">
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={onClose} />
 
-          <div className="inline-block align-top bg-black/80 backdrop-blur-lg rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-top md:max-w-6xl max-w-lg sm:w-full relative border border-white/20 max-h-[80vh] flex flex-col">
+          <div className="inline-block align-middle bg-black/80 backdrop-blur-lg rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle md:max-w-6xl max-w-lg sm:w-full relative border border-white/20 max-h-[90vh] flex flex-col">
             {/* 헤더 */}
             <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex-shrink-0">
               <div className="text-center w-full">
@@ -345,7 +345,8 @@ export default function AttendanceModal({
             <div className="flex-1 overflow-y-auto px-4 pb-4 sm:px-6">
               {!event ? (
                 // 내 출석 목록 모드
-                <div className="mt-6 space-y-4">
+                <div className="mt-6 flex justify-center items-center">
+                  <div className="w-full max-w-2xl space-y-4">
                   {myAttendances.length === 0 ? (
                     <div className="text-center py-12">
                       <FontAwesomeIcon icon={faList} className="mx-auto h-12 w-12 text-gray-400 mb-4" />
@@ -390,6 +391,7 @@ export default function AttendanceModal({
                       ))}
                     </div>
                   )}
+                  </div>
                 </div>
               ) : (
                 // Admin 전용 출석 관리 - 좌우 분할 레이아웃

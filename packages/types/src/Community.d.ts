@@ -2,9 +2,12 @@
 export interface Post {
   id: number;
   author_id: string;
+  author_name: string;
+  author_gen: number;
   category: string;
   title: string;
   content: string;
+  images?: string[];  // 이미지 URL 리스트
   is_deleted: boolean;
   created_at: string;
   updated_at: string;
@@ -18,6 +21,8 @@ export interface Comment {
   id: number;
   post_id: number;
   author_id: string;
+  author_name: string;
+  author_gen: number;
   content: string;
   is_deleted: boolean;
   created_at: string;

@@ -42,6 +42,7 @@ import {
   AttendanceStatsResponseDto,
   SuccessResponseDto,
   EventQueryParams,
+  AttendableEventQueryParams,
   AttendanceQueryParams,
   CheckInAttendanceRequest,
   GenerateAttendanceCodeRequest,
@@ -271,6 +272,34 @@ export class EventApi {
       isValid: response.is_valid,
       message: response.message
     };
+  }
+
+  /**
+   * 출석 가능한 이벤트 목록 조회
+   */
+  async getAttendableEvents(
+    page: number = 1,
+    size: number = 20,
+    filter?: EventFilter
+  ): Promise<EventList> {
+    const params: AttendableEventQueryParams = {
+      page,
+      size,
+      ...(filter?.gen && { gen: filter.gen }),
+      ...(filter?.eventType && { event_type: filter.eventType })
+    };
+
+    const queryString = new URLSearchParams(
+      Object.entries(params)
+        .filter(([_, value]) => value !== undefined)
+        .map(([key, value]) => [key, String(value)])
+    ).toString();
+
+    const response = await this.apiClient.get<EventListResponseDto>(
+      `/event/list/attendable?${queryString}`
+    );
+
+    return this.transformEventListResponse(response);
   }
 
   /**

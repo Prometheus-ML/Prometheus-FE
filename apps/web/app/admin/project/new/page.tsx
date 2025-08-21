@@ -33,14 +33,15 @@ export default function NewProjectPage() {
   // Check permissions
   if (!canCreate) {
     return (
-      <div className="py-6">
-        <div className="text-center">
+      <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
+        <div className="text-center py-12">
           <h1 className="text-2xl font-bold text-white mb-4">접근 권한 없음</h1>
           <p className="text-gray-300 mb-4">프로젝트 생성 권한이 없습니다.</p>
           <Link 
             href="/admin/project" 
-            className="text-blue-400 hover:text-blue-300"
+            className="text-red-400 hover:text-red-300 inline-flex items-center"
           >
+            <FontAwesomeIcon icon={faArrowLeft} className="mr-1" />
             어드민 프로젝트 목록으로 돌아가기
           </Link>
         </div>
@@ -49,23 +50,29 @@ export default function NewProjectPage() {
   }
 
   return (
-    <div className="py-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-white">프로젝트 생성</h1>
-        <Link 
-          href="/admin/project" 
-          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white hover:text-gray-300"
-        >
-          <FontAwesomeIcon icon={faList} className="mr-2" />
-          목록으로
-        </Link>
-      </div>
+    <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
+      {/* 헤더 */}
+      <header className="mx-4 px-6 py-6 border-b border-white/20">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link href="/admin/project" className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
+              <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
+            </Link>
+            <div>
+              <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">프로젝트 생성</h1>
+              <p className="text-sm font-pretendard text-[#e0e0e0]">새로운 프로젝트 등록</p>
+            </div>
+          </div>
+        </div>
+      </header>
 
-      <ProjectForm 
-        initial={{}}
-        mode="create"
-        onSubmit={handleSubmit}
-      />
+      <div className="px-4 py-6">
+        <ProjectForm 
+          initial={{}}
+          mode="create"
+          onSubmit={handleSubmit}
+        />
+      </div>
     </div>
   );
 }

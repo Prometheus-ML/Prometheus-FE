@@ -19,7 +19,7 @@ export type ProjectMember = {
   id: string;
   project_id: number;
   member_id: string;
-  role?: string | null;
+  role?: 'team_leader' | 'team_member' | string | null; // team_leader, team_member
   contribution?: string | null;
   member_name?: string | null;
   member_gen?: number | null;

@@ -1,10 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useCommunity } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
+import { useImage } from '@prometheus-fe/hooks';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeart } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faHeart, 
+  faTimes, 
+  faUser, 
+  faCalendarAlt, 
+  faComments,
+  faCircle
+} from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 import Portal from './Portal';
 
@@ -38,15 +47,15 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
     deletePost,
     clearSelectedPost,
     clearComments,
-    getMemberInfo,
     toggleLike,
   } = useCommunity();
 
-  const { user, canAccessManager } = useAuthStore();
+  const { user, canAccessAdministrator } = useAuthStore();
   const [newComment, setNewComment] = useState<any>({ content: '' });
   const [error, setError] = useState('');
-  const [authorInfo, setAuthorInfo] = useState<any>(null);
-  const [commentAuthors, setCommentAuthors] = useState<Record<string, any>>({});
+
+  // useImage 훅 사용
+  const { getThumbnailUrl } = useImage();
 
   // 모달이 열릴 때 게시글 데이터 로드
   useEffect(() => {
@@ -55,19 +64,13 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
     }
   }, [isOpen, postId, fetchPost]);
 
-  // 게시글 작성자 정보 로드
+  // 디버깅용: selectedPost 변경 시 로그
   useEffect(() => {
-    if (selectedPost?.author_id) {
-      loadAuthorInfo(selectedPost.author_id);
+    if (selectedPost) {
+      console.log('PostModal - selectedPost:', selectedPost);
+      console.log('PostModal - selectedPost.images:', selectedPost.images);
     }
   }, [selectedPost]);
-
-  // 댓글 작성자 정보 로드
-  useEffect(() => {
-    if (comments.length > 0) {
-      loadCommentAuthors();
-    }
-  }, [comments]);
 
   // 모달이 닫힐 때 상태 초기화
   useEffect(() => {
@@ -76,43 +79,14 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
       clearComments();
       setNewComment({ content: '' });
       setError('');
-      setAuthorInfo(null);
-      setCommentAuthors({});
     }
   }, [isOpen, clearSelectedPost, clearComments]);
 
-  const loadAuthorInfo = async (authorId: string) => {
-    try {
-      const memberData = await getMemberInfo(authorId);
-      setAuthorInfo(memberData);
-    } catch (error) {
-      console.error('작성자 정보 로드 실패:', error);
+  const getAuthorDisplayName = (authorId: string) => {
+    if (selectedPost) {
+      return `${selectedPost.author_gen}기 ${selectedPost.author_name}`;
     }
-  };
-
-  const loadCommentAuthors = async () => {
-    const uniqueAuthorIds = [...new Set(comments.map(comment => comment.author_id))];
-    const authors: Record<string, any> = {};
-    
-    for (const authorId of uniqueAuthorIds) {
-      try {
-        const memberData = await getMemberInfo(authorId);
-        if (memberData) {
-          authors[authorId] = memberData;
-        }
-      } catch (error) {
-        console.error(`댓글 작성자 ${authorId} 정보 로드 실패:`, error);
-      }
-    }
-    
-    setCommentAuthors(authors);
-  };
-
-  const getAuthorDisplayName = (authorId: string, memberData: any) => {
-    if (memberData) {
-      return `${memberData.gen}기 ${memberData.name}`;
-    }
-    return authorId; // 멤버 정보가 없으면 ID로 표시
+    return authorId;
   };
 
   const handleCreateComment = async (e: React.FormEvent) => {
@@ -196,36 +170,57 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
-      free: 'bg-gray-100 text-gray-800 border-gray-200',
-      activity: 'bg-blue-100 text-blue-800 border-blue-200',
-      career: 'bg-green-100 text-green-800 border-green-200',
-      promotion: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      study_group: 'bg-purple-100 text-purple-800 border-purple-200',
-      casual_group: 'bg-pink-100 text-pink-800 border-pink-200',
-      announcement: 'bg-red-100 text-red-800 border-red-200',
+      free: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+      activity: 'bg-green-500/20 text-green-300 border-green-500/30',
+      career: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
+      promotion: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+      study_group: 'bg-pink-500/20 text-pink-300 border-pink-500/30',
+      casual_group: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
+      announcement: 'bg-red-500/20 text-red-300 border-red-500/30',
     };
-    return colors[category] || 'bg-gray-100 text-gray-800 border-gray-200';
+    return colors[category] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+  };
+
+  // 기수별 색상 반환 (ProfileModal과 동일한 스타일)
+  const getGenColor = (gen: number) => {
+    if (gen <= 4) return 'bg-gray-500/20 text-gray-300'; // 4기 이하는 이전기수로 회색
+    return 'bg-[#8B0000] text-[#ffa282]';
   };
 
   if (!isOpen) return null;
 
   return (
     <Portal>
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-          {/* 헤더 */}
-          <div className="flex items-center justify-between p-6 border-b border-white/20">
-            <h2 className="text-xl font-bold text-white">게시글 상세</h2>
-            <button
-              onClick={onClose}
-              className="text-white/70 hover:text-white text-2xl"
-            >
-              ✕
-            </button>
-          </div>
+      <div className="fixed inset-0 z-50 overflow-y-auto">
+        {/* Prometheus background */}
+        <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0 relative z-10">
+          {/* 배경 오버레이 */}
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={onClose} />
 
-          {/* 내용 */}
-          <div className="flex-1 overflow-y-auto p-6">
+          {/* 모달 컨텐츠 */}
+          <div className="inline-block align-middle bg-black/80 backdrop-blur-lg rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle md:max-w-4xl max-w-lg sm:w-full relative border border-white/20 max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            {/* 헤더 */}
+            <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex-shrink-0 border-b border-white/20">
+              <div className="text-center w-full">
+                <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-500/20 mb-4">
+                  <svg className="h-6 w-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg leading-6 font-kimm-bold text-white mb-2">게시글 상세</h3>
+                
+                <button 
+                  onClick={onClose} 
+                  className="absolute top-3 right-3 text-gray-400 hover:text-gray-200 cursor-pointer"
+                >
+                  <FontAwesomeIcon icon={faTimes} className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* 스크롤 가능한 컨텐츠 영역 */}
+            <div className="flex-1 overflow-y-auto px-4 pb-4 sm:px-6 font-pretendard">
+              <div className="mt-6">
             {isLoadingPost ? (
               <div className="flex justify-center items-center py-20">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
@@ -234,14 +229,25 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
               <>
                 {/* 게시글 정보 */}
                 <div className="mb-6">
+                  {/* 제목과 기수 */}
+                  <div className="flex items-center gap-2 mb-4">
+                    <h1 className="text-2xl font-semibold text-white">{selectedPost.title}</h1>
+                    <span className={`px-1.5 py-0.5 text-xs rounded-full font-medium flex font-semibold items-center gap-1 flex-shrink-0 ${getGenColor(selectedPost.author_gen)}`}>
+                      {selectedPost.author_gen <= 4 ? '이전기수' : `${selectedPost.author_gen}기`}
+                    </span>
+                  </div>
+
+                  {/* 카테고리와 작성자 정보 */}
                   <div className="flex items-center space-x-2 mb-4">
-                    <span className={`px-3 py-1 text-sm rounded-full border ${getCategoryColor(selectedPost.category)}`}>
+                    <span className={`px-2 py-1 text-xs rounded-full border ${getCategoryColor(selectedPost.category)}`}>
                       {getCategoryLabel(selectedPost.category)}
                     </span>
-                    <span className="text-sm text-gray-300">
-                      작성자: {getAuthorDisplayName(selectedPost.author_id, authorInfo)}
+                    <span className="text-sm text-gray-300 flex items-center">
+                      <FontAwesomeIcon icon={faUser} className="mr-1" />
+                      {selectedPost.author_name}
                     </span>
-                    <span className="text-sm text-gray-300">
+                    <span className="text-sm text-gray-300 flex items-center">
+                      <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" />
                       {new Date(selectedPost.created_at).toLocaleString('ko-KR')}
                     </span>
                     {user && user.id === selectedPost.author_id && (
@@ -254,37 +260,31 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                     )}
                   </div>
 
-                  <h1 className="text-2xl font-bold text-white mb-4">
-                    {selectedPost.title}
-                  </h1>
-
-                  {/* 좋아요 섹션 */}
+                  {/* 좋아요 버튼 - 제목 오른쪽에 */}
                   <div className="flex items-center space-x-4 mb-4">
                     {user && (
                       <button
                         onClick={handleToggleLike}
                         disabled={isTogglingLike}
-                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+                        className={`inline-flex items-center px-1 py-1 text-sm transition-colors ${
                           selectedPost.is_liked
-                            ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
-                            : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-red-400'
-                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                            ? 'text-red-300 hover:text-red-200'
+                            : 'text-white hover:text-gray-300'
+                        } ${isTogglingLike ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
                         <FontAwesomeIcon 
-                          icon={selectedPost.is_liked ? faHeart : faHeartRegular} 
-                          className={`w-4 h-4 ${isTogglingLike ? 'animate-pulse' : ''}`} 
+                          icon={faHeart} 
+                          className={`mr-1 h-3 w-3 ${isTogglingLike ? 'animate-pulse' : ''} ${selectedPost.is_liked ? 'text-red-300' : 'text-white'}`}
                         />
-                        <span className="text-sm font-medium">
-                          {selectedPost.is_liked ? '좋아요 취소' : '좋아요'}
-                        </span>
+                        {isTogglingLike ? '...' : (selectedPost.like_count || 0)}
                       </button>
                     )}
-                    <div className="flex items-center space-x-1 text-gray-300">
-                      <FontAwesomeIcon icon={faHeart} className="w-4 h-4" />
-                      <span className="text-sm">
-                        {selectedPost.like_count || 0}명이 좋아합니다
-                      </span>
-                    </div>
+                    {!user && (
+                      <div className="text-gray-400 text-sm">
+                        <FontAwesomeIcon icon={faHeart} className="mr-1 h-3 w-3" />
+                        {selectedPost.like_count || 0}
+                      </div>
+                    )}
                   </div>
 
                   <div className="prose max-w-none">
@@ -292,11 +292,40 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                       {selectedPost.content}
                     </p>
                   </div>
+
+                  {/* 이미지 표시 */}
+                  {selectedPost.images && selectedPost.images.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="text-sm font-medium text-gray-300 mb-3">첨부된 이미지 ({selectedPost.images.length}개)</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {selectedPost.images.map((imageUrl, index) => (
+                          <div key={index} className="relative group">
+                            <Image
+                              src={getThumbnailUrl(imageUrl, 200)}
+                              alt={`게시글 이미지 ${index + 1}`}
+                              className="w-full h-32 object-cover rounded-lg border border-white/20 hover:border-white/40 transition-colors cursor-pointer"
+                              width={200}
+                              height={150}
+                              onClick={() => window.open(imageUrl, '_blank')}
+                              onError={(e) => {
+                                // 이미지 로드 실패 시 에러 처리
+                                const target = e.target as HTMLImageElement;
+                                console.error(`이미지 로드 실패: ${imageUrl}`);
+                                // 에러 시 기본 이미지나 플레이스홀더 표시
+                                target.style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* 댓글 섹션 */}
                 <div className="border-t border-white/20 pt-6">
-                  <h3 className="text-lg font-semibold mb-4 text-white">
+                  <h3 className="text-lg font-semibold mb-4 text-white flex items-center">
+                    <FontAwesomeIcon icon={faComments} className="mr-2" />
                     댓글 ({comments.length})
                   </h3>
                   
@@ -364,17 +393,17 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                                 <div className="flex-1">
                                   <div className="flex items-center space-x-2 mb-2">
                                     <span className="text-sm font-medium text-white">
-                                      {getAuthorDisplayName(comment.author_id, commentAuthors[comment.author_id])}
+                                      {comment.author_gen}기 {comment.author_name}
                                     </span>
                                     <span className="text-xs text-gray-300">
-                                      {comment.created_at ? new Date(comment.created_at).toLocaleString('ko-KR') : '날짜 없음'}
+                                      {new Date(comment.created_at).toLocaleString('ko-KR')}
                                     </span>
                                   </div>
                                   <p className="text-gray-300 whitespace-pre-wrap">
                                     {comment.content || '내용 없음'}
                                   </p>
                                 </div>
-                                {user && (user.id === comment.author_id || canAccessManager()) && (
+                                {user && (user.id === comment.author_id || canAccessAdministrator()) && (
                                   <button
                                     onClick={() => handleDeleteComment(comment.id)}
                                     className="text-red-400 hover:text-red-300 text-sm ml-4"
@@ -395,6 +424,8 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                 게시글을 찾을 수 없습니다.
               </div>
             )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

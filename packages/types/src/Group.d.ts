@@ -4,6 +4,7 @@ export interface Group {
   description?: string;
   category: string;
   max_members?: number;
+  current_member_count?: number;
   thumbnail_url?: string;
   owner_id: string;
   owner_name: string;

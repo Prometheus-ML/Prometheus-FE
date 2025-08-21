@@ -15,7 +15,6 @@ export interface AuthState {
   getUserGrant: () => string | null;
   getUserGrantWeight: () => number;
   canAccessMember: () => boolean;
-  canAccessManager: () => boolean;
   canAccessAdministrator: () => boolean;
   canAccessSuper: () => boolean;
   canAccessRoot: () => boolean;
@@ -84,10 +83,6 @@ export const useAuthStore = create<AuthState>()(
 
   canAccessMember: () => {
           return get().getUserGrantWeight() >= 1; // Member 이상
-  },
-
-  canAccessManager: () => {
-          return get().getUserGrantWeight() >= 2; // Administrator 이상 (Manager 역할 제거)
   },
 
   canAccessAdministrator: () => {

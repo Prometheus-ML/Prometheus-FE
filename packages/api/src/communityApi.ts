@@ -2,6 +2,8 @@ import { ApiClient } from './apiClient';
 import {
   CreatePostRequest,
   CreatePostResponse,
+  UpdatePostRequest,
+  UpdatePostResponse,
   GetPostsRequest,
   GetPostsResponse,
   CreateCommentRequest,
@@ -38,6 +40,7 @@ export class CommunityApi {
       if (params?.page) sp.set('page', String(params.page));
       if (params?.size) sp.set('size', String(params.size));
       if (params?.category) sp.set('category', params.category);
+      if (params?.search) sp.set('search', params.search);
       
       const query = sp.toString() ? `?${sp.toString()}` : '';
       const response = await this.api.get<GetPostsResponse>(`${this.postsBase}/${query}`);
@@ -55,6 +58,16 @@ export class CommunityApi {
     } catch (error: any) {
       console.error(`Error fetching post ${postId}:`, error);
       throw new Error(error.message || 'Failed to fetch post');
+    }
+  }
+
+  async updatePost(postId: number | string, data: UpdatePostRequest): Promise<UpdatePostResponse> {
+    try {
+      const response = await this.api.put<UpdatePostResponse>(`${this.postsBase}/${postId}`, data);
+      return response;
+    } catch (error: any) {
+      console.error(`Error updating post ${postId}:`, error);
+      throw new Error(error.message || 'Failed to update post');
     }
   }
 

@@ -67,7 +67,6 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const canAccessManager = useAuthStore((s) => s.canAccessManager);
   const canAccessAdministrator = useAuthStore((s) => s.canAccessAdministrator);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const router = useRouter();

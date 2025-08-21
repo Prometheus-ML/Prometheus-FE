@@ -29,6 +29,57 @@ import {
 } from '@prometheus-fe/types';
 
 /**
+ * 출석 가능한 이벤트 목록 관리 훅
+ */
+export function useAttendableEventList() {
+  const { event } = useApi();
+  const [attendableEvents, setAttendableEvents] = useState<Event[]>([]);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    size: 20,
+    total: 0
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAttendableEvents = useCallback(async (
+    page: number = 1,
+    size: number = 20,
+    filter?: EventFilter
+  ) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const result: EventList = await event.getAttendableEvents(page, size, filter);
+      
+      setAttendableEvents(result.events);
+      setPagination(result.pagination);
+    } catch (err: any) {
+      const errorMessage = err?.message || '출석 가능한 이벤트 목록을 불러오는데 실패했습니다.';
+      setError(errorMessage);
+      console.error('출석 가능한 이벤트 목록 조회 실패:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [event]);
+
+  const refreshAttendableEvents = useCallback(() => {
+    fetchAttendableEvents(pagination.page, pagination.size);
+  }, [fetchAttendableEvents, pagination.page, pagination.size]);
+
+  return {
+    attendableEvents,
+    pagination,
+    isLoading,
+    error,
+    fetchAttendableEvents,
+    refreshAttendableEvents
+  };
+}
+
+/**
  * 이벤트 목록 관리 훅
  */
 export function useEventList() {
@@ -683,6 +734,7 @@ export function useParticipantManagement() {
  */
 export function useEvent() {
   const eventList = useEventList();
+  const attendableEventList = useAttendableEventList();
   const eventManagement = useEventManagement();
   const attendanceCodeManagement = useAttendanceCodeManagement();
   const attendanceManagement = useAttendanceManagement();
@@ -698,6 +750,14 @@ export function useEvent() {
     eventListError: eventList.error,
     fetchEvents: eventList.fetchEvents,
     refreshEvents: eventList.refreshEvents,
+
+    // 출석 가능한 이벤트 목록 관련
+    attendableEvents: attendableEventList.attendableEvents,
+    attendablePagination: attendableEventList.pagination,
+    isLoadingAttendableEvents: attendableEventList.isLoading,
+    attendableEventListError: attendableEventList.error,
+    fetchAttendableEvents: attendableEventList.fetchAttendableEvents,
+    refreshAttendableEvents: attendableEventList.refreshAttendableEvents,
 
     // 이벤트 관리 관련
     isCreating: eventManagement.isCreating,

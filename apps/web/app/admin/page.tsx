@@ -30,7 +30,7 @@ const recentActivities = [
 ];
 
 export default function AdminDashboard() {
-  const canAccessManager = useAuthStore((s) => s.canAccessManager);
+  const canAccessAdministrator = useAuthStore((s) => s.canAccessAdministrator);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const router = useRouter();
 
@@ -40,11 +40,11 @@ export default function AdminDashboard() {
       return;
     }
 
-    if (!canAccessManager()) {
+    if (!canAccessAdministrator()) {
       router.push('/');
       return;
     }
-  }, [isAuthenticated, canAccessManager, router]);
+  }, [isAuthenticated, canAccessAdministrator, router]);
 
   const getIcon = (type: string) => {
     switch (type) {

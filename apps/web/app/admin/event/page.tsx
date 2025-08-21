@@ -25,8 +25,6 @@ import {
   faArrowLeft
 } from '@fortawesome/free-solid-svg-icons';
 import Link from 'next/link';
-import EventCard from '../../../src/components/EventCard';
-import EventCardSkeleton from '../../../src/components/EventCardSkeleton';
 
 // 메인 어드민 이벤트 페이지
 export default function AdminEventPage() {
@@ -116,6 +114,125 @@ export default function AdminEventPage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  // EventCardSkeleton 컴포넌트
+  const EventCardSkeleton = () => (
+    <GlassCard className="p-4 border border-white/20">
+      <div className="animate-pulse">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center space-x-2">
+            <div className="w-16 h-4 bg-gray-600 rounded"></div>
+            <div className="w-20 h-4 bg-gray-600 rounded"></div>
+          </div>
+          <div className="w-24 h-4 bg-gray-600 rounded"></div>
+        </div>
+        <div className="w-full h-6 bg-gray-600 rounded mb-2"></div>
+        <div className="w-3/4 h-4 bg-gray-600 rounded mb-3"></div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-20 h-4 bg-gray-600 rounded"></div>
+            <div className="w-16 h-4 bg-gray-600 rounded"></div>
+          </div>
+          <div className="flex space-x-2">
+            <div className="w-12 h-8 bg-gray-600 rounded"></div>
+            <div className="w-12 h-8 bg-gray-600 rounded"></div>
+            <div className="w-12 h-8 bg-gray-600 rounded"></div>
+          </div>
+        </div>
+      </div>
+    </GlassCard>
+  );
+
+  // EventCard 컴포넌트
+  const EventCard = ({ 
+    event, 
+    onEdit, 
+    onDelete, 
+    onAttendanceManage, 
+    isAdmin = false 
+  }: {
+    event: Event;
+    onEdit?: (event: Event) => void;
+    onDelete?: (eventId: number) => void;
+    onAttendanceManage?: (event: Event) => void;
+    isAdmin?: boolean;
+  }) => {
+    const status = getEventStatus(event);
+
+    return (
+      <GlassCard className="p-4 hover:bg-white/20 transition-colors cursor-pointer border border-white/20">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center space-x-2">
+            <span className={`px-2 py-1 text-xs rounded-full border ${status.color}`}>
+              {status.text}
+            </span>
+            <span className="text-xs text-gray-300">
+              {event.eventType === '회의' ? '정기모임' : '특별이벤트'}
+            </span>
+          </div>
+          <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded">
+            {event.currentGen}기
+          </span>
+        </div>
+        
+        <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2">
+          {event.title}
+        </h3>
+        
+        <p className="text-gray-300 text-sm mb-3 line-clamp-2">
+          {event.description}
+        </p>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4 text-sm text-gray-300">
+            <span className="flex items-center">
+              <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" />
+              {new Date(event.startTime).toLocaleDateString('ko-KR')}
+            </span>
+            <span className="flex items-center">
+              <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1" />
+              {event.location || '장소 미정'}
+            </span>
+          </div>
+          
+          {isAdmin && (
+            <div className="flex space-x-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit?.(event);
+                }}
+                className="text-blue-400 hover:text-blue-300 text-sm px-2 py-1 rounded hover:bg-blue-500/20 transition-colors"
+              >
+                <FontAwesomeIcon icon={faEdit} className="mr-1" />
+                수정
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAttendanceManage?.(event);
+                }}
+                className="text-green-400 hover:text-green-300 text-sm px-2 py-1 rounded hover:bg-green-500/20 transition-colors"
+              >
+                <FontAwesomeIcon icon={faUsers} className="mr-1" />
+                출석관리
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete?.(event.id);
+                }}
+                className="text-red-400 hover:text-red-300 text-sm px-2 py-1 rounded hover:bg-red-500/20 transition-colors"
+              >
+                <FontAwesomeIcon icon={faTrash} className="mr-1" />
+                삭제
+              </button>
+            </div>
+          )}
+        </div>
+      </GlassCard>
+    );
   };
 
   const renderPagination = () => {

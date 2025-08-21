@@ -3,7 +3,7 @@ import { Post, Comment, LikeStatus } from '@prometheus-fe/types';
 import { useState, useCallback } from 'react';
 
 export function useCommunity() {
-  const { community, member } = useApi();
+  const { community } = useApi();
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -12,33 +12,9 @@ export function useCommunity() {
   const [isLoadingPost, setIsLoadingPost] = useState(false);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [isCreatingPost, setIsCreatingPost] = useState(false);
+  const [isUpdatingPost, setIsUpdatingPost] = useState(false);
   const [isCreatingComment, setIsCreatingComment] = useState(false);
-  const [memberCache, setMemberCache] = useState<Record<string, any>>({});
   const [isTogglingLike, setIsTogglingLike] = useState(false);
-
-  // 멤버 정보 가져오기 (캐시 활용)
-  const getMemberInfo = useCallback(async (memberId: string) => {
-    if (!member) return null;
-    
-    // 캐시에 있으면 반환
-    if (memberCache[memberId]) {
-      return memberCache[memberId];
-    }
-
-    try {
-      // 일반 사용자용 API 사용 (admin API 대신)
-      const memberData = await member.getMemberDetail(memberId);
-      // 캐시에 저장
-      setMemberCache(prev => ({
-        ...prev,
-        [memberId]: memberData
-      }));
-      return memberData;
-    } catch (error) {
-      console.error(`멤버 ${memberId} 정보 조회 실패:`, error);
-      return null;
-    }
-  }, [member, memberCache]);
 
   // 게시글 목록 조회
   const fetchPosts = useCallback(async (params?: any) => {
@@ -112,6 +88,35 @@ export function useCommunity() {
       setIsCreatingPost(false);
     }
   }, [community]);
+
+  // 게시글 수정
+  const updatePost = useCallback(async (postId: number | string, postData: any) => {
+    if (!community) {
+      console.warn('community is not available. Ensure useCommunity is used within ApiProvider.');
+      return null;
+    }
+    try {
+      setIsUpdatingPost(true);
+      const updatedPost = await community.updatePost(postId, postData);
+      
+      // 게시글 목록에서 해당 게시글 업데이트
+      setPosts(prev => prev.map(post => 
+        post.id === Number(postId) ? updatedPost.post : post
+      ));
+      
+      // 현재 선택된 게시글이 해당 게시글이면 업데이트
+      if (selectedPost && selectedPost.id === Number(postId)) {
+        setSelectedPost(updatedPost.post);
+      }
+      
+      return updatedPost;
+    } catch (error) {
+      console.error('게시글 수정 실패:', error);
+      throw error;
+    } finally {
+      setIsUpdatingPost(false);
+    }
+  }, [community, selectedPost]);
 
   // 게시글 삭제
   const deletePost = useCallback(async (postId: number | string) => {
@@ -260,19 +265,19 @@ export function useCommunity() {
     isLoadingPost,
     isLoadingComments,
     isCreatingPost,
+    isUpdatingPost,
     isCreatingComment,
     isTogglingLike,
-    memberCache,
     
     // API 함수들
     fetchPosts,
     fetchPost,
     createPost,
+    updatePost,
     deletePost,
     createComment,
     deleteComment,
     filterPostsByCategory,
-    getMemberInfo,
     toggleLike,
     getLikeStatus,
     
