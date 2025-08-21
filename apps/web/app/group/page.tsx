@@ -6,6 +6,7 @@ import { useGroup } from '@prometheus-fe/hooks';
 import { useImage } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
 import GlassCard from '../../src/components/GlassCard';
+import GroupModal from '../../src/components/GroupModal';
 import RedButton from '../../src/components/RedButton';
 import QueryBar from '../../src/components/QueryBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -33,33 +34,14 @@ export default function GroupPage() {
   const {
     groups,
     selectedGroup,
-    members,
-    joinRequests,
-    groupLikes,
-    userLikedGroups,
     isLoadingGroups,
-    isLoadingGroup,
-    isLoadingMembers,
-    isLoadingJoinRequests,
     isCreatingGroup,
-    isTogglingLike,
-    isDeletingGroup,
     fetchGroups,
-    fetchGroup,
     createGroup,
     requestJoinGroup,
-    fetchGroupMembers,
-    fetchJoinRequests,
-    approveMember,
-    rejectMember,
-    removeMember,
-    deleteGroup,
     filterGroupsByCategory,
     toggleGroupLike,
-    fetchGroupLikes,
-    checkUserLikedGroup,
-    canViewJoinRequests,
-    canDeleteGroup,
+    handleGroupSelect,
   } = useGroup();
 
   const { user } = useAuthStore();
@@ -89,7 +71,6 @@ export default function GroupPage() {
     category_filter: ''
   });
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
   const [showGroupDetail, setShowGroupDetail] = useState(false);
   const [newGroup, setNewGroup] = useState<any>({
     name: '',
@@ -199,23 +180,15 @@ export default function GroupPage() {
 
   const handleGroupClick = async (groupId: number) => {
     try {
-      // 기본적으로 모든 사용자가 볼 수 있는 정보들
-      await Promise.all([
-        fetchGroup(groupId),
-        fetchGroupMembers(groupId),
-        fetchGroupLikes(groupId).catch(() => {}),
-        checkUserLikedGroup(groupId).catch(() => {})
-      ]);
-
-      // 권한이 있는 경우에만 가입 요청 목록 조회
-      // fetchJoinRequests 내부에서 권한 체크를 수행함
-      fetchJoinRequests(groupId).catch(() => {});
-
-      setSelectedGroupId(groupId);
-      setShowGroupDetail(true);
+      // 그룹을 선택된 그룹으로 설정
+      const group = groups.find(g => g.id === groupId);
+      if (group) {
+        handleGroupSelect(group);
+        setShowGroupDetail(true);
+      }
     } catch (err) {
-      console.error('그룹 상세 정보 로드 실패:', err);
-      setError('그룹 상세 정보를 불러오지 못했습니다.');
+      console.error('그룹 선택 실패:', err);
+      setError('그룹을 선택할 수 없습니다.');
     }
   };
 
@@ -239,114 +212,6 @@ export default function GroupPage() {
     } catch (err) {
       console.error('그룹 가입 신청 실패:', err);
       setError('그룹 가입 신청에 실패했습니다.');
-    }
-  };
-
-  const handleApproveMember = async (requestId: number) => {
-    try {
-      const request = joinRequests.find(r => r.id === requestId);
-      if (!request || !selectedGroupId) return;
-      
-      await approveMember(selectedGroupId, request.member_id);
-      await fetchJoinRequests(selectedGroupId);
-      await fetchGroupMembers(selectedGroupId);
-    } catch (err) {
-      console.error('멤버 승인 실패:', err);
-      setError('멤버 승인에 실패했습니다.');
-    }
-  };
-
-  const handleRejectMember = async (requestId: number) => {
-    try {
-      const request = joinRequests.find(r => r.id === requestId);
-      if (!request || !selectedGroupId) return;
-      
-      await rejectMember(selectedGroupId, request.member_id);
-      await fetchJoinRequests(selectedGroupId);
-    } catch (err) {
-      console.error('멤버 거절 실패:', err);
-      setError('멤버 거절에 실패했습니다.');
-    }
-  };
-
-  const handleRemoveMember = async (memberId: string) => {
-    if (!selectedGroupId) return;
-    
-    if (!confirm('정말 이 멤버를 그룹에서 제거하시겠습니까?')) {
-      return;
-    }
-    
-    try {
-      await removeMember(selectedGroupId, memberId);
-      await fetchGroupMembers(selectedGroupId);
-    } catch (err) {
-      console.error('멤버 제거 실패:', err);
-      setError('멤버 제거에 실패했습니다.');
-    }
-  };
-
-  const handleDeleteGroup = async (groupId: number) => {
-    if (!confirm('정말 이 그룹을 삭제하시겠습니까?\n삭제된 그룹은 복구할 수 없습니다.')) {
-      return;
-    }
-    
-    try {
-      await deleteGroup(groupId);
-      setShowGroupDetail(false);
-      setSelectedGroupId(null);
-      alert('그룹이 성공적으로 삭제되었습니다.');
-    } catch (err) {
-      console.error('그룹 삭제 실패:', err);
-      setError('그룹 삭제에 실패했습니다.');
-    }
-  };
-
-  const getCategoryLabel = (category: string) => {
-    return CATEGORIES.find(c => c.value === category)?.label || category;
-  };
-
-  const getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      STUDY: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-      CASUAL: 'bg-green-500/20 text-green-300 border-green-500/30',
-    };
-    return colors[category] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
-  };
-
-  // 그룹 상태 확인 (마감됨/진행중)
-  const getGroupStatus = (group: any) => {
-    if (!group.deadline) return { status: 'ongoing', label: '진행중', color: 'bg-green-500/20 text-green-300 border-green-500/30' };
-    
-    const now = new Date();
-    const deadline = new Date(group.deadline);
-    const isExpired = now > deadline;
-    
-    if (isExpired) {
-      return { status: 'expired', label: '마감됨', color: 'bg-red-500/20 text-red-300 border-red-500/30' };
-    } else {
-      return { status: 'ongoing', label: '진행중', color: 'bg-green-500/20 text-green-300 border-green-500/30' };
-    }
-  };
-
-  // 마감일까지 남은 시간 계산
-  const getTimeUntilDeadline = (deadline: string) => {
-    if (!deadline) return null;
-    
-    const now = new Date();
-    const deadlineDate = new Date(deadline);
-    const diffTime = deadlineDate.getTime() - now.getTime();
-    
-    if (diffTime <= 0) return '마감됨';
-    
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
-    
-    if (diffDays > 1) {
-      return `${diffDays}일 남음`;
-    } else if (diffHours > 1) {
-      return `${diffHours}시간 남음`;
-    } else {
-      return '1시간 미만 남음';
     }
   };
 
@@ -663,11 +528,11 @@ export default function GroupPage() {
                     
                     <div className="flex items-center space-x-3 mb-2">
                       <h3 className="text-lg font-semibold text-white">{group.name}</h3>
-                      <span className={`px-2 py-1 text-xs rounded-full border ${getCategoryColor(group.category)}`}>
-                        {getCategoryLabel(group.category)}
+                      <span className={`px-2 py-1 text-xs rounded-full border ${group.category === 'STUDY' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-green-500/20 text-green-300 border-green-500/30'}`}>
+                        {group.category === 'STUDY' ? '스터디 그룹' : '취미 그룹'}
                       </span>
-                      <span className={`px-2 py-1 text-xs rounded-full border ${getGroupStatus(group).color}`}>
-                        {getGroupStatus(group).label}
+                      <span className={`px-2 py-1 text-xs rounded-full border ${group.deadline ? 'bg-red-500/20 text-red-300 border-red-500/30' : 'bg-green-500/20 text-green-300 border-green-500/30'}`}>
+                        {group.deadline ? '마감됨' : '진행중'}
                       </span>
                       <span className="px-2 py-1 text-xs rounded-full bg-yellow-500/20 text-yellow-300">
                         {group.owner_gen}기 {group.owner_name}
@@ -691,7 +556,7 @@ export default function GroupPage() {
                       {/* 마감일 정보 표시 */}
                       <span className="flex items-center">
                         <FontAwesomeIcon icon={faClock} className="mr-1" />
-                        {group.deadline ? getTimeUntilDeadline(group.deadline) : '무기한'}
+                        {group.deadline ? new Date(group.deadline).toLocaleDateString() : '무기한'}
                       </span>
                     </div>
                   </div>
@@ -699,18 +564,21 @@ export default function GroupPage() {
                     {/* 좋아요 버튼 */}
                     <button
                       onClick={(e) => handleLikeToggle(group.id, e)}
-                      disabled={isTogglingLike}
+                      // disabled={isTogglingLike}
                       className={`flex items-center space-x-1 px-2 py-1 rounded text-sm transition-colors ${
-                        userLikedGroups[group.id]
+                        // userLikedGroups[group.id]
+                        false // userLikedGroups 상태가 제거되었으므로 항상 false
                           ? 'text-red-400 hover:text-red-300 bg-red-500/20'
                           : 'text-gray-400 hover:text-gray-300 bg-white/10 hover:bg-white/20'
                       }`}
                     >
                       <FontAwesomeIcon 
-                        icon={userLikedGroups[group.id] ? faHeart : faHeartBroken} 
+                        // icon={userLikedGroups[group.id] ? faHeart : faHeartBroken} 
+                        icon={faHeart} 
                         className="mr-1" 
                       />
-                      {userLikedGroups[group.id] ? '좋아요' : '좋아요'}
+                      {/* {userLikedGroups[group.id] ? '좋아요' : '좋아요'} */}
+                      좋아요
                     </button>
                     
                     <button
@@ -757,240 +625,11 @@ export default function GroupPage() {
 
       {/* 그룹 상세 모달 */}
       {showGroupDetail && selectedGroup && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <GlassCard className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-white">{selectedGroup.name}</h2>
-              <div className="flex items-center space-x-2">
-                {/* 소유자만 그룹 삭제 가능 */}
-                {user && user.id === selectedGroup.owner_id && (
-                  <button
-                    onClick={() => handleDeleteGroup(selectedGroup.id)}
-                    disabled={isDeletingGroup}
-                    className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="그룹 삭제"
-                  >
-                    {isDeletingGroup ? (
-                      <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
-                        삭제 중...
-                      </div>
-                    ) : (
-                      <>
-                        <FontAwesomeIcon icon={faTrash} className="mr-1" />
-                        그룹 삭제
-                      </>
-                    )}
-                  </button>
-                )}
-                <button
-                  onClick={async () => {
-                    setShowGroupDetail(false);
-                  }}
-                  className="text-white/70 hover:text-white"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              {/* 그룹 썸네일 */}
-              <div className="flex justify-center">
-                <div className="w-48 h-32 rounded-lg overflow-hidden bg-white/10">
-                  {selectedGroup.thumbnail_url ? (
-                    <Image
-                      src={getThumbnailUrl(selectedGroup.thumbnail_url, 400)}
-                      alt={selectedGroup.name}
-                      width={192}
-                      height={128}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        if (target.src !== selectedGroup.thumbnail_url && selectedGroup.thumbnail_url) {
-                          target.src = selectedGroup.thumbnail_url;
-                        }
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <FontAwesomeIcon icon={faUsers} className="text-white/30 text-4xl" />
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              <div>
-                <span className={`px-2 py-1 text-xs rounded-full border ${getCategoryColor(selectedGroup.category)}`}>
-                  {getCategoryLabel(selectedGroup.category)}
-                </span>
-              </div>
-              
-              {selectedGroup.description && (
-                <p className="text-gray-300">{selectedGroup.description}</p>
-              )}
-              
-              <div className="text-sm text-gray-300">
-                <p>소유자: {selectedGroup.owner_gen}기 {selectedGroup.owner_name}</p>
-                <p>멤버 수: {selectedGroup.current_member_count || 0}명</p>
-                {selectedGroup.max_members && (
-                  <p>최대 인원: {selectedGroup.max_members}명</p>
-                )}
-                <p>좋아요: {selectedGroup.like_count || 0}개</p>
-                {/* 마감일 정보 표시 */}
-                <div className="mt-2 p-2 bg-white/10 rounded">
-                  <p className="font-medium text-white">마감일 정보</p>
-                  {selectedGroup.deadline ? (
-                    <>
-                      <p>마감일: {new Date(selectedGroup.deadline).toLocaleString('ko-KR')}</p>
-                      <p className={`font-semibold ${
-                        getGroupStatus(selectedGroup).status === 'expired' ? 'text-red-400' : 'text-green-400'
-                      }`}>
-                        상태: {getTimeUntilDeadline(selectedGroup.deadline)}
-                      </p>
-                    </>
-                  ) : (
-                    <p className="font-semibold text-blue-400">무기한 진행</p>
-                  )}
-                </div>
-              </div>
-
-              {/* 좋아요 버튼 */}
-              <div className="mt-4">
-                <button
-                  onClick={(e) => handleLikeToggle(selectedGroup.id, e)}
-                  disabled={isTogglingLike}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                    userLikedGroups[selectedGroup.id]
-                      ? 'bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30'
-                      : 'bg-white/10 text-white border border-white/30 hover:bg-white/20'
-                  }`}
-                >
-                  <FontAwesomeIcon 
-                    icon={userLikedGroups[selectedGroup.id] ? faHeart : faHeartBroken} 
-                    className="mr-2" 
-                  />
-                  <span>
-                    {userLikedGroups[selectedGroup.id] ? '좋아요 취소' : '좋아요'}
-                  </span>
-                </button>
-              </div>
-
-              {/* 좋아요한 멤버 목록 */}
-              {groupLikes[selectedGroup.id] && groupLikes[selectedGroup.id].recent_likers.length > 0 && (
-                <div className="mt-4">
-                  <h3 className="text-lg font-semibold text-white mb-3">최근 좋아요한 멤버</h3>
-                  <div className="space-y-2">
-                    {groupLikes[selectedGroup.id].recent_likers.slice(0, 5).map((liker, index) => (
-                      <div key={index} className="flex items-center space-x-2 p-2 bg-white/10 rounded">
-                        <span className="text-white font-medium">{liker.name}</span>
-                        <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded">
-                          {liker.gen}기
-                        </span>
-                        <span className="text-gray-300 text-sm">({liker.member_id})</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* 멤버 목록 */}
-            {isLoadingMembers ? (
-              <div className="mt-6 flex justify-center">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600" />
-              </div>
-            ) : (
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold text-white mb-3">멤버 목록</h3>
-                <div className="space-y-2">
-                  {members.map((member: any) => (
-                    <div key={member.member_id} className="flex items-center justify-between p-2 bg-white/10 rounded">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-white font-medium">{member.name}</span>
-                        <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded">
-                          {member.gen}기
-                        </span>
-                        <span className="text-gray-300 text-sm">({member.member_id})</span>
-                        <span className={`px-2 py-1 text-xs rounded ${
-                          member.role === 'owner' 
-                            ? 'bg-yellow-500/20 text-yellow-300' 
-                            : 'bg-blue-500/20 text-blue-300'
-                        }`}>
-                          {member.role === 'owner' ? '소유자' : '멤버'}
-                        </span>
-                      </div>
-                      {/* 소유자가 아닌 멤버만 제거 가능 */}
-                      {user && user.id === selectedGroup.owner_id && member.role !== 'owner' && (
-                        <button
-                          onClick={() => handleRemoveMember(member.member_id)}
-                          className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-                        >
-                          <FontAwesomeIcon icon={faTimes} className="mr-1" />
-                          제거
-                        </button>
-                      )}
-                      {/* 소유자만 그룹 삭제 가능 */}
-                      {user && user.id === selectedGroup.owner_id && (
-                        <button
-                          onClick={() => handleDeleteGroup(selectedGroup.id)}
-                          className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-                        >
-                          <FontAwesomeIcon icon={faTrash} className="mr-1" />
-                          삭제
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 가입 신청 목록 */}
-            {canViewJoinRequests(selectedGroup) && (
-              <>
-                {isLoadingJoinRequests ? (
-                  <div className="mt-6 flex justify-center">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600" />
-                  </div>
-                ) : (
-                  <div className="mt-6">
-                    <h3 className="text-lg font-semibold text-white mb-3">가입 신청</h3>
-                    <div className="space-y-2">
-                      {joinRequests.map((request: any) => (
-                        <div key={request.id} className="flex items-center justify-between p-2 bg-white/10 rounded">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-white font-medium">{request.name}</span>
-                            <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded">
-                              {request.gen}기
-                            </span>
-                            <span className="text-gray-300 text-sm">({request.member_id})</span>
-                          </div>
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => handleApproveMember(request.id)}
-                              className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
-                            >
-                              <FontAwesomeIcon icon={faCheck} className="mr-1" />
-                              승인
-                            </button>
-                            <button
-                              onClick={() => handleRejectMember(request.id)}
-                              className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
-                            >
-                              <FontAwesomeIcon icon={faTimes} className="mr-1" />
-                              거절
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </GlassCard>
-        </div>
+        <GroupModal
+          isOpen={showGroupDetail}
+          onClose={() => setShowGroupDetail(false)}
+          group={selectedGroup}
+        />
       )}
       </div>
     </div>
