@@ -15,6 +15,13 @@ export function useCommunity() {
   const [isUpdatingPost, setIsUpdatingPost] = useState(false);
   const [isCreatingComment, setIsCreatingComment] = useState(false);
   const [isTogglingLike, setIsTogglingLike] = useState(false);
+  
+  // 멤버 게시글 히스토리 관련 상태
+  const [memberPosts, setMemberPosts] = useState<Post[]>([]);
+  const [memberPostsStats, setMemberPostsStats] = useState({
+    total_posts: 0
+  });
+  const [isLoadingMemberPosts, setIsLoadingMemberPosts] = useState(false);
 
   // 게시글 목록 조회
   const fetchPosts = useCallback(async (params?: any) => {
@@ -34,6 +41,31 @@ export function useCommunity() {
       setTotalPosts(0);
     } finally {
       setIsLoadingPosts(false);
+    }
+  }, [community]);
+
+  // 멤버 게시글 히스토리 조회
+  const fetchMemberPostsHistory = useCallback(async (memberId: string) => {
+    if (!community) {
+      console.warn('community is not available. Ensure useCommunity is used within ApiProvider.');
+      setIsLoadingMemberPosts(false);
+      return;
+    }
+    try {
+      setIsLoadingMemberPosts(true);
+      const data = await community.getMemberPostsHistory(memberId);
+      setMemberPosts(data.items || []);
+      setMemberPostsStats({
+        total_posts: data.total_posts || 0
+      });
+    } catch (error) {
+      console.error('멤버 게시글 히스토리 조회 실패:', error);
+      setMemberPosts([]);
+      setMemberPostsStats({
+        total_posts: 0
+      });
+    } finally {
+      setIsLoadingMemberPosts(false);
     }
   }, [community]);
 
@@ -269,8 +301,14 @@ export function useCommunity() {
     isCreatingComment,
     isTogglingLike,
     
+    // 멤버 게시글 히스토리 관련 상태
+    memberPosts,
+    memberPostsStats,
+    isLoadingMemberPosts,
+    
     // API 함수들
     fetchPosts,
+    fetchMemberPostsHistory,
     fetchPost,
     createPost,
     updatePost,

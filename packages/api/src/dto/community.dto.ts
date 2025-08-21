@@ -62,4 +62,13 @@ export interface LikeStatusResponse {
   like_count: number;
 }
 
+// 멤버 게시글 히스토리 조회
+export interface GetMemberPostsHistoryResponse {
+  member_id: string;
+  total_posts: number;
+  active_posts: number;
+  deleted_posts: number;
+  items: Post[];
+}
+
 
