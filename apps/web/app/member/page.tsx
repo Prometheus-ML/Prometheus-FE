@@ -18,11 +18,6 @@ import {
   faCircle,
   faSearch
 } from '@fortawesome/free-solid-svg-icons';
-import { 
-  faGithub,
-  faNotion,
-  faFigma
-} from '@fortawesome/free-brands-svg-icons';
 
 import { 
   MemberDetailResponse,

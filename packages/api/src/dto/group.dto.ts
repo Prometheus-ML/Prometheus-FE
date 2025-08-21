@@ -20,6 +20,7 @@ export interface GroupCreateRequest {
   category: 'STUDY' | 'CASUAL';
   max_members?: number;
   thumbnail_url?: string;
+  deadline?: string;  // 마감 기한 추가
 }
 
 export interface GroupCreateResponse extends BaseResponse {
@@ -33,6 +34,7 @@ export interface GroupUpdateRequest {
   category?: 'STUDY' | 'CASUAL';
   max_members?: number;
   thumbnail_url?: string;
+  deadline?: string;  // 마감 기한 추가
 }
 
 export interface GroupUpdateResponse extends BaseResponse {
@@ -75,4 +77,8 @@ export interface GetGroupLikesResponse extends BaseResponse {
 
 export interface CheckUserLikedGroupResponse extends BaseResponse {
   liked: boolean;
+}
+
+export interface GroupDeleteResponse extends BaseResponse {
+  message: string;
 }

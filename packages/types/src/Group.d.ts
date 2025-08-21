@@ -10,6 +10,8 @@ export interface Group {
   owner_name: string;
   owner_gen: number;
   like_count?: number;
+  deadline?: string;  // 마감 기한 추가
+  created_at: string;  // 생성 시간 추가
 }
 
 export interface GroupMember {
@@ -56,4 +58,8 @@ export interface GroupLikeInfo {
     gen: number;
     liked_at: string;
   }>;
+}
+
+export interface GroupDeleteResponse {
+  message: string;
 }

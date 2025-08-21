@@ -25,6 +25,7 @@ export function useGroup() {
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
   const [isCreatingNote, setIsCreatingNote] = useState(false);
   const [isTogglingLike, setIsTogglingLike] = useState(false);
+  const [isDeletingGroup, setIsDeletingGroup] = useState(false);
 
   // 사용자가 가입 요청을 볼 수 있는 권한이 있는지 확인
   const canViewJoinRequests = useCallback((group?: Group | null) => {
@@ -37,6 +38,17 @@ export function useGroup() {
     const isSuperUser = user.grant === 'Super';
 
     return isOwner || isSuperUser;
+  }, [user, selectedGroup]);
+
+  // 사용자가 그룹을 삭제할 수 있는 권한이 있는지 확인
+  const canDeleteGroup = useCallback((group?: Group | null) => {
+    if (!user) return false;
+    
+    const targetGroup = group || selectedGroup;
+    if (!targetGroup) return false;
+
+    // 그룹 소유자만 삭제 가능
+    return user.id === targetGroup.owner_id;
   }, [user, selectedGroup]);
 
   // 그룹 목록 조회
@@ -83,7 +95,14 @@ export function useGroup() {
   }, [group]);
 
   // 그룹 생성
-  const createGroup = useCallback(async (groupData: any) => {
+  const createGroup = useCallback(async (groupData: {
+    name: string;
+    description?: string;
+    category: 'STUDY' | 'CASUAL';
+    max_members?: number;
+    thumbnail_url?: string;
+    deadline?: string;  // 마감 기한 추가
+  }) => {
     if (!group) {
       console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
       return null;
@@ -221,6 +240,33 @@ export function useGroup() {
       throw error;
     }
   }, [group, fetchGroupMembers]);
+
+  // 그룹 삭제 (소유자만 가능)
+  const deleteGroup = useCallback(async (groupId: number | string) => {
+    if (!group) {
+      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
+      return;
+    }
+    try {
+      setIsDeletingGroup(true);
+      await group.deleteGroup(groupId);
+      
+      // 삭제된 그룹을 목록에서 제거
+      setGroups(prev => prev.filter(g => g.id !== groupId));
+      
+      // 현재 선택된 그룹이 삭제된 그룹인 경우 선택 해제
+      if (selectedGroup && selectedGroup.id === groupId) {
+        handleGroupDeselect();
+      }
+      
+      return { success: true, message: '그룹이 성공적으로 삭제되었습니다.' };
+    } catch (error) {
+      console.error(`그룹 ${groupId} 삭제 실패:`, error);
+      throw error;
+    } finally {
+      setIsDeletingGroup(false);
+    }
+  }, [group, selectedGroup]);
 
   // 그룹 노트 생성
   const createGroupNote = useCallback(async (groupId: number | string, noteData: any) => {
@@ -366,6 +412,7 @@ export function useGroup() {
     isCreatingGroup,
     isCreatingNote,
     isTogglingLike,
+    isDeletingGroup,
     
     // API 함수들
     fetchGroups,
@@ -377,6 +424,7 @@ export function useGroup() {
     approveMember,
     rejectMember,
     removeMember,
+    deleteGroup, // Added deleteGroup to the return object
     createGroupNote,
     toggleGroupLike,
     fetchGroupLikes,
@@ -393,5 +441,6 @@ export function useGroup() {
     clearMembers,
     clearJoinRequests,
     canViewJoinRequests,
+    canDeleteGroup,
   };
 }

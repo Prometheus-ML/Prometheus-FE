@@ -9,7 +9,7 @@ import GlassCard from '../../src/components/GlassCard';
 import RedButton from '../../src/components/RedButton';
 import QueryBar from '../../src/components/QueryBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faUsers, faEye, faUserPlus, faCheck, faTimes, faSearch, faUndo, faHeart, faHeartBroken, faArrowLeft, faImage } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faUsers, faEye, faUserPlus, faCheck, faTimes, faSearch, faUndo, faHeart, faHeartBroken, faArrowLeft, faImage, faClock, faTrash } from '@fortawesome/free-solid-svg-icons';
 import Image from 'next/image';
 
 const CATEGORIES = [
@@ -43,6 +43,7 @@ export default function GroupPage() {
     isLoadingJoinRequests,
     isCreatingGroup,
     isTogglingLike,
+    isDeletingGroup,
     fetchGroups,
     fetchGroup,
     createGroup,
@@ -52,11 +53,13 @@ export default function GroupPage() {
     approveMember,
     rejectMember,
     removeMember,
+    deleteGroup,
     filterGroupsByCategory,
     toggleGroupLike,
     fetchGroupLikes,
     checkUserLikedGroup,
     canViewJoinRequests,
+    canDeleteGroup,
   } = useGroup();
 
   const { user } = useAuthStore();
@@ -94,6 +97,7 @@ export default function GroupPage() {
     category: 'STUDY',
     max_members: undefined,
     thumbnail_url: '',
+    deadline: '',  // 마감일 추가
   });
 
   // 탭 변경 핸들러 (기존 필터에 추가하고 바로 검색 실행)
@@ -171,13 +175,19 @@ export default function GroupPage() {
 
     try {
       setError('');
-      await createGroup(newGroup);
+      // 마감일이 설정된 경우 ISO 문자열로 변환
+      const groupData = {
+        ...newGroup,
+        deadline: newGroup.deadline ? new Date(newGroup.deadline).toISOString() : undefined
+      };
+      await createGroup(groupData);
       setNewGroup({
         name: '',
         description: '',
         category: 'STUDY',
         max_members: undefined,
         thumbnail_url: '',
+        deadline: '',
       });
       setShowCreateForm(false);
       await loadGroups();
@@ -275,6 +285,22 @@ export default function GroupPage() {
     }
   };
 
+  const handleDeleteGroup = async (groupId: number) => {
+    if (!confirm('정말 이 그룹을 삭제하시겠습니까?\n삭제된 그룹은 복구할 수 없습니다.')) {
+      return;
+    }
+    
+    try {
+      await deleteGroup(groupId);
+      setShowGroupDetail(false);
+      setSelectedGroupId(null);
+      alert('그룹이 성공적으로 삭제되었습니다.');
+    } catch (err) {
+      console.error('그룹 삭제 실패:', err);
+      setError('그룹 삭제에 실패했습니다.');
+    }
+  };
+
   const getCategoryLabel = (category: string) => {
     return CATEGORIES.find(c => c.value === category)?.label || category;
   };
@@ -285,6 +311,43 @@ export default function GroupPage() {
       CASUAL: 'bg-green-500/20 text-green-300 border-green-500/30',
     };
     return colors[category] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+  };
+
+  // 그룹 상태 확인 (마감됨/진행중)
+  const getGroupStatus = (group: any) => {
+    if (!group.deadline) return { status: 'ongoing', label: '진행중', color: 'bg-green-500/20 text-green-300 border-green-500/30' };
+    
+    const now = new Date();
+    const deadline = new Date(group.deadline);
+    const isExpired = now > deadline;
+    
+    if (isExpired) {
+      return { status: 'expired', label: '마감됨', color: 'bg-red-500/20 text-red-300 border-red-500/30' };
+    } else {
+      return { status: 'ongoing', label: '진행중', color: 'bg-green-500/20 text-green-300 border-green-500/30' };
+    }
+  };
+
+  // 마감일까지 남은 시간 계산
+  const getTimeUntilDeadline = (deadline: string) => {
+    if (!deadline) return null;
+    
+    const now = new Date();
+    const deadlineDate = new Date(deadline);
+    const diffTime = deadlineDate.getTime() - now.getTime();
+    
+    if (diffTime <= 0) return '마감됨';
+    
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
+    
+    if (diffDays > 1) {
+      return `${diffDays}일 남음`;
+    } else if (diffHours > 1) {
+      return `${diffHours}시간 남음`;
+    } else {
+      return '1시간 미만 남음';
+    }
   };
 
   // 썸네일 파일 변경 핸들러
@@ -448,6 +511,26 @@ export default function GroupPage() {
                 />
               </div>
               
+              {/* 마감일 설정 */}
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-white mb-1">
+                  마감일 (선택사항)
+                </label>
+                <input
+                  type="datetime-local"
+                  value={newGroup.deadline || ''}
+                  onChange={(e) => setNewGroup((prev: any) => ({ 
+                    ...prev, 
+                    deadline: e.target.value 
+                  }))}
+                  className="w-full bg-white/20 text-white border border-white/30 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  placeholder="마감일을 설정하세요"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  마감일을 설정하지 않으면 무기한 진행됩니다.
+                </p>
+              </div>
+              
               {/* 썸네일 이미지 업로드 */}
               <div className="mt-4">
                 <label className="block text-sm font-medium text-white mb-1">
@@ -518,6 +601,7 @@ export default function GroupPage() {
                       category: 'STUDY',
                       max_members: undefined,
                       thumbnail_url: '',
+                      deadline: '',  // 마감일 초기화
                     });
                   }}
                   className="px-4 py-2 rounded-md bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-colors"
@@ -582,6 +666,9 @@ export default function GroupPage() {
                       <span className={`px-2 py-1 text-xs rounded-full border ${getCategoryColor(group.category)}`}>
                         {getCategoryLabel(group.category)}
                       </span>
+                      <span className={`px-2 py-1 text-xs rounded-full border ${getGroupStatus(group).color}`}>
+                        {getGroupStatus(group).label}
+                      </span>
                       <span className="px-2 py-1 text-xs rounded-full bg-yellow-500/20 text-yellow-300">
                         {group.owner_gen}기 {group.owner_name}
                       </span>
@@ -600,6 +687,11 @@ export default function GroupPage() {
                       <span className="flex items-center">
                         <FontAwesomeIcon icon={faHeart} className="mr-1" />
                         {group.like_count || 0}개
+                      </span>
+                      {/* 마감일 정보 표시 */}
+                      <span className="flex items-center">
+                        <FontAwesomeIcon icon={faClock} className="mr-1" />
+                        {group.deadline ? getTimeUntilDeadline(group.deadline) : '무기한'}
                       </span>
                     </div>
                   </div>
@@ -669,14 +761,37 @@ export default function GroupPage() {
           <GlassCard className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-white">{selectedGroup.name}</h2>
-              <button
-                onClick={async () => {
-                  setShowGroupDetail(false);
-                }}
-                className="text-white/70 hover:text-white"
-              >
-                ✕
-              </button>
+              <div className="flex items-center space-x-2">
+                {/* 소유자만 그룹 삭제 가능 */}
+                {user && user.id === selectedGroup.owner_id && (
+                  <button
+                    onClick={() => handleDeleteGroup(selectedGroup.id)}
+                    disabled={isDeletingGroup}
+                    className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="그룹 삭제"
+                  >
+                    {isDeletingGroup ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
+                        삭제 중...
+                      </div>
+                    ) : (
+                      <>
+                        <FontAwesomeIcon icon={faTrash} className="mr-1" />
+                        그룹 삭제
+                      </>
+                    )}
+                  </button>
+                )}
+                <button
+                  onClick={async () => {
+                    setShowGroupDetail(false);
+                  }}
+                  className="text-white/70 hover:text-white"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
             
             <div className="space-y-4">
@@ -722,6 +837,22 @@ export default function GroupPage() {
                   <p>최대 인원: {selectedGroup.max_members}명</p>
                 )}
                 <p>좋아요: {selectedGroup.like_count || 0}개</p>
+                {/* 마감일 정보 표시 */}
+                <div className="mt-2 p-2 bg-white/10 rounded">
+                  <p className="font-medium text-white">마감일 정보</p>
+                  {selectedGroup.deadline ? (
+                    <>
+                      <p>마감일: {new Date(selectedGroup.deadline).toLocaleString('ko-KR')}</p>
+                      <p className={`font-semibold ${
+                        getGroupStatus(selectedGroup).status === 'expired' ? 'text-red-400' : 'text-green-400'
+                      }`}>
+                        상태: {getTimeUntilDeadline(selectedGroup.deadline)}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="font-semibold text-blue-400">무기한 진행</p>
+                  )}
+                </div>
               </div>
 
               {/* 좋아요 버튼 */}
@@ -797,6 +928,16 @@ export default function GroupPage() {
                         >
                           <FontAwesomeIcon icon={faTimes} className="mr-1" />
                           제거
+                        </button>
+                      )}
+                      {/* 소유자만 그룹 삭제 가능 */}
+                      {user && user.id === selectedGroup.owner_id && (
+                        <button
+                          onClick={() => handleDeleteGroup(selectedGroup.id)}
+                          className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                        >
+                          <FontAwesomeIcon icon={faTrash} className="mr-1" />
+                          삭제
                         </button>
                       )}
                     </div>

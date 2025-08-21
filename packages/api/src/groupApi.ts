@@ -12,6 +12,7 @@ import {
   GroupLikeToggleResponseType,
   GetGroupLikesResponse,
   CheckUserLikedGroupResponse,
+  GroupDeleteResponse,
 } from './dto/group.dto';
 import type {
   Group,
@@ -32,6 +33,7 @@ export class GroupApi {
   // Group CRUD
   async createGroup(data: GroupCreateRequest): Promise<GroupCreateResponse> {
     try {
+      // deadline 필드가 포함된 그룹 생성 요청
       const response = await this.api.post<GroupCreateResponse>(`${this.base}/`, data);
       return response;
     } catch (error: any) {
@@ -163,6 +165,17 @@ export class GroupApi {
     } catch (error: any) {
       console.error(`Error checking like status for group ${groupId}:`, error);
       return false;
+    }
+  }
+
+  // Group Deletion
+  async deleteGroup(groupId: number | string): Promise<GroupDeleteResponse> {
+    try {
+      const response = await this.api.delete<GroupDeleteResponse>(`${this.base}/${groupId}`);
+      return response;
+    } catch (error: any) {
+      console.error(`Error deleting group ${groupId}:`, error);
+      throw new Error(error.message || 'Failed to delete group');
     }
   }
 }
