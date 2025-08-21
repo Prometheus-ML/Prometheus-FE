@@ -12,7 +12,8 @@ import {
   faUser, 
   faCalendarAlt, 
   faComments,
-  faCircle
+  faCircle,
+  faPaperPlane
 } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 import Portal from './Portal';
@@ -169,16 +170,7 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
   };
 
   const getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      free: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-      activity: 'bg-green-500/20 text-green-300 border-green-500/30',
-      career: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
-      promotion: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-      study_group: 'bg-pink-500/20 text-pink-300 border-pink-500/30',
-      casual_group: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-      announcement: 'bg-red-500/20 text-red-300 border-red-500/30',
-    };
-    return colors[category] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+    return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
   };
 
   // 기수별 색상 반환 (ProfileModal과 동일한 스타일)
@@ -341,24 +333,25 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                   {user && !isLoadingComments && (
                     <div className="mb-6">
                       <form onSubmit={handleCreateComment}>
-                        <div className="mb-3">
+                        <div className="relative">
                           <textarea
                             value={newComment.content}
                             onChange={(e) => setNewComment({ content: e.target.value })}
                             placeholder="댓글을 입력하세요..."
                             rows={3}
-                            className="w-full bg-white/20 text-black border border-white/30 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                            className="w-full bg-white/20 text-gray-300 border border-white/30 rounded-md px-3 py-2 pr-12 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
                           />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="text-sm text-gray-300">
-                          </div>
                           <button
                             type="submit"
                             disabled={isCreatingComment || !newComment.content.trim()}
-                            className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="absolute right-5 top-1/2 transform -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            title="댓글 작성"
                           >
-                            {isCreatingComment ? '작성 중...' : '댓글 작성'}
+                            {isCreatingComment ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                            ) : (
+                              <FontAwesomeIcon icon={faPaperPlane} className="w-4 h-4" />
+                            )}
                           </button>
                         </div>
                       </form>
