@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, PersistStorage } from 'zustand/middleware';
 import type { UserInfo } from '@prometheus-fe/types';
 import type { AuthApi } from '@prometheus-fe/api';
 
@@ -40,6 +40,96 @@ export interface AuthState {
   // Error management
   clearError: () => void;
 }
+
+// SSR 안전 스토리지 생성 함수
+const createSafeStorage = (): PersistStorage<Partial<AuthState>> => {
+  // 서버 사이드 환경 체크
+  if (typeof window === 'undefined') {
+    // 메모리 스토리지 (서버 사이드용)
+    const memoryStorage: Record<string, any> = {};
+    return {
+      getItem: async (name: string) => memoryStorage[name] || null,
+      setItem: async (name: string, value: any) => {
+        memoryStorage[name] = value;
+      },
+      removeItem: async (name: string) => {
+        delete memoryStorage[name];
+      },
+    };
+  }
+  
+  // React Native 환경 체크
+  if (typeof navigator !== 'undefined' && navigator.product === 'ReactNative') {
+    try {
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      return {
+        getItem: async (name: string) => {
+          try {
+            const value = await AsyncStorage.getItem(name);
+            return value ? JSON.parse(value) : null;
+          } catch (error) {
+            console.warn('AsyncStorage getItem error:', error);
+            return null;
+          }
+        },
+        setItem: async (name: string, value: any) => {
+          try {
+            await AsyncStorage.setItem(name, JSON.stringify(value));
+          } catch (error) {
+            console.warn('AsyncStorage setItem error:', error);
+          }
+        },
+        removeItem: async (name: string) => {
+          try {
+            await AsyncStorage.removeItem(name);
+          } catch (error) {
+            console.warn('AsyncStorage removeItem error:', error);
+          }
+        },
+      };
+    } catch (error) {
+      console.warn('AsyncStorage not available:', error);
+      // fallback to memory storage
+      const memoryStorage: Record<string, any> = {};
+      return {
+        getItem: async (name: string) => memoryStorage[name] || null,
+        setItem: async (name: string, value: any) => {
+          memoryStorage[name] = value;
+        },
+        removeItem: async (name: string) => {
+          delete memoryStorage[name];
+        },
+      };
+    }
+  }
+  
+  // 브라우저 환경에서 localStorage 사용
+  return {
+    getItem: async (name: string) => {
+      try {
+        const value = window.localStorage.getItem(name);
+        return value ? JSON.parse(value) : null;
+      } catch (error) {
+        console.warn('localStorage getItem error:', error);
+        return null;
+      }
+    },
+    setItem: async (name: string, value: any) => {
+      try {
+        window.localStorage.setItem(name, JSON.stringify(value));
+      } catch (error) {
+        console.warn('localStorage setItem error:', error);
+      }
+    },
+    removeItem: async (name: string) => {
+      try {
+        window.localStorage.removeItem(name);
+      } catch (error) {
+        console.warn('localStorage removeItem error:', error);
+      }
+    },
+  };
+};
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -245,6 +335,7 @@ export const useAuthStore = create<AuthState>()(
     },
     {
       name: 'auth-store',
+      storage: createSafeStorage(), // 플랫폼별 스토리지 사용
       partialize: (state) => ({
         user: state.user,
         accessToken: state.accessToken,

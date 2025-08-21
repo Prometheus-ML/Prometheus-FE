@@ -10,7 +10,18 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.prometheus.app"
+      "bundleIdentifier": "com.prometheus.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLName": "Google Sign-In",
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.32759850302-fbq1l32oivdqs99bev91shfpemimsrsp"
+            ]
+          }
+        ]
+      }
     },
     "android": {
       "package": "com.prometheus.app"

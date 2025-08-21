@@ -11,7 +11,7 @@
     "ios": "expo run:ios",
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",
-    "eas-build-post-install": "echo 'Starting eas-build-post-install...' && cd ../../ && pnpm turbo run build --filter='@prometheus-fe/types' --filter='@prometheus-fe/api' --filter='@prometheus-fe/stores' --filter='@prometheus-fe/context' --filter='@prometheus-fe/hooks' --filter='@prometheus-fe/core' && echo 'eas-build-post-install completed successfully'"
+    "eas-build-post-install": "echo 'Starting eas-build-post-install...' && cd ../../ && pnpm turbo run build --filter='@prometheus-fe/types' --filter='@prometheus-fe/api' --filter='@prometheus-fe/stores' --filter='@prometheus-fe/context' --filter='@prometheus-fe/hooks' && echo 'eas-build-post-install completed successfully'"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
