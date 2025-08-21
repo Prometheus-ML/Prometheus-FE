@@ -4,6 +4,7 @@ import { useAuthStore } from '@prometheus-fe/stores';
 import { useProject } from '@prometheus-fe/hooks';
 import GlassCard from '../../../src/components/GlassCard';
 import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
 
 export default function ProjectPage() {
   const { isAuthenticated, user } = useAuthStore();
@@ -60,12 +61,20 @@ export default function ProjectPage() {
             {myProjects.map((projectWithMembers) => {
               const project = projectWithMembers.project;
               return (
-                <div key={project.id} className="bg-white/10 rounded-lg p-4 hover:bg-white/20 transition-colors">
+                <Link
+                  key={project.id}
+                  href={`/project/${project.id}`}
+                  className="block bg-white/10 rounded-lg p-4 hover:bg-white/20 transition-colors cursor-pointer group"
+                >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h3 className="text-white font-medium text-lg mb-2">{project.title}</h3>
+                      <h3 className="text-white font-medium text-lg mb-2 group-hover:text-blue-300 transition-colors">
+                        {project.title}
+                      </h3>
                       {project.description && (
-                        <p className="text-gray-300 text-sm mb-3 line-clamp-2">{project.description}</p>
+                        <p className="text-gray-300 text-sm mb-3 line-clamp-2 group-hover:text-gray-200 transition-colors">
+                          {project.description}
+                        </p>
                       )}
                       <div className="flex flex-wrap gap-2 mb-3">
                         {project.keywords?.map((keyword: string, index: number) => (
@@ -96,6 +105,7 @@ export default function ProjectPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-400 hover:text-blue-300 text-sm"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           GitHub →
                         </a>
@@ -106,13 +116,17 @@ export default function ProjectPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-green-400 hover:text-green-300 text-sm"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           Demo →
                         </a>
                       )}
+                      <div className="text-gray-400 text-sm group-hover:text-blue-300 transition-colors">
+                        상세보기 →
+                      </div>
                     </div>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
