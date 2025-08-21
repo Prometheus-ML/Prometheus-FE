@@ -36,4 +36,13 @@ export interface LikeStatus {
   like_count: number;
 }
 
+// 멤버 게시글 히스토리 타입
+export interface MemberPostsHistory {
+  member_id: string;
+  total_posts: number;
+  active_posts: number;
+  deleted_posts: number;
+  items: Post[];
+}
+
 

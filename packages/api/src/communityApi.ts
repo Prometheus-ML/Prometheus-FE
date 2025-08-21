@@ -9,6 +9,7 @@ import {
   CreateCommentRequest,
   CreateCommentResponse,
   LikeStatusResponse,
+  GetMemberPostsHistoryResponse,
 } from './dto/community.dto';
 import type {
   Post,
@@ -77,6 +78,17 @@ export class CommunityApi {
     } catch (error: any) {
       console.error(`Error deleting post ${postId}:`, error);
       throw new Error(error.message || 'Failed to delete post');
+    }
+  }
+
+  // 멤버 게시글 히스토리 조회
+  async getMemberPostsHistory(memberId: string): Promise<GetMemberPostsHistoryResponse> {
+    try {
+      const response = await this.api.get<GetMemberPostsHistoryResponse>(`${this.postsBase}/member/${memberId}/history`);
+      return response;
+    } catch (error: any) {
+      console.error(`Error fetching member posts history for ${memberId}:`, error);
+      throw new Error(error.message || 'Failed to fetch member posts history');
     }
   }
 

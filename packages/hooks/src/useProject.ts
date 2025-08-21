@@ -329,6 +329,28 @@ export function useProject() {
     return text.replace(regex, '<mark>$1</mark>');
   }, []);
 
+  // 내 프로젝트 히스토리 조회
+  const fetchMyProjectHistory = useCallback(async (params?: any) => {
+    if (!project) {
+      console.warn('project is not available. Ensure useProject is used within ApiProvider.');
+      return { items: [], total_project: 0, active_project: 0, completed_project: 0 };
+    }
+    
+    const currentUserId = useAuthStore.getState().user?.id;
+    if (!currentUserId) {
+      console.warn('User not authenticated');
+      return { items: [], total_project: 0, active_project: 0, completed_project: 0 };
+    }
+    
+    try {
+      const data = await project.memberHistory(currentUserId, params);
+      return data;
+    } catch (error) {
+      console.error('내 프로젝트 히스토리 조회 실패:', error);
+      throw error;
+    }
+  }, [project]);
+
       // 현재 사용자가 프로젝트 리더인지 확인하는 함수
     const isProjectLeader = useCallback((projectId: number | string) => {
       if (!selectedProject || !projectMembers.length) return false;
@@ -394,6 +416,9 @@ export function useProject() {
     
     // Admin용 함수
     fetchAllProjectsForAdmin,
+    
+    // 내 프로젝트 히스토리 조회
+    fetchMyProjectHistory,
     
     // 프로젝트 리더 확인 함수
     isProjectLeader,
