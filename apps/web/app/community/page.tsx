@@ -78,6 +78,11 @@ export default function CommunityPage() {
     const category = tabId === 'all' ? '' : tabId;
     setSelectedCategory(category);
     setCurrentPage(1); // 페이지 리셋
+    
+    // 상태를 먼저 업데이트한 후 검색 실행
+    setAppliedCategory(category);
+    setAppliedSearchTerm(searchTerm);
+    
     // 탭 변경 시 즉시 검색 실행
     const fetchData = async () => {
       try {
@@ -91,9 +96,6 @@ export default function CommunityPage() {
           params.category = category;
         }
         await fetchPosts(params);
-        // 상태 업데이트는 API 호출 후에
-        setAppliedCategory(category);
-        setAppliedSearchTerm(searchTerm);
       } catch (err) {
         console.error('게시글 목록 로드 실패:', err);
         setError('게시글 목록을 불러오지 못했습니다.');

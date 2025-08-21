@@ -121,14 +121,10 @@ export const QueryBar: React.FC<QueryBarProps> = ({
     onReset?.();
   };
 
-  // 탭 변경 핸들러 (기존 필터에 추가하고 바로 검색 실행)
+  // 탭 변경 핸들러 (탭 변경만 처리, 검색은 상위에서 처리)
   const handleTabChange = (tabId: string) => {
     if (onTabChange) {
       onTabChange(tabId);
-    }
-    // 탭 변경 시 바로 검색 실행
-    if (onSearch) {
-      onSearch();
     }
   };
 
