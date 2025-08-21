@@ -59,6 +59,20 @@ body {
   overflow: hidden;
 }
 
+/* Navigation styles */
+.router-link-active {
+  color: #b91c1c;
+  font-weight: 800;
+}
+
+.prometheus {
+  font-family: 'Prometheus', sans-serif;
+}
+
+.selected {
+  color: #b91c1c;
+}
+
 @layer components {
   .prometheus-bg {
     @apply fixed inset-0 -z-10;

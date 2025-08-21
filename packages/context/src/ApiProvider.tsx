@@ -8,7 +8,7 @@ import {
   createMemberApi,
   createCoffeeChatApi,
   createProjectApi,
-  createSponsorshipApi,
+  createLandingApi,
   createStorageApi,
   createCommunityApi,
   createGroupApi,
@@ -17,7 +17,7 @@ import {
   MemberApi,
   CoffeeChatApi,
   ProjectApi,
-  SponsorshipApi,
+  LandingApi,
   StorageApi,
   CommunityApi,
   GroupApi,
@@ -31,7 +31,7 @@ type ApiInstances = {
   member: MemberApi;
   coffeeChat: CoffeeChatApi;
   project: ProjectApi;
-  sponsorship: SponsorshipApi;
+  landing: LandingApi;
   storage: StorageApi;
   community: CommunityApi;
   group: GroupApi;
@@ -93,7 +93,7 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
       member: createMemberApi(client),
       coffeeChat: createCoffeeChatApi(client),
       project: createProjectApi(client),
-      sponsorship: createSponsorshipApi(client),
+      landing: createLandingApi(client),
       storage: createStorageApi(client),
       community: createCommunityApi(client),
       group: createGroupApi(client),

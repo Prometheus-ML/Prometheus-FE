@@ -44,7 +44,7 @@ const navbarItems = [
   },
   {
     name: '스폰서',
-    href: '/admin/sponsorship',
+    href: '/admin/landing',
     icon: faHandshake,
     requiredGrant: 'Administrator'
   },

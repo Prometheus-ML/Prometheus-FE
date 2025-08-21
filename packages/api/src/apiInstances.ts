@@ -3,7 +3,7 @@ import { AuthApi } from './authApi';
 import { MemberApi } from './memberApi';
 import { CoffeeChatApi } from './coffeeChatApi';
 import { ProjectApi } from './projectApi';
-import { SponsorshipApi } from './sponsorshipApi';
+import { LandingApi } from './landingApi';
 import { StorageApi } from './storageApi';
 import { CommunityApi } from './communityApi';
 import { GroupApi } from './groupApi';
@@ -35,7 +35,7 @@ export const createAuthApi = (apiClient: ApiClient) => new AuthApi(apiClient);
 export const createMemberApi = (apiClient: ApiClient) => new MemberApi(apiClient);
 export const createCoffeeChatApi = (apiClient: ApiClient) => new CoffeeChatApi(apiClient);
 export const createProjectApi = (apiClient: ApiClient) => new ProjectApi(apiClient);
-export const createSponsorshipApi = (apiClient: ApiClient) => new SponsorshipApi(apiClient);
+export const createLandingApi = (apiClient: ApiClient) => new LandingApi(apiClient);
 export const createStorageApi = (apiClient: ApiClient) => new StorageApi(apiClient);
 export const createCommunityApi = (apiClient: ApiClient) => new CommunityApi(apiClient);
 export const createGroupApi = (apiClient: ApiClient) => new GroupApi(apiClient);
@@ -47,7 +47,7 @@ export type {
   MemberApi, 
   CoffeeChatApi, 
   ProjectApi, 
-  SponsorshipApi, 
+  LandingApi,
   StorageApi, 
   CommunityApi, 
   GroupApi,
