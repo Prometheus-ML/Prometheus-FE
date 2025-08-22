@@ -210,10 +210,10 @@ export default function EventModal({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
-                                 <h3 className="text-lg leading-6 font-kimm-bold text-white mb-2">
-                   {isEditing ? (event ? '이벤트 수정' : '새 이벤트 생성') : '이벤트 상세'}
-                 </h3>
-                 <p className="text-sm text-gray-300">
+                <h3 className="text-lg leading-6 font-kimm-bold text-white mb-2">
+                  {isEditing ? (event ? '이벤트 수정' : '새 이벤트 생성') : '이벤트 상세'}
+                </h3>
+                <p className="text-sm text-gray-300">
                    {isEditing ? (event ? '이벤트 정보를 수정해주세요.' : '새로운 이벤트 정보를 입력해주세요.') : '이벤트 상세 정보를 확인하세요.'}
                  </p>
                 
@@ -620,7 +620,7 @@ export default function EventModal({
               ) : (
                 // General event detail mode
                 <div className="mt-6">
-                  <div className="space-y-4">
+                    <div className="space-y-4">
                   <div>
                     <h4 className="text-lg font-semibold text-white">{event.title}</h4>
                     <p className="text-gray-300 mt-2">{event.description}</p>
@@ -697,7 +697,7 @@ export default function EventModal({
                       </div>
                     </div>
                   )}
-                  </div>
+                              </div>
                 </div>
               )}
             </div>

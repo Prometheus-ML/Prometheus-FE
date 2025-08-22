@@ -83,11 +83,11 @@ export default function AboutPage() {
          <div className="absolute w-full transform -translate-x-1/2 -translate-y-1/2 top-[60%] left-[50%] text-center font-semibold">
            <p className="text-xl font-kimm-bold md:text-4xl lg:text-7xl md:mb-1 lg:mb-3">Think Ahead, </p>
            <p className="text-xl font-kimm-bold md:text-4xl lg:text-7xl">Challenge<span className="text-[#B91C1C]"> On</span> !</p>
-         </div>
-       </div>
+        </div>
+      </div>
 
        {/* Prometheus Description Section */}
-       <div className="relative w-screen overflow-hidden -mt-[20vh] mb-16 md:mb-64">
+       <div className="relative overflow-hidden w-screen -mt-[20vh] mb-16 md:mb-64">
          <Image
            src="/images/landing5.png"
            alt="prometheus description"
@@ -110,23 +110,23 @@ export default function AboutPage() {
            </p>
            <p className="text-xs md:text-lg lg:text-2xl tracking-wide mb-3 md:mb-3 lg:mb-4">
              선구자들의 가치 있는 도전을 통해 더 나은 세상을 만들어가고자 합니다.
-           </p>
-         </div>
+            </p>
+          </div>
        </div>
 
       <div className="mx-auto max-w-6xl flex-row items-center pt-40 pb-24">
                  {/* Our Vision */}
          <div className="mb-48">
            <p className="mx-auto text-center font-semibold font-kimm-bold text-lg md:text-3xl lg:text-5xl mb-10 md:mb-24 lg:mb-32">Our Vision</p>
-           <Image
+                          <Image
              src="/images/vision.png"
              alt="vision"
              width={1200}
              height={600}
              className="object-cover w-[90%] mx-auto mb-2 md:mb-6 lg:mb-8"
            />
-         </div>
-
+                    </div>
+                    
         {/* Our History */}
         <div className="mb-48">
           <p className="mx-auto text-center font-semibold font-kimm-bold text-lg md:text-3xl lg:text-5xl mb-10 md:mb-24 lg:mb-32">Our History</p>
@@ -134,12 +134,12 @@ export default function AboutPage() {
             {isLoadingHistories ? (
               <div className="flex justify-center items-center py-16">
                 <div className="animate-spin h-8 w-8 border-4 border-red-200 border-t-red-600 rounded-full"></div>
-              </div>
+                    </div>
                          ) : (
                renderHistoryTimeline()
-             )}
-          </div>
-        </div>
+                          )}
+                        </div>
+                      </div>
       </div>
     </div>
   );

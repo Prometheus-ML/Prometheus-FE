@@ -11,6 +11,7 @@ import {
   LandingInterviewListParams,
   LandingLinkListParams,
   LandingHistoryListParams,
+  LandingHistoryListResponse,
   LandingSponsorCreateRequest,
   LandingHonorHallCreateRequest,
   LandingInterviewCreateRequest,
@@ -71,9 +72,10 @@ export const useLanding = () => {
     try {
       setIsLoadingHistories(true);
       const data = await landing.getHistories(params);
-      setHistories(data || []);
-      setHistoriesTotal(data?.length || 0);
-      return data || [];
+      const historiesArray = data?.histories || [];
+      setHistories(historiesArray);
+      setHistoriesTotal(data?.total || 0);
+      return historiesArray;
     } catch (error) {
       console.error('Failed to fetch histories:', error);
       throw error;

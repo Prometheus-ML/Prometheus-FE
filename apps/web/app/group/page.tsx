@@ -256,34 +256,34 @@ export default function GroupPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredGroups.map((group: any) => (
+            {filteredGroups.map((group: any) => (
             <div 
-              key={group.id}
+                key={group.id} 
               className="bg-white/10 rounded-lg p-4 border border-white/20 hover:bg-white/20 transition-colors cursor-pointer group"
-              onClick={() => handleGroupClick(group.id)}
-            >
+                onClick={() => handleGroupClick(group.id)}
+              >
               <div className="space-y-3">
                 {/* 썸네일 */}
                 <div className="w-full h-32 rounded-lg overflow-hidden bg-white/10">
-                  {group.thumbnail_url ? (
-                    <Image
+                        {group.thumbnail_url ? (
+                          <Image
                       src={group.thumbnail_url}
-                      alt={group.name}
+                            alt={group.name}
                       width={300}
                       height={128}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        if (target.src !== group.thumbnail_url && group.thumbnail_url) {
-                          target.src = group.thumbnail_url;
-                        }
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              if (target.src !== group.thumbnail_url && group.thumbnail_url) {
+                                target.src = group.thumbnail_url;
+                              }
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
                       <FontAwesomeIcon icon={faUsers} className="text-white/30 text-4xl" />
-                    </div>
-                  )}
+                          </div>
+                        )}
                 </div>
                 
                 {/* 제목과 기수 */}
@@ -296,27 +296,27 @@ export default function GroupPage() {
                     <span className="px-1.5 py-0.5 text-xs rounded-full font-medium bg-[#8B0000] text-[#ffa282] flex-shrink-0">
                       {group.owner_gen}기
                     </span>
-                  </div>
-                </div>
-
+                      </div>
+                    </div>
+                    
                 {/* 카테고리와 상태 */}
                 <div className="flex items-center space-x-2">
                   <span className="px-1.5 py-0.5 bg-gray-500/20 text-gray-300 text-xs rounded">
-                    {group.category === 'STUDY' ? '스터디 그룹' : '취미 그룹'}
-                  </span>
+                        {group.category === 'STUDY' ? '스터디 그룹' : '취미 그룹'}
+                      </span>
                   <span className={`px-1.5 py-0.5 text-xs rounded ${
                     group.deadline ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-[#3FFF4F]'
                   }`}>
-                    {group.deadline ? '마감됨' : '진행중'}
-                  </span>
-                </div>
+                        {group.deadline ? '마감됨' : '진행중'}
+                      </span>
+                    </div>
 
                 {/* 설명 (두 줄 고정) */}
                 <div className="h-10">
                   {group.description ? (
                     <p className="text-gray-300 text-sm line-clamp-2">
-                      {group.description}
-                    </p>
+                        {group.description}
+                      </p>
                   ) : (
                     <div className="h-10"></div>
                   )}
@@ -343,19 +343,19 @@ export default function GroupPage() {
                   </div>
                   <div className="text-xs text-gray-400">
                     운영자: {group.owner_name}
+                    </div>
                   </div>
-                </div>
 
                 {/* 액션 버튼들 */}
                 <div className="flex items-center justify-between pt-2">
-                  <button
-                    onClick={(e) => handleLikeToggle(group.id, e)}
+                    <button
+                      onClick={(e) => handleLikeToggle(group.id, e)}
                     className="flex items-center space-x-1 px-2 py-1 rounded text-sm transition-colors text-gray-400 hover:text-gray-300 bg-white/10 hover:bg-white/20"
                   >
                     <FontAwesomeIcon icon={faHeart} className="w-3 h-3" />
                     <span className="text-xs">좋아요</span>
-                  </button>
-                  
+                    </button>
+                    
                   <div className="flex space-x-2">
                     <button
                       onClick={(e) => {
@@ -383,8 +383,8 @@ export default function GroupPage() {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+            ))}
+          </div>
       )}
 
       {/* 빈 상태 */}

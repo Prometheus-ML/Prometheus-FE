@@ -10,7 +10,7 @@ import TabBar from '../../src/components/TabBar';
 const navbarItems = [
   {
     name: '기본정보',
-    href: '/my',
+    href: '/profile',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -19,7 +19,7 @@ const navbarItems = [
   },
   {
     name: '커피챗',
-    href: '/my/coffee_chat',
+    href: '/profile/coffee_chat',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -28,7 +28,7 @@ const navbarItems = [
   },
   {
     name: '프로젝트',
-    href: '/my/project',
+    href: '/profile/project',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -37,7 +37,7 @@ const navbarItems = [
   },
   {
     name: '게시글',
-    href: '/my/post',
+    href: '/profile/post',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -88,7 +88,7 @@ export default function MyLayout({
           {/* Navigation Tabs */}
           <div className="flex gap-2">
             {/* 홈으로 버튼 */}
-            <GlassCard href="/" className="w-12 h-12 flex items-center justify-center text-white">
+            <GlassCard href="/my" className="w-12 h-12 flex items-center justify-center text-white">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>

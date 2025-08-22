@@ -12,7 +12,7 @@ import RedButton from '../../src/components/RedButton';
 export default function MyPage() {
   const { isAuthenticated } = useAuthStore();
   const { getMyProfile, updateMyProfile, myProfile, isLoadingProfile } = useMember();
-  const { getThumbnailUrl } = useImage();
+  const { getThumbnailUrl, uploadImage, validateImageFile } = useImage();
 
   // 상태 관리
   const [profileInnerTab, setProfileInnerTab] = useState<'basic' | 'optional'>('basic');
@@ -81,19 +81,23 @@ export default function MyPage() {
 
     try {
       setProfileSubmitting(true);
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('category', 'member');
+      
+      // 이미지 파일 검증
+      const validationError = validateImageFile(file);
+      if (validationError) {
+        alert(validationError);
+        return;
+      }
 
-      // TODO: 이미지 업로드 API 호출
-      // const res = await uploadImage(formData);
-      // const cdn = res?.publicCdnUrl || (res?.id ? `https://lh3.googleusercontent.com/d/${res.id}=s512-c` : '');
-      // setMyProfileDraft(prev => ({
-      //   ...prev,
-      //   profile_image_url: cdn || res?.publicEmbedUrl || res?.publicEmbedUrlAlt || prev.profile_image_url
-      // }));
-
-      alert('이미지 업로드 기능은 준비 중입니다.');
+      // useImage 훅을 사용하여 이미지 업로드
+      const imageUrl = await uploadImage(file, 'member');
+      if (imageUrl) {
+        setMyProfileDraft(prev => ({
+          ...prev,
+          profile_image_url: imageUrl
+        }));
+        setProfileImageError(false);
+      }
     } catch (err) {
       console.error('Upload failed:', err);
       alert('이미지 업로드 실패');
@@ -101,7 +105,7 @@ export default function MyPage() {
       setProfileSubmitting(false);
       if (e.target) e.target.value = '';
     }
-  }, []);
+  }, [uploadImage, validateImageFile]);
 
   // 프로필 저장
   const submitMyProfile = useCallback(async () => {
@@ -337,7 +341,11 @@ export default function MyPage() {
                         onChange={(e) => setMyProfileDraft(prev => ({ ...prev, github: e.target.value }))}
                         disabled={!profileEditMode} 
                         type="url" 
-                        className="mt-1 w-full border border-white/20 rounded px-3 py-2 bg-white/10 text-white placeholder-gray-400 disabled:opacity-50" 
+                        className={`mt-1 w-full border rounded px-3 py-2 placeholder-gray-400 disabled:opacity-50 ${
+                          profileEditMode 
+                            ? 'border-gray-300 bg-white text-gray-800' 
+                            : 'border-white/20 bg-white/10 text-white'
+                        }`}
                       />
                     </div>
                     <div>
@@ -347,7 +355,11 @@ export default function MyPage() {
                         onChange={(e) => setMyProfileDraft(prev => ({ ...prev, notion: e.target.value }))}
                         disabled={!profileEditMode} 
                         type="url" 
-                        className="mt-1 w-full border border-white/20 rounded px-3 py-2 bg-white/10 text-white placeholder-gray-400 disabled:opacity-50" 
+                        className={`mt-1 w-full border rounded px-3 py-2 placeholder-gray-400 disabled:opacity-50 ${
+                          profileEditMode 
+                            ? 'border-gray-300 bg-white text-gray-800' 
+                            : 'border-white/20 bg-white/10 text-white'
+                        }`}
                       />
                     </div>
                     <div>
@@ -357,7 +369,11 @@ export default function MyPage() {
                         onChange={(e) => setMyProfileDraft(prev => ({ ...prev, figma: e.target.value }))}
                         disabled={!profileEditMode} 
                         type="url" 
-                        className="mt-1 w-full border border-white/20 rounded px-3 py-2 bg-white/10 text-white placeholder-gray-400 disabled:opacity-50" 
+                        className={`mt-1 w-full border rounded px-3 py-2 placeholder-gray-400 disabled:opacity-50 ${
+                          profileEditMode 
+                            ? 'border-gray-300 bg-white text-gray-800' 
+                            : 'border-white/20 bg-white/10 text-white'
+                        }`}
                       />
                     </div>
                     <div>
@@ -367,7 +383,11 @@ export default function MyPage() {
                         onChange={(e) => setMyProfileDraft(prev => ({ ...prev, kakao_id: e.target.value }))}
                         disabled={!profileEditMode} 
                         type="text" 
-                        className="mt-1 w-full border border-white/20 rounded px-3 py-2 bg-white/10 text-white placeholder-gray-400 disabled:opacity-50" 
+                        className={`mt-1 w-full border rounded px-3 py-2 placeholder-gray-400 disabled:opacity-50 ${
+                          profileEditMode 
+                            ? 'border-gray-300 bg-white text-gray-800' 
+                            : 'border-white/20 bg-white/10 text-white'
+                        }`}
                       />
                     </div>
                     <div>
@@ -377,7 +397,11 @@ export default function MyPage() {
                         onChange={(e) => setMyProfileDraft(prev => ({ ...prev, instagram_id: e.target.value }))}
                         disabled={!profileEditMode} 
                         type="text" 
-                        className="mt-1 w-full border border-white/20 rounded px-3 py-2 bg-white/10 text-white placeholder-gray-400 disabled:opacity-50" 
+                        className={`mt-1 w-full border rounded px-3 py-2 placeholder-gray-400 disabled:opacity-50 ${
+                          profileEditMode 
+                            ? 'border-gray-300 bg-white text-gray-800' 
+                            : 'border-white/20 bg-white/10 text-white'
+                        }`}
                       />
                     </div>
                     <div>
@@ -388,7 +412,11 @@ export default function MyPage() {
                         disabled={!profileEditMode} 
                         type="text" 
                         maxLength={4} 
-                        className="mt-1 w-full border border-white/20 rounded px-3 py-2 bg-white/10 text-white placeholder-gray-400 disabled:opacity-50" 
+                        className={`mt-1 w-full border rounded px-3 py-2 placeholder-gray-400 disabled:opacity-50 ${
+                          profileEditMode 
+                            ? 'border-gray-300 bg-white text-gray-800' 
+                            : 'border-white/20 bg-white/10 text-white'
+                        }`}
                       />
                     </div>
                     <div>
@@ -397,7 +425,11 @@ export default function MyPage() {
                         value={myProfileDraft.coffee_chat_enabled ? 'true' : 'false'} 
                         onChange={(e) => setMyProfileDraft(prev => ({ ...prev, coffee_chat_enabled: e.target.value === 'true' }))}
                         disabled={!profileEditMode} 
-                        className="mt-1 w-full border border-white/20 rounded px-3 py-2 bg-white/10 text-white disabled:opacity-50"
+                        className={`mt-1 w-full border rounded px-3 py-2 disabled:opacity-50 ${
+                          profileEditMode 
+                            ? 'border-gray-300 bg-white text-gray-800' 
+                            : 'border-white/20 bg-white/10 text-white'
+                        }`}
                       >
                         <option value="true">활성화</option>
                         <option value="false">비활성화</option>
@@ -414,7 +446,11 @@ export default function MyPage() {
                         disabled={!profileEditMode}
                         rows={4}
                         maxLength={300}
-                        className="w-full border border-white/20 rounded px-3 py-2 bg-white/10 text-white placeholder-gray-400 disabled:opacity-50"
+                        className={`w-full border rounded px-3 py-2 placeholder-gray-400 disabled:opacity-50 ${
+                          profileEditMode 
+                            ? 'border-gray-300 bg-white text-gray-800' 
+                            : 'border-white/20 bg-white/10 text-white'
+                        }`}
                       />
                       <div className="text-right text-xs text-gray-400 mt-1">{selfIntroCount}/300</div>
                     </div>
@@ -429,7 +465,11 @@ export default function MyPage() {
                         disabled={!profileEditMode}
                         rows={4}
                         maxLength={300}
-                        className="w-full border border-white/20 rounded px-3 py-2 bg-white/10 text-white placeholder-gray-400 disabled:opacity-50"
+                        className={`w-full border rounded px-3 py-2 placeholder-gray-400 disabled:opacity-50 ${
+                          profileEditMode 
+                            ? 'border-gray-300 bg-white text-gray-800' 
+                            : 'border-white/20 bg-white/10 text-white'
+                        }`}
                       />
                       <div className="text-right text-xs text-gray-400 mt-1">{additionalCareerCount}/300</div>
                     </div>

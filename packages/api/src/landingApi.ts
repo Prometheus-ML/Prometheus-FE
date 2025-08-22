@@ -37,14 +37,14 @@ export class LandingApi {
   // ===== 히스토리 API =====
 
   // 히스토리 목록 조회 (JWT 토큰 필요)
-  async getHistories(params?: any): Promise<LandingHistory[]> {
+  async getHistories(params?: any): Promise<LandingHistoryListResponseDto> {
     try {
       const sp = new URLSearchParams();
       if (params?.page) sp.set('page', String(params.page));
       if (params?.size) sp.set('size', String(params.size));
       
       const query = sp.toString() ? `?${sp.toString()}` : '';
-      const response = await this.api.get<LandingHistory[]>(`${this.base}/history${query}`);
+      const response = await this.api.get<LandingHistoryListResponseDto>(`${this.base}/history${query}`);
       return response;
     } catch (error: any) {
       console.error('Error fetching histories:', error);
