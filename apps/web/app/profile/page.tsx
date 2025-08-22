@@ -278,7 +278,7 @@ export default function MyPage() {
                   <div>
                     <label className="text-xs text-gray-400 font-medium">활동 기수</label>
                     <div className="mt-1 flex flex-wrap gap-1">
-                      {myProfile.active_gens.map((gen, index) => (
+                      {myProfile.active_gens.map((gen: number, index: number) => (
                         <span key={index} className="px-2 py-1 text-xs bg-white/20 text-white rounded-full">
                           {gen}
                         </span>
@@ -291,7 +291,7 @@ export default function MyPage() {
                   <div>
                     <label className="text-xs text-gray-400 font-medium">이력</label>
                     <div className="mt-1 flex flex-wrap gap-1">
-                      {myProfile.history.map((item, index) => (
+                      {myProfile.history.map((item: string, index: number) => (
                         <span key={index} className="px-2 py-1 text-xs bg-white/20 text-white rounded-full">
                           {item}
                         </span>

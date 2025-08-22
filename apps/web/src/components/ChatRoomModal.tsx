@@ -3,7 +3,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useChat } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
+import { useImage } from '@prometheus-fe/hooks';
 import { ChatRoom, ChatMessage } from '@prometheus-fe/types';
+import Image from 'next/image';
 
 interface ChatRoomModalProps {
   isOpen: boolean;
@@ -16,6 +18,9 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const { getAccessToken, user } = useAuthStore();
+  
+  // useImage 훅 사용
+  const { getThumbnailUrl, getDefaultImageUrl } = useImage({});
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -272,36 +277,26 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
                       
                       {/* 프로필 이미지 (상대방 메시지만) */}
                       {message.sender_id !== user?.id && (
-                        <div className="w-10 h-10 rounded-full bg-white/20 border border-white/30 flex-shrink-0 mb-2 flex items-center justify-center overflow-hidden">
-                          {message.sender_profile_image ? (
-                            <img
-                              src={message.sender_profile_image}
-                              alt={`${message.sender_name || message.sender_id}의 프로필`}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                // 이미지 로드 실패 시 기본 아이콘으로 대체
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                                const parent = target.parentElement;
-                                if (parent) {
-                                  const fallbackIcon = document.createElement('svg');
-                                  fallbackIcon.innerHTML = `
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-white/60">
-                                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                      <circle cx="12" cy="7" r="4"></circle>
-                                    </svg>
-                                  `;
-                                  parent.appendChild(fallbackIcon.firstChild!);
-                                }
-                              }}
-                            />
-                          ) : (
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/60">
-                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                              <circle cx="12" cy="7" r="4"></circle>
-                            </svg>
-                          )}
-                        </div>
+                                                  <div className="w-10 h-10 rounded-full bg-white/20 border border-white/30 flex-shrink-0 mb-2 flex items-center justify-center overflow-hidden">
+                            {message.sender_profile_image ? (
+                              <Image
+                                src={getThumbnailUrl(message.sender_profile_image, 80)}
+                                alt={`${message.sender_name || message.sender_id}의 프로필`}
+                                width={40}
+                                height={40}
+                                className="w-full h-full object-cover rounded-full"
+                                onError={() => {
+                                  // 에러 발생 시 기본 아이콘으로 대체
+                                  console.warn('프로필 이미지 로드 실패:', message.sender_profile_image);
+                                }}
+                              />
+                            ) : (
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/60">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                              </svg>
+                            )}
+                          </div>
                       )}
                       
                       {/* 메시지 말풍선 */}

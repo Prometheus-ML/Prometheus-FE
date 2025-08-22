@@ -72,6 +72,25 @@ export function useGroup() {
     }
   }, [group]);
 
+  // 개별 그룹 조회
+  const fetchGroup = useCallback(async (groupId: number | string) => {
+    if (!group) {
+      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
+      return;
+    }
+    try {
+      setIsLoadingGroup(true);
+      const data = await group.getGroup(groupId);
+      setSelectedGroup(data);
+      return data;
+    } catch (error) {
+      console.error(`그룹 ${groupId} 조회 실패:`, error);
+      throw error;
+    } finally {
+      setIsLoadingGroup(false);
+    }
+  }, [group]);
+
   // 그룹 생성 (관리자 전용)
   const createGroup = useCallback(async (groupData: {
     name: string;
@@ -353,6 +372,7 @@ export function useGroup() {
     
     // API 함수들
     fetchGroups,
+    fetchGroup,
     createGroup,
     fetchGroupMembers,
     fetchJoinRequests,

@@ -69,10 +69,10 @@ function SponsorModal({ isOpen, sponsor, onClose, onSubmit }: SponsorModalProps)
       setForm({
         name: sponsor.name,
         logo_url: sponsor.logo_url || '',
-        purpose: sponsor.purpose,
-        amount: sponsor.amount,
-        note: sponsor.note,
-        sponsored_at: sponsor.sponsored_at.split('T')[0]
+        purpose: sponsor.purpose || '',
+        amount: sponsor.amount || 0,
+        note: sponsor.note || '',
+        sponsored_at: sponsor.sponsored_at?.split('T')[0] || new Date().toISOString().split('T')[0]
       });
     } else {
       setForm({
@@ -556,7 +556,7 @@ export default function AdminLandingPage() {
       console.error('Failed to load data:', error);
       setError('데이터를 불러오는 중 오류가 발생했습니다.');
     }
-  }, [activeTab, getAdminSponsors, getAdminHonorHall, getAdminReviews, getAdminLinks]);
+  }, [activeTab, getAdminSponsors, getAdminHonorHall, getAdminInterviews, getAdminLinks]);
 
   useEffect(() => {
     if (!isMounted || !isAuthenticated() || !canAccessAdministrator()) return;
@@ -727,7 +727,7 @@ export default function AdminLandingPage() {
                       </div>
                       <div className="space-y-2 text-sm text-gray-300">
                         <p><span className="font-medium">목적:</span> {sponsor.purpose}</p>
-                        <p><span className="font-medium">금액:</span> {sponsor.amount.toLocaleString()}원</p>
+                        <p><span className="font-medium">금액:</span> {sponsor.amount?.toLocaleString() || '0'}원</p>
                         <p><span className="font-medium">후원일:</span> {new Date(sponsor.sponsored_at).toLocaleDateString()}</p>
                         {sponsor.note && <p><span className="font-medium">비고:</span> {sponsor.note}</p>}
                       </div>
