@@ -5,16 +5,20 @@ import {
   LandingHonorHall,
   LandingInterview,
   LandingLink,
+  LandingHistory,
   LandingSponsorListParams,
   LandingSponsorListResponse,
   LandingInterviewListParams,
   LandingLinkListParams,
+  LandingHistoryListParams,
   LandingSponsorCreateRequest,
   LandingHonorHallCreateRequest,
   LandingInterviewCreateRequest,
   LandingLinkCreateRequest,
+  LandingHistoryCreateRequest,
   LandingInterviewUpdateRequest,
-  LandingLinkUpdateRequest
+  LandingLinkUpdateRequest,
+  LandingHistoryUpdateRequest
 } from '@prometheus-fe/types';
 
 export const useLanding = () => {
@@ -25,31 +29,99 @@ export const useLanding = () => {
   const [honorHall, setHonorHall] = useState<LandingHonorHall[]>([]);
   const [interviews, setInterviews] = useState<LandingInterview[]>([]);
   const [links, setLinks] = useState<LandingLink[]>([]);
+  const [histories, setHistories] = useState<LandingHistory[]>([]);
   const [selectedInterview, setSelectedInterview] = useState<LandingInterview | null>(null);
   const [selectedLink, setSelectedLink] = useState<LandingLink | null>(null);
+  const [selectedHistory, setSelectedHistory] = useState<LandingHistory | null>(null);
   
   // Admin 상태 관리
   const [adminSponsors, setAdminSponsors] = useState<LandingSponsor[]>([]);
   const [adminHonorHall, setAdminHonorHall] = useState<LandingHonorHall[]>([]);
   const [adminInterviews, setAdminInterviews] = useState<LandingInterview[]>([]);
   const [adminLinks, setAdminLinks] = useState<LandingLink[]>([]);
+  const [adminHistories, setAdminHistories] = useState<LandingHistory[]>([]);
   
   // 로딩 상태
   const [isLoadingSponsors, setIsLoadingSponsors] = useState<boolean>(false);
   const [isLoadingHonorHall, setIsLoadingHonorHall] = useState<boolean>(false);
   const [isLoadingInterviews, setIsLoadingInterviews] = useState<boolean>(false);
   const [isLoadingLinks, setIsLoadingLinks] = useState<boolean>(false);
+  const [isLoadingHistories, setIsLoadingHistories] = useState<boolean>(false);
   
   // Admin 로딩 상태
   const [isLoadingAdminSponsors, setIsLoadingAdminSponsors] = useState<boolean>(false);
   const [isLoadingAdminHonorHall, setIsLoadingAdminHonorHall] = useState<boolean>(false);
   const [isLoadingAdminInterviews, setIsLoadingAdminInterviews] = useState<boolean>(false);
   const [isLoadingAdminLinks, setIsLoadingAdminLinks] = useState<boolean>(false);
+  const [isLoadingAdminHistories, setIsLoadingAdminHistories] = useState<boolean>(false);
   
   // 페이지네이션 상태
   const [sponsorsTotal, setSponsorsTotal] = useState<number>(0);
   const [interviewsTotal, setInterviewsTotal] = useState<number>(0);
   const [linksTotal, setLinksTotal] = useState<number>(0);
+  const [historiesTotal, setHistoriesTotal] = useState<number>(0);
+
+  // ===== 히스토리 API =====
+
+  // 히스토리 목록 조회 (JWT 토큰 필요)
+  const getHistories = useCallback(async (params?: LandingHistoryListParams): Promise<LandingHistory[]> => {
+    if (!landing) {
+      throw new Error('Landing API not available');
+    }
+    try {
+      setIsLoadingHistories(true);
+      const data = await landing.getHistories(params);
+      setHistories(data || []);
+      setHistoriesTotal(data?.length || 0);
+      return data || [];
+    } catch (error) {
+      console.error('Failed to fetch histories:', error);
+      throw error;
+    } finally {
+      setIsLoadingHistories(false);
+    }
+  }, [landing]);
+
+  // 히스토리 생성 (JWT 토큰 필요)
+  const createHistory = useCallback(async (data: LandingHistoryCreateRequest): Promise<number> => {
+    if (!landing) {
+      throw new Error('Landing API not available');
+    }
+    try {
+      const response = await landing.createHistory(data);
+      return response.id;
+    } catch (error) {
+      console.error('Failed to create history:', error);
+      throw error;
+    }
+  }, [landing]);
+
+  // 히스토리 수정 (JWT 토큰 필요)
+  const updateHistory = useCallback(async (historyId: number, data: LandingHistoryUpdateRequest): Promise<number> => {
+    if (!landing) {
+      throw new Error('Landing API not available');
+    }
+    try {
+      const response = await landing.updateHistory(historyId, data);
+      return response.id;
+    } catch (error) {
+      console.error(`Failed to update history ${historyId}:`, error);
+      throw error;
+    }
+  }, [landing]);
+
+  // 히스토리 삭제 (JWT 토큰 필요)
+  const deleteHistory = useCallback(async (historyId: number): Promise<void> => {
+    if (!landing) {
+      throw new Error('Landing API not available');
+    }
+    try {
+      await landing.deleteHistory(historyId);
+    } catch (error) {
+      console.error(`Failed to delete history ${historyId}:`, error);
+      throw error;
+    }
+  }, [landing]);
 
   // ===== 후원사 API =====
 
@@ -217,6 +289,65 @@ export const useLanding = () => {
   }, [landing]);
 
   // ===== Admin API =====
+
+  // Admin 히스토리 목록 조회 (Super 이상)
+  const getAdminHistories = useCallback(async (): Promise<LandingHistory[]> => {
+    if (!landing) {
+      throw new Error('Landing API not available');
+    }
+    try {
+      setIsLoadingAdminHistories(true);
+      const data = await landing.getAdminHistories();
+      setAdminHistories(data || []);
+      return data || [];
+    } catch (error) {
+      console.error('Failed to fetch admin histories:', error);
+      throw error;
+    } finally {
+      setIsLoadingAdminHistories(false);
+    }
+  }, [landing]);
+
+  // Admin 히스토리 생성 (Super 이상)
+  const createAdminHistory = useCallback(async (data: LandingHistoryCreateRequest): Promise<number> => {
+    if (!landing) {
+      throw new Error('Landing API not available');
+    }
+    try {
+      const response = await landing.createAdminHistory(data);
+      return response.id;
+    } catch (error) {
+      console.error('Failed to create admin history:', error);
+      throw error;
+    }
+  }, [landing]);
+
+  // Admin 히스토리 수정 (Super 이상)
+  const updateAdminHistory = useCallback(async (historyId: number, data: LandingHistoryUpdateRequest): Promise<number> => {
+    if (!landing) {
+      throw new Error('Landing API not available');
+    }
+    try {
+      const response = await landing.updateAdminHistory(historyId, data);
+      return response.id;
+    } catch (error) {
+      console.error(`Failed to update admin history ${historyId}:`, error);
+      throw error;
+    }
+  }, [landing]);
+
+  // Admin 히스토리 삭제 (Super 이상)
+  const deleteAdminHistory = useCallback(async (historyId: number): Promise<void> => {
+    if (!landing) {
+      throw new Error('Landing API not available');
+    }
+    try {
+      await landing.deleteAdminHistory(historyId);
+    } catch (error) {
+      console.error(`Failed to delete admin history ${historyId}:`, error);
+      throw error;
+    }
+  }, [landing]);
 
   // Admin 후원사 목록 조회 (Super 이상)
   const getAdminSponsors = useCallback(async (): Promise<LandingSponsor[]> => {
@@ -443,6 +574,14 @@ export const useLanding = () => {
     setSelectedLink(null);
   }, []);
 
+  const handleHistorySelect = useCallback((history: LandingHistory): void => {
+    setSelectedHistory(history);
+  }, []);
+
+  const handleHistoryDeselect = useCallback((): void => {
+    setSelectedHistory(null);
+  }, []);
+
   // 상태 초기화
   const clearSponsors = useCallback((): void => {
     setSponsors([]);
@@ -463,37 +602,54 @@ export const useLanding = () => {
     setLinksTotal(0);
   }, []);
 
+  const clearHistories = useCallback((): void => {
+    setHistories([]);
+    setHistoriesTotal(0);
+  }, []);
+
   return {
     // 상태
     sponsors,
     honorHall,
     interviews,
     links,
+    histories,
     selectedInterview,
     selectedLink,
+    selectedHistory,
     
     // Admin 상태
     adminSponsors,
     adminHonorHall,
     adminInterviews,
     adminLinks,
+    adminHistories,
     
     // 로딩 상태
     isLoadingSponsors,
     isLoadingHonorHall,
     isLoadingInterviews,
     isLoadingLinks,
+    isLoadingHistories,
     
     // Admin 로딩 상태
     isLoadingAdminSponsors,
     isLoadingAdminHonorHall,
     isLoadingAdminInterviews,
     isLoadingAdminLinks,
+    isLoadingAdminHistories,
     
     // 페이지네이션
     sponsorsTotal,
     interviewsTotal,
     linksTotal,
+    historiesTotal,
+    
+    // 히스토리 API 함수들
+    getHistories,
+    createHistory,
+    updateHistory,
+    deleteHistory,
     
     // 후원사 API 함수들
     getSponsors,
@@ -514,6 +670,10 @@ export const useLanding = () => {
     deleteLink,
     
     // Admin API 함수들
+    getAdminHistories,
+    createAdminHistory,
+    updateAdminHistory,
+    deleteAdminHistory,
     getAdminSponsors,
     getAdminHonorHall,
     getAdminInterviews,
@@ -534,11 +694,14 @@ export const useLanding = () => {
     handleInterviewDeselect,
     handleLinkSelect,
     handleLinkDeselect,
+    handleHistorySelect,
+    handleHistoryDeselect,
     
     // 초기화 함수들
     clearSponsors,
     clearHonorHall,
     clearInterviews,
     clearLinks,
+    clearHistories,
   };
 };

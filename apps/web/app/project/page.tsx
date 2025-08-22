@@ -16,7 +16,6 @@ import {
   faTags, 
   faUsers, 
   faArrowLeft, 
-  faHeart, 
   faCircle
 } from '@fortawesome/free-solid-svg-icons';
 import Image from 'next/image';
@@ -30,8 +29,6 @@ export default function ProjectPage() {
   const {
     allProjects,
     fetchProjects,
-    addProjectLike,
-    removeProjectLike,
   } = useProject();
 
   const { getThumbnailUrl, getDefaultImageUrl } = useImage();
@@ -42,7 +39,6 @@ export default function ProjectPage() {
   const [size] = useState<number>(15);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
-  const [likeLoading, setLikeLoading] = useState<Record<string, boolean>>({});
 
   // 검색 상태
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -151,29 +147,6 @@ export default function ProjectPage() {
     setPage(1);
     fetchProjectList(true);
   }, [fetchProjectList]);
-
-  // 좋아요 토글 처리
-  const handleLikeToggle = async (project: Project) => {
-    if (likeLoading[project.id]) return;
-    
-    try {
-      setLikeLoading(prev => ({ ...prev, [project.id]: true }));
-      
-      if (project.is_liked) {
-        await removeProjectLike(project.id);
-      } else {
-        await addProjectLike(project.id);
-      }
-      
-      // 로컬 상태 업데이트 - useProject 훅에서 이미 처리됨
-      // fetchProjectList() 호출 제거
-    } catch (error: any) {
-      console.error('좋아요 처리 실패:', error);
-      alert('좋아요 처리에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
-    } finally {
-      setLikeLoading(prev => ({ ...prev, [project.id]: false }));
-    }
-  };
 
   // 기수별 색상 반환 (멤버 페이지와 동일한 스타일)
   const getGenColor = (gen: number) => {
@@ -403,7 +376,7 @@ export default function ProjectPage() {
                       </div>
                     )}
 
-                    {/* 키워드와 좋아요 버튼 */}
+                    {/* 키워드 */}
                     <div className="flex items-center justify-between">
                       <div className="flex flex-wrap gap-1 flex-1">
                         {project.keywords && project.keywords.length > 0 ? (
@@ -424,32 +397,6 @@ export default function ProjectPage() {
                           </span>
                         )}
                       </div>
-                        <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleLikeToggle(project);
-                        }}
-                        onMouseEnter={(e) => {
-                          e.stopPropagation();
-                          e.currentTarget.closest('.group')?.classList.remove('hover:bg-white/20');
-                        }}
-                        onMouseLeave={(e) => {
-                          e.stopPropagation();
-                          e.currentTarget.closest('.group')?.classList.add('hover:bg-white/20');
-                        }}
-                          disabled={likeLoading[project.id]}
-                        className={`inline-flex items-center px-2 py-1 text-sm transition-colors pointer-events-auto ${
-                            project.is_liked
-                            ? 'text-red-300 hover:text-red-200'
-                            : 'text-white hover:text-gray-300'
-                          } ${likeLoading[project.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                          <FontAwesomeIcon 
-                          icon={faHeart} 
-                          className={`mr-1 h-3 w-3 ${project.is_liked ? 'text-red-300' : 'text-white'}`}
-                          />
-                          {project.like_count || 0}
-                        </button>
                     </div>
                   </div>
                 </div>

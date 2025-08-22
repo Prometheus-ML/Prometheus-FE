@@ -92,6 +92,7 @@ export class EventApi {
       size,
       ...(filter?.gen && { gen: filter.gen }),
       ...(filter?.eventType && { event_type: filter.eventType }),
+      ...(filter?.excludeEventType && { not_event_type: filter.excludeEventType }),
       ...(filter?.isAttendanceRequired !== undefined && { 
         is_attendance_required: filter.isAttendanceRequired 
       }),
@@ -667,6 +668,10 @@ export class EventApi {
       eventId: dto.event_id,
       eventTitle: dto.event_title,
       eventGen: dto.event_gen,
+      eventType: dto.event_type,
+      eventLocation: dto.event_location,
+      eventStartTime: dto.event_start_time ? new Date(dto.event_start_time) : undefined,
+      eventEndTime: dto.event_end_time ? new Date(dto.event_end_time) : undefined,
       memberId: dto.member_id,
       memberName: dto.member_name,
       status: dto.status as AttendanceStatus,

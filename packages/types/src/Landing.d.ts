@@ -34,6 +34,15 @@ export interface LandingLink {
   created_at: string;
 }
 
+export interface LandingHistory {
+  id: number;
+  date: string;
+  title: string;
+  image_url: string | null;
+  gen: number | null;
+  created_at: string;
+}
+
 // Request/Response 타입들
 export interface LandingSponsorListParams {
   page?: number;
@@ -83,6 +92,18 @@ export interface LandingLinkListResponse {
   size: number;
 }
 
+export interface LandingHistoryListParams {
+  page?: number;
+  size?: number;
+}
+
+export interface LandingHistoryListResponse {
+  histories: LandingHistory[];
+  total: number;
+  page: number;
+  size: number;
+}
+
 // Create Request 타입들
 export interface LandingSponsorCreateRequest {
   name: string;
@@ -114,6 +135,13 @@ export interface LandingLinkCreateRequest {
   post_date: string;
 }
 
+export interface LandingHistoryCreateRequest {
+  date: string;
+  title: string;
+  image_url?: string;
+  gen?: number;
+}
+
 // Update Request 타입들
 export interface LandingSponsorUpdateRequest {
   name: string;
@@ -142,6 +170,13 @@ export interface LandingLinkUpdateRequest {
   url: string;
   image_url?: string;
   post_date: string;
+}
+
+export interface LandingHistoryUpdateRequest {
+  date?: string;
+  title?: string;
+  image_url?: string;
+  gen?: number;
 }
 
 // Response 타입들
@@ -175,4 +210,22 @@ export interface LandingLinkCreateResponse {
 
 export interface LandingLinkUpdateResponse {
   id: number;
+}
+
+export interface LandingHistoryCreateResponse {
+  id: number;
+  date: string;
+  title: string;
+  image_url: string | null;
+  gen: number | null;
+  created_at: string;
+}
+
+export interface LandingHistoryUpdateResponse {
+  id: number;
+  date: string;
+  title: string;
+  image_url: string | null;
+  gen: number | null;
+  created_at: string;
 }
