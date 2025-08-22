@@ -9,6 +9,15 @@ export default function AboutPage() {
 
   // 히스토리 타임라인 렌더링을 위한 함수
   const renderHistoryTimeline = () => {
+    // histories가 배열이 아닌 경우 빈 배열로 처리
+    if (!Array.isArray(histories)) {
+      return (
+        <div className="text-center py-16">
+          <p className="text-gray-400">히스토리 데이터를 불러올 수 없습니다.</p>
+        </div>
+      );
+    }
+
     // 히스토리 데이터를 타임라인 형태로 변환
     const historyItems = histories.map((history) => ({
       id: `history-${history.id}`,

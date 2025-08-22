@@ -238,15 +238,7 @@ export default function EventPage() {
       setShowEventModal(true);
     } else {
       // 여전히 찾을 수 없는 경우, API에서 직접 조회
-      try {
-        const { eventApi } = useApi();
-        const fetchedEvent = await eventApi.getEvent(attendance.eventId);
-        setSelectedAttendanceEvent(fetchedEvent);
-        setShowEventModal(true);
-      } catch (error) {
-        console.error('이벤트 상세 정보를 가져올 수 없습니다:', error);
-        alert('이벤트 정보를 불러올 수 없습니다.');
-      }
+      console.log('이벤트 상세 정보를 가져올 수 없습니다:', attendance.eventId);
     }
   };
 

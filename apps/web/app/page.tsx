@@ -225,7 +225,7 @@ export default function HomePage() {
                   }`}></div>
                   
                   {/* 텍스트 컨텐츠 */}
-                  <div className="absolute w-full h-full z-20 flex flex-col pt-[20%] px-[15%] md:px-[10%] lg:px-[15%]">
+                  <div className="absolute w-full h-full z-20 flex flex-col justify-center items-center text-center pt-[20%] px-[15%] md:px-[10%] lg:px-[15%]">
                     <p className={`text-xs md:text-xl lg:text-2xl transition-all duration-300 font-bold text-white mb-1 md:mb-3 font-kimm-light ${
                       hoveredActivity === index ? 'translate-y-[-1rem] lg:translate-y-[-2rem]' : ''
                     }`}>
