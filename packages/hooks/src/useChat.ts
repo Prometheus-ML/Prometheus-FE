@@ -533,11 +533,11 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
       // 3. 웹소켓 연결
       await connect(roomId);
       
-      // 4. 연결 완료 대기 및 히스토리 로드
+      // 4. 연결 완료 대기 및 히스토리 로드 - 지연 제거
       const waitForConnection = (): Promise<void> => {
         return new Promise((resolve, reject) => {
           let attempts = 0;
-          const maxAttempts = 20; // 최대 10초 대기
+          const maxAttempts = 10; // 최대 5초 대기로 단축
           
           const checkConnection = () => {
             attempts++;
@@ -550,7 +550,8 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
               console.error('WebSocket connection timeout');
               reject(new Error('WebSocket connection timeout'));
             } else {
-              setTimeout(checkConnection, 500);
+              // 지연 시간 단축
+              setTimeout(checkConnection, 100);
             }
           };
           

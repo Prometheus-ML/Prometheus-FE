@@ -80,20 +80,20 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* 배경 오버레이 */}
       <div 
-        className="absolute inset-0 bg-black bg-opacity-50"
+        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
         onClick={handleClose}
       />
       
-      {/* 모달 컨테이너 */}
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+      {/* 모달 컨테이너 - GlassCard 스타일 */}
+      <div className="relative bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col border border-white/20">
         {/* 헤더 */}
-        <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">
+        <div className="flex-shrink-0 flex items-center justify-between p-6 border-b border-white/20">
+          <h2 className="text-2xl font-kimm-bold text-[#FFFFFF]">
             채팅
           </h2>
           <button
             onClick={handleClose}
-            className="text-gray-500 hover:text-gray-700 transition-colors"
+            className="text-white/70 hover:text-white transition-colors p-2 rounded-full hover:bg-white/10"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -104,45 +104,49 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
 
         {/* 채팅방이 선택되지 않은 경우 - 채팅방 목록 */}
         {!selectedRoom && (
-          <div className="flex-1 min-h-0 p-4 overflow-y-auto">
-            <div className="mb-4">
-              <h3 className="text-lg font-medium text-gray-700 mb-2">내 채팅방</h3>
+          <div className="flex-1 min-h-0 p-6 overflow-y-auto">
+            <div className="mb-6">
+              <h3 className="text-xl font-pretendard text-[#FFFFFF] mb-3">내 채팅방</h3>
             </div>
             
             {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white/50"></div>
               </div>
             ) : error ? (
-              <div className="text-red-500 text-center py-8">{error}</div>
+              <div className="text-red-400 text-center py-12 font-pretendard">{error}</div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {rooms.map((room) => (
                   <div
                     key={room.id}
                     onClick={() => handleRoomSelect(room)}
-                    className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                    className="p-6 bg-white/5 border border-white/20 rounded-xl hover:bg-white/10 hover:border-white/30 cursor-pointer transition-all duration-300 hover:scale-[1.02]"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <h4 className="font-medium text-gray-800">
+                        <h4 className="font-kimm-bold text-[#FFFFFF] text-lg mb-2">
                           {room.name || `채팅방 ${room.id}`}
                         </h4>
-                        <p className="text-sm text-gray-500">
-                          {room.room_type === 'group' ? '그룹 채팅' : '커피챗'}
-                        </p>
+                        <div className="inline-block bg-white/10 border border-white/20 rounded-full px-3 py-1 mb-3">
+                          <span className="text-white/80 text-sm font-pretendard">
+                            {room.room_type === 'group' ? '그룹 채팅' : '커피챗'}
+                          </span>
+                        </div>
                         {room.last_message && (
-                          <p className="text-sm text-gray-600 mt-1 truncate">
+                          <p className="text-white/70 text-sm mt-3 font-pretendard">
                             {room.last_message.content}
                           </p>
                         )}
                       </div>
                       <div className="text-right">
-                        <span className="text-xs text-gray-500">
-                          {room.participant_count}명
-                        </span>
+                        <div className="bg-white/10 border border-white/20 rounded-full px-3 py-1 mb-2">
+                          <span className="text-white/80 text-sm font-pretendard font-semibold">
+                            {room.participant_count}명
+                          </span>
+                        </div>
                         {room.last_message && (
-                          <div className="text-xs text-gray-400 mt-1">
+                          <div className="text-white/60 text-xs font-pretendard">
                             {new Date(room.last_message.created_at).toLocaleDateString()}
                           </div>
                         )}

@@ -18,10 +18,10 @@ const ChatToggle: React.FC<ChatToggleProps> = ({ onToggle, isOpen }) => {
         onClick={handleClick}
         className={`
           w-14 h-14 rounded-full shadow-lg transition-all duration-300 ease-in-out
-          flex items-center justify-center
+          flex items-center justify-center border
           ${isOpen 
-            ? 'bg-red-500 hover:bg-red-600 text-white transform scale-110' 
-            : 'bg-blue-500 hover:bg-blue-600 text-white hover:scale-110'
+            ? 'bg-[#8B0000]/20 hover:bg-[#8B0000]/40 border-[#c2402a] text-[#ffa282] transform scale-110' 
+            : 'bg-[#8B0000]/20 hover:bg-[#8B0000]/40 border-[#c2402a]/30 text-[#ffa282] hover:scale-110 hover:border-[#c2402a]'
           }
         `}
         aria-label={isOpen ? '채팅 닫기' : '채팅 열기'}
@@ -40,7 +40,7 @@ const ChatToggle: React.FC<ChatToggleProps> = ({ onToggle, isOpen }) => {
       
       {/* 알림 뱃지 (새 메시지가 있을 때) */}
       {!isOpen && (
-        <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+        <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#FF4500] rounded-full flex items-center justify-center border border-[#c2402a]">
           <span className="text-white text-xs font-bold">3</span>
         </div>
       )}
