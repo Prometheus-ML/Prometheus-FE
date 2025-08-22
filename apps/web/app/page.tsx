@@ -10,9 +10,7 @@ import {
   faDiscord 
 } from '@fortawesome/free-brands-svg-icons';
 import { faEnvelope, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import GlassCard from '../src/components/GlassCard';
 import RedButton from '../src/components/RedButton';
-import Navigation from '../src/components/Navigation';
 import { useProject, useLanding } from '@prometheus-fe/hooks';
 import { Project } from '@prometheus-fe/types';
 
@@ -130,9 +128,6 @@ export default function HomePage() {
 
   return (
     <div className="max-w-full mx-auto min-h-screen text-white w-full bg-black">
-      {/* Navigation */}
-      <Navigation />
-      
       {/* Side Navigation */}
       <div className="fixed right-0 top-1/2 transform -translate-y-1/2 z-50">
         <ul className="space-y-4">

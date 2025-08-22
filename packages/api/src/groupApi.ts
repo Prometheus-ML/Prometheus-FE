@@ -26,14 +26,32 @@ import type {
 
 export class GroupApi {
   private readonly api: ApiClient;
-  private readonly base = '/api/v1/groups';
-  private readonly adminBase = '/api/v1/admin/groups';
+  private readonly base = '/group/groups';
+  private readonly adminBase = '/admin/groups';
 
   constructor(apiClient: ApiClient) {
     this.api = apiClient;
   }
 
   // === 일반 사용자용 API ===
+
+  // 그룹 생성
+  async createGroup(data: {
+    name: string;
+    description: string;
+    category: 'STUDY' | 'CASUAL';
+    max_members?: number;
+    deadline?: string;
+    thumbnail_url?: string;
+  }): Promise<{ id: number; message: string }> {
+    try {
+      const response = await this.api.post<{ id: number; message: string }>(`${this.base}`, data);
+      return response;
+    } catch (error: any) {
+      console.error('Error creating group:', error);
+      throw new Error(error.message || 'Failed to create group');
+    }
+  }
 
   // 그룹 목록 조회
   async listGroups(params?: GetGroupsRequest): Promise<Group[]> {
@@ -163,15 +181,15 @@ export class GroupApi {
   // === 관리자용 API ===
 
   // 관리자용 그룹 생성
-  async createGroup(data: AdminGroupCreateRequest): Promise<AdminGroupCreateResponse> {
-    try {
-      const response = await this.api.post<AdminGroupCreateResponse>(`${this.adminBase}`, data);
-      return response;
-    } catch (error: any) {
-      console.error('Error creating group:', error);
-      throw new Error(error.message || 'Failed to create group');
-    }
-  }
+  // async createGroup(data: AdminGroupCreateRequest): Promise<AdminGroupCreateResponse> {
+  //   try {
+  //     const response = await this.api.post<AdminGroupCreateResponse>(`${this.adminBase}`, data);
+  //     return response;
+  //   } catch (error: any) {
+  //     console.error('Error creating group:', error);
+  //     throw new Error(error.message || 'Failed to create group');
+  //   }
+  // }
 
   // 관리자용 그룹 목록 조회
   async listGroupsAdmin(params?: AdminGetGroupsRequest): Promise<Group[]> {

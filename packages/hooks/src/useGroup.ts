@@ -94,11 +94,11 @@ export function useGroup() {
   // 그룹 생성 (관리자 전용)
   const createGroup = useCallback(async (groupData: {
     name: string;
-    description?: string;
+    description: string;
     category: 'STUDY' | 'CASUAL';
     max_members?: number;
-    thumbnail_url?: string;
     deadline?: string;
+    thumbnail_url?: string;
   }) => {
     if (!group) {
       console.warn('group is not available. Ensure useGroup is used within ApiProvider.');

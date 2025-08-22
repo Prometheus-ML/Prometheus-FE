@@ -3,9 +3,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useGroup } from '@prometheus-fe/hooks';
+import { useImage } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
 import GlassCard from '../../src/components/GlassCard';
 import GroupModal from '../../src/components/GroupModal';
+import GroupForm from '../../src/components/GroupForm';
 import RedButton from '../../src/components/RedButton';
 import QueryBar from '../../src/components/QueryBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -38,6 +40,7 @@ export default function GroupPage() {
     isTogglingLike,
     userLikedGroups,
     fetchGroups,
+    createGroup,
     requestJoinGroup,
     filterGroupsByCategory,
     toggleGroupLike,
@@ -46,6 +49,7 @@ export default function GroupPage() {
   } = useGroup();
 
   const { user } = useAuthStore();
+  const { getThumbnailUrl, getDefaultImageUrl } = useImage();
 
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('all');
@@ -54,6 +58,8 @@ export default function GroupPage() {
     category_filter: ''
   });
   const [showGroupDetail, setShowGroupDetail] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
   // 탭 변경 핸들러 (기존 필터에 추가하고 바로 검색 실행)
   const handleTabChange = (tabId: string) => {
@@ -160,6 +166,19 @@ export default function GroupPage() {
     }
   };
 
+  const handleCreateGroup = async (groupData: any) => {
+    try {
+      setError('');
+      await createGroup(groupData);
+      setShowCreateForm(false);
+      // 그룹 생성 후 목록 새로고침
+      await loadGroups();
+    } catch (err) {
+      console.error('그룹 생성 실패:', err);
+      setError('그룹 생성에 실패했습니다.');
+    }
+  };
+
   const handleJoinGroup = async (groupId: number) => {
     try {
       await requestJoinGroup(groupId);
@@ -170,13 +189,18 @@ export default function GroupPage() {
     }
   };
 
+  // 이미지 에러 처리
+  const handleImageError = (groupId: string) => {
+    setImageErrors(prev => ({ ...prev, [groupId]: true }));
+  };
+
   return (
     <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
       {/* 헤더 */}
       <header className="mx-4 px-6 py-6 border-b border-white/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/" className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
+            <Link href="/my" className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
               <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
             </Link>
         <div>
@@ -184,14 +208,22 @@ export default function GroupPage() {
               <p className="text-sm font-pretendard text-[#e0e0e0]">프로메테우스 그룹 목록</p>
             </div>
         </div>
-          <div className="text-right">
+          <div className="text-right flex items-center gap-3">
+            {user && (
+              <button
+                onClick={() => setShowCreateForm(!showCreateForm)}
+                className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
+              >
+                <FontAwesomeIcon icon={faPlus} className="w-5 h-5" />
+              </button>
+            )}
             <p className="text-sm text-[#e0e0e0]">전체 <span className="text-[#ffa282] font-bold">{groups.length}</span>개</p>
           </div>
       </div>
       </header>
 
       <div className="px-4 py-6">
-      {/* 검색 및 필터 */}
+              {/* 검색 및 필터 */}
         <div className="mb-6 space-y-4">
           <QueryBar
             searchTerm={filters.search}
@@ -219,6 +251,17 @@ export default function GroupPage() {
               placeholder="그룹명, 설명을 검색해보세요!"
             />
           </div>
+
+        {/* 그룹 생성 폼 */}
+        {showCreateForm && (
+          <GlassCard className="mb-6">
+            <GroupForm
+              onSubmit={handleCreateGroup}
+              onCancel={() => setShowCreateForm(false)}
+              isSubmitting={isCreatingGroup}
+            />
+          </GlassCard>
+        )}
 
       {/* 검색 결과 수 */}
         {(filters.search || filters.category_filter) && (
@@ -282,25 +325,20 @@ export default function GroupPage() {
               <div className="space-y-3">
                 {/* 썸네일 */}
                 <div className="w-full h-32 rounded-lg overflow-hidden bg-white/10">
-                        {group.thumbnail_url ? (
-                          <Image
-                      src={group.thumbnail_url}
-                            alt={group.name}
+                  {group.thumbnail_url && !imageErrors[group.id.toString()] ? (
+                    <Image
+                      src={getThumbnailUrl(group.thumbnail_url, 300)}
+                      alt={group.name}
                       width={300}
                       height={128}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              if (target.src !== group.thumbnail_url && group.thumbnail_url) {
-                                target.src = group.thumbnail_url;
-                              }
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                      <FontAwesomeIcon icon={faUsers} className="text-white/30 text-4xl" />
-                          </div>
-                        )}
+                      className="w-full h-full object-cover"
+                      onError={() => handleImageError(group.id.toString())}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-white/10">
+                      <FontAwesomeIcon icon={faUsers} className="text-white/50 text-4xl" />
+                    </div>
+                  )}
                 </div>
                 
                 {/* 제목과 기수 */}

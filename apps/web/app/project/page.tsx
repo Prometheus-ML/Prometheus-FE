@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useProject } from '@prometheus-fe/hooks';
 import { useImage } from '@prometheus-fe/hooks';
+import { useAuthStore } from '@prometheus-fe/stores';
 import { Project } from '@prometheus-fe/types';
 import GlassCard from '../../src/components/GlassCard';
 import RedButton from '../../src/components/RedButton';
@@ -26,6 +27,7 @@ interface ProjectFilters {
 }
 
 export default function ProjectPage() {
+  const { isAuthenticated } = useAuthStore();
   const {
     allProjects,
     fetchProjects,
@@ -220,9 +222,12 @@ export default function ProjectPage() {
         <header className="mx-4 px-6 py-6 border-b border-white/20">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Link href="/" className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
+              <button 
+                onClick={() => window.history.back()}
+                className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
+              >
                 <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
-              </Link>
+              </button>
               <div>
                 <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">프로젝트</h1>
                 <p className="text-sm font-pretendard text-[#e0e0e0]">프로메테우스 프로젝트 목록</p>
@@ -232,25 +237,27 @@ export default function ProjectPage() {
         </header>
 
         <div className="px-4 py-6">
-          {/* 검색 및 필터 */}
-          <div className="mb-6 space-y-4">
-            <QueryBar
-              searchTerm={searchTerm}
-              onSearchTermChange={setSearchTerm}
-              selects={[
-                {
-                  id: 'gen',
-                  value: selectedGen,
-                  onChange: setSelectedGen,
-                  options: genOptions
-                }
-              ]}
-              onSearch={handleSearch}
-              onReset={handleReset}
-              isLoading={isSearchLoading}
-              placeholder="프로젝트명, 키워드를 검색해보세요!"
-            />
-          </div>
+          {/* 검색 및 필터 - 로그인 상태에서만 표시 */}
+          {isAuthenticated() && (
+            <div className="mb-6 space-y-4">
+              <QueryBar
+                searchTerm={searchTerm}
+                onSearchTermChange={setSearchTerm}
+                selects={[
+                  {
+                    id: 'gen',
+                    value: selectedGen,
+                    onChange: setSelectedGen,
+                    options: genOptions
+                  }
+                ]}
+                onSearch={handleSearch}
+                onReset={handleReset}
+                isLoading={isSearchLoading}
+                placeholder="프로젝트명, 키워드를 검색해보세요!"
+              />
+            </div>
+          )}
 
           {/* Project Cards Skeleton */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -271,9 +278,12 @@ export default function ProjectPage() {
       <header className="mx-4 px-6 py-6 border-b border-white/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/" className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
+            <button 
+              onClick={() => window.history.back()}
+              className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
+            >
               <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
-            </Link>
+            </button>
             <div>
               <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">프로젝트</h1>
               <p className="text-sm font-pretendard text-[#e0e0e0]">프로메테우스 프로젝트 목록</p>
@@ -286,25 +296,27 @@ export default function ProjectPage() {
       </header>
 
       <div className="px-4 py-6">
-        {/* 검색 및 필터 */}
-        <div className="mb-6 space-y-4">
-          <QueryBar
-            searchTerm={searchTerm}
-            onSearchTermChange={setSearchTerm}
-            selects={[
-              {
-                id: 'gen',
-                value: selectedGen,
-                onChange: setSelectedGen,
-                options: genOptions
-              }
-            ]}
-            onSearch={handleSearch}
-            onReset={handleReset}
-            isLoading={isSearchLoading}
-            placeholder="프로젝트명, 키워드를 검색해보세요!"
-          />
-        </div>
+        {/* 검색 및 필터 - 로그인 상태에서만 표시 */}
+        {isAuthenticated() && (
+          <div className="mb-6 space-y-4">
+            <QueryBar
+              searchTerm={searchTerm}
+              onSearchTermChange={setSearchTerm}
+              selects={[
+                {
+                  id: 'gen',
+                  value: selectedGen,
+                  onChange: setSelectedGen,
+                  options: genOptions
+                }
+              ]}
+              onSearch={handleSearch}
+              onReset={handleReset}
+              isLoading={isSearchLoading}
+              placeholder="프로젝트명, 키워드를 검색해보세요!"
+            />
+          </div>
+        )}
 
         {/* 검색 결과 수 */}
         {(appliedSearchTerm || appliedGen !== 'all') && (

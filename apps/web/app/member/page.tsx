@@ -261,9 +261,12 @@ export default function MemberPage() {
         <header className="mx-4 px-6 py-6 border-b border-white/20">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Link href="/" className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
+              <button 
+                onClick={() => window.history.back()}
+                className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
+              >
                 <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
-              </Link>
+              </button>
               <div>
                 <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">멤버</h1>
                 <p className="text-sm font-pretendard text-[#e0e0e0]">프로메테우스 멤버 목록</p>
@@ -292,9 +295,12 @@ export default function MemberPage() {
       <header className="mx-4 px-6 py-6 border-b border-white/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/" className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
+            <button 
+              onClick={() => window.history.back()}
+              className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
+            >
               <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
-            </Link>
+            </button>
             <div>
               <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">멤버</h1>
               <p className="text-sm font-pretendard text-[#e0e0e0]">프로메테우스 멤버 목록</p>
@@ -307,42 +313,45 @@ export default function MemberPage() {
       </header>
 
       <div className="px-4 py-6">
-        {/* 검색 및 필터 */}
-        <div className="mb-6 space-y-4">
-          {/* 검색 바 */}
-          <QueryBar
-            searchTerm={searchTerm}
-            onSearchTermChange={setSearchTerm}
-            selects={[
-              {
-                id: 'gen',
-                value: selectedGen,
-                onChange: setSelectedGen,
-                options: [
-                  { value: 'all', label: '전체 기수' },
-                  ...genTabs.slice(1).map((tab) => ({
-                    value: tab.id,
-                    label: tab.label
-                  }))
-                ]
-              },
-              {
-                id: 'status',
-                value: selectedStatus,
-                onChange: setSelectedStatus,
-                options: [
-                  { value: 'all', label: '활동 상태' },
-                  { value: 'active', label: '활동중' },
-                  { value: 'alumni', label: '알럼나이' }
-                ]
-              }
-            ]}
-            onSearch={handleSearch}
-            onReset={handleReset}
-            isLoading={isSearchLoading}
-            placeholder="이름, 학교를 검색해보세요!"
-          />
-        </div>
+        {/* 검색 및 필터 - 로그인 상태에서만 표시 */}
+        {isPrivate && (
+          <div className="mb-6 space-y-4">
+            {/* 검색 바 */}
+            <QueryBar
+              searchTerm={searchTerm}
+              onSearchTermChange={setSearchTerm}
+              selects={[
+                {
+                  id: 'gen',
+                  value: selectedGen,
+                  onChange: setSelectedGen,
+                  options: [
+                    { value: 'all', label: '전체 기수' },
+                    ...Array.from({ length: getCurrentGen() }, (_, i) => getCurrentGen() - i).map(gen => ({
+                      value: gen.toString(),
+                      label: `${gen}기`
+                    })),
+                    { value: '0', label: '창립멤버' }
+                  ]
+                },
+                {
+                  id: 'status',
+                  value: selectedStatus,
+                  onChange: setSelectedStatus,
+                  options: [
+                    { value: 'all', label: '활동 상태' },
+                    { value: 'active', label: '활동중' },
+                    { value: 'alumni', label: '알럼나이' }
+                  ]
+                }
+              ]}
+              onSearch={handleSearch}
+              onReset={handleReset}
+              isLoading={isSearchLoading}
+              placeholder="이름, 학교를 검색해보세요!"
+            />
+          </div>
+        )}
         
         {/* 멤버 카드 그리드 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
