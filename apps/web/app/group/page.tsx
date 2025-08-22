@@ -36,12 +36,15 @@ export default function GroupPage() {
     selectedGroup,
     isLoadingGroups,
     isCreatingGroup,
+    isTogglingLike,
+    userLikedGroups,
     fetchGroups,
     createGroup,
     requestJoinGroup,
     filterGroupsByCategory,
     toggleGroupLike,
     handleGroupSelect,
+    checkUserLikedGroup,
   } = useGroup();
 
   const { user } = useAuthStore();
@@ -96,6 +99,19 @@ export default function GroupPage() {
   useEffect(() => {
     loadGroups();
   }, [filters.search, filters.category_filter]);
+
+  // 그룹 목록이 로드된 후 각 그룹의 좋아요 상태 확인
+  useEffect(() => {
+    if (groups.length > 0) {
+      groups.forEach(async (group) => {
+        try {
+          await checkUserLikedGroup(group.id);
+        } catch (error) {
+          console.warn(`그룹 ${group.id} 좋아요 상태 확인 실패:`, error);
+        }
+      });
+    }
+  }, [groups, checkUserLikedGroup]);
 
   const loadGroups = async () => {
     try {
@@ -564,21 +580,18 @@ export default function GroupPage() {
                     {/* 좋아요 버튼 */}
                     <button
                       onClick={(e) => handleLikeToggle(group.id, e)}
-                      // disabled={isTogglingLike}
+                      disabled={isTogglingLike}
                       className={`flex items-center space-x-1 px-2 py-1 rounded text-sm transition-colors ${
-                        // userLikedGroups[group.id]
-                        false // userLikedGroups 상태가 제거되었으므로 항상 false
+                        userLikedGroups[group.id]
                           ? 'text-red-400 hover:text-red-300 bg-red-500/20'
                           : 'text-gray-400 hover:text-gray-300 bg-white/10 hover:bg-white/20'
                       }`}
                     >
                       <FontAwesomeIcon 
-                        // icon={userLikedGroups[group.id] ? faHeart : faHeartBroken} 
-                        icon={faHeart} 
+                        icon={userLikedGroups[group.id] ? faHeart : faHeartBroken} 
                         className="mr-1" 
                       />
-                      {/* {userLikedGroups[group.id] ? '좋아요' : '좋아요'} */}
-                      좋아요
+                      {userLikedGroups[group.id] ? '좋아요' : '좋아요'}
                     </button>
                     
                     <button

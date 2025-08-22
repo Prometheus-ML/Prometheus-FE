@@ -37,13 +37,6 @@ const ChatToggle: React.FC<ChatToggleProps> = ({ onToggle, isOpen }) => {
           </svg>
         )}
       </button>
-      
-      {/* 알림 뱃지 (새 메시지가 있을 때) */}
-      {!isOpen && (
-        <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#FF4500] rounded-full flex items-center justify-center border border-[#c2402a]">
-          <span className="text-white text-xs font-bold">3</span>
-        </div>
-      )}
     </div>
   );
 };

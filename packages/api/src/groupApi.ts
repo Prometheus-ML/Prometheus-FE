@@ -13,6 +13,7 @@ import {
   GetGroupLikesResponse,
   CheckUserLikedGroupResponse,
   GroupDeleteResponse,
+  LeaveGroupResponse,
 } from './dto/group.dto';
 import type {
   Group,
@@ -176,6 +177,17 @@ export class GroupApi {
     } catch (error: any) {
       console.error(`Error deleting group ${groupId}:`, error);
       throw new Error(error.message || 'Failed to delete group');
+    }
+  }
+
+  // Group Leave
+  async leaveGroup(groupId: number | string): Promise<LeaveGroupResponse> {
+    try {
+      const response = await this.api.post<LeaveGroupResponse>(`${this.base}/${groupId}/leave`, {});
+      return response;
+    } catch (error: any) {
+      console.error(`Error leaving group ${groupId}:`, error);
+      throw new Error(error.message || 'Failed to leave group');
     }
   }
 }

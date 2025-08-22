@@ -319,24 +319,6 @@ export default function GroupModal({ group, isOpen, onClose }: GroupModalProps) 
               </span>
             </button>
           </div>
-
-          {/* 좋아요한 멤버 목록 */}
-          {groupLikes[group.id] && groupLikes[group.id].recent_likers.length > 0 && (
-            <div className="mt-4">
-              <h3 className="text-lg font-semibold text-white mb-3">최근 좋아요한 멤버</h3>
-              <div className="space-y-2">
-                {groupLikes[group.id].recent_likers.slice(0, 5).map((liker, index) => (
-                  <div key={index} className="flex items-center space-x-2 p-2 bg-white/10 rounded">
-                    <span className="text-white font-medium">{liker.name}</span>
-                    <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded">
-                      {liker.gen}기
-                    </span>
-                    <span className="text-gray-300 text-sm">({liker.member_id})</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* 멤버 목록 */}

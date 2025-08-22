@@ -5,6 +5,7 @@ import type {
   GroupNote,
   GroupLikeToggleResponse,
   GroupLikeInfo,
+  ChatRoom,
 } from '@prometheus-fe/types';
 
 // 공통 응답 인터페이스 (내부에서만 사용)
@@ -80,5 +81,14 @@ export interface CheckUserLikedGroupResponse extends BaseResponse {
 }
 
 export interface GroupDeleteResponse extends BaseResponse {
+  message: string;
+}
+
+// 그룹 채팅방 관련
+export interface GetGroupChatRoomResponse extends BaseResponse {
+  chat_room: ChatRoom;
+}
+
+export interface LeaveGroupResponse extends BaseResponse {
   message: string;
 }
