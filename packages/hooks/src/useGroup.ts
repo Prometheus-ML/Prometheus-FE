@@ -52,13 +52,51 @@ export function useGroup() {
     return user.id === targetGroup.owner_id;
   }, [user, selectedGroup]);
 
+  // 그룹 목록 조회
+  const fetchGroups = useCallback(async (params?: any) => {
+    if (!group) {
+      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
+      setIsLoadingGroups(false);
+      return;
+    }
+    try {
+      setIsLoadingGroups(true);
+      const data = await group.listGroups(params);
+      setGroups(data || []);
+      console.log('groups data:', data);
+    } catch (error) {
+      console.error('그룹 목록 조회 실패:', error);
+      setGroups([]);
+    } finally {
+      setIsLoadingGroups(false);
+    }
+  }, [group]);
 
-
-
-
-
-
-
+  // 그룹 생성 (관리자 전용)
+  const createGroup = useCallback(async (groupData: {
+    name: string;
+    description?: string;
+    category: 'STUDY' | 'CASUAL';
+    max_members?: number;
+    thumbnail_url?: string;
+    deadline?: string;
+  }) => {
+    if (!group) {
+      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
+      return;
+    }
+    try {
+      setIsCreatingGroup(true);
+      await group.createGroup(groupData);
+      // 새 그룹을 목록에 추가하기 위해 목록을 다시 불러옴
+      await fetchGroups();
+    } catch (error) {
+      console.error('그룹 생성 실패:', error);
+      throw error;
+    } finally {
+      setIsCreatingGroup(false);
+    }
+  }, [group, fetchGroups]);
 
   // 그룹 멤버 목록 조회
   const fetchGroupMembers = useCallback(async (groupId: number | string) => {
@@ -78,35 +116,16 @@ export function useGroup() {
     }
   }, [group]);
 
-  // 가입 요청 목록 조회 (권한 체크 포함)
-  const fetchJoinRequests = useCallback(async (groupId: number | string, skipPermissionCheck = false) => {
+  // 가입 요청 목록 조회 (관리자 전용)
+  const fetchJoinRequests = useCallback(async (groupId: number | string) => {
     if (!group) {
       console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
       return;
     }
 
-    // 권한 체크를 건너뛰지 않는 경우, 사용자 권한 확인
-    if (!skipPermissionCheck) {
-      if (!user) {
-        console.warn('User not authenticated. Cannot fetch join requests.');
-        setJoinRequests([]);
-        return;
-      }
-
-      // 그룹 오너인지 확인하기 위해 selectedGroup 사용
-      const isOwner = selectedGroup && user.id === selectedGroup.owner_id;
-      const isSuperUser = user.grant === 'Super';
-
-      if (!isOwner && !isSuperUser) {
-        console.warn('User does not have permission to view join requests.');
-        setJoinRequests([]);
-        return;
-      }
-    }
-
     try {
       setIsLoadingJoinRequests(true);
-      const data = await group.listJoinRequests(groupId);
+      const data = await group.listJoinRequestsAdmin(groupId);
       setJoinRequests(data || []);
     } catch (error) {
       console.error(`그룹 ${groupId} 가입 요청 목록 조회 실패:`, error);
@@ -114,169 +133,16 @@ export function useGroup() {
     } finally {
       setIsLoadingJoinRequests(false);
     }
-  }, [group, user, selectedGroup]);
-
-  // 멤버 거절
-  const rejectMember = useCallback(async (groupId: number | string, memberId: string) => {
-    if (!group) {
-      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
-      return;
-    }
-    try {
-      await group.rejectMember(groupId, memberId);
-      // 가입 요청 목록을 다시 불러옴
-      await fetchJoinRequests(groupId);
-    } catch (error) {
-      console.error(`멤버 ${memberId} 거절 실패:`, error);
-      throw error;
-    }
-  }, [group, fetchJoinRequests]);
-
-
-
-  // 그룹에서 멤버 제거
-  const removeMember = useCallback(async (groupId: number | string, memberId: string) => {
-    if (!group) {
-      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
-      return;
-    }
-    try {
-      await group.removeMember(groupId, memberId);
-      // 멤버 목록을 다시 불러옴
-      await fetchGroupMembers(groupId);
-    } catch (error) {
-      console.error(`멤버 ${memberId} 제거 실패:`, error);
-      throw error;
-    }
-  }, [group, fetchGroupMembers]);
-
-  // 그룹 나가기
-  const leaveGroup = useCallback(async (groupId: number | string) => {
-    if (!group) {
-      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
-      return;
-    }
-    try {
-      setIsLeavingGroup(true);
-      await group.leaveGroup(groupId);
-      
-      // 그룹 목록에서 제거
-      setGroups(prev => prev.filter(g => g.id !== groupId));
-      
-      // 현재 선택된 그룹이 나간 그룹인 경우 선택 해제
-      if (selectedGroup && selectedGroup.id === groupId) {
-        handleGroupDeselect();
-      }
-      
-      return { success: true, message: '그룹에서 성공적으로 나갔습니다.' };
-    } catch (error) {
-      console.error(`그룹 ${groupId} 나가기 실패:`, error);
-      throw error;
-    } finally {
-      setIsLeavingGroup(false);
-    }
-  }, [group, selectedGroup]);
-
-  // 그룹 목록 조회
-  const fetchGroups = useCallback(async (params?: any) => {
-    if (!group) {
-      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
-      setIsLoadingGroups(false);
-      return;
-    }
-    try {
-      setIsLoadingGroups(true);
-      const data = await group.listGroups(params);
-      // 백엔드에서 배열을 직접 반환하는 경우 처리
-      if (Array.isArray(data)) {
-        setGroups(data);
-      } else {
-        setGroups(data.items || []);
-      }
-      console.log('groups data:', data);
-    } catch (error) {
-      console.error('그룹 목록 조회 실패:', error);
-      setGroups([]);
-    } finally {
-      setIsLoadingGroups(false);
-    }
   }, [group]);
 
-  // 특정 그룹 조회
-  const fetchGroup = useCallback(async (groupId: number | string) => {
-    if (!group) {
-      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
-      return;
-    }
-    try {
-      setIsLoadingGroup(true);
-      const data = await group.getGroup(groupId);
-      setSelectedGroup(data);
-    } catch (error) {
-      console.error(`그룹 ${groupId} 조회 실패:`, error);
-      setSelectedGroup(null);
-    } finally {
-      setIsLoadingGroup(false);
-    }
-  }, [group]);
-
-  // 그룹 가입 요청
-  const requestJoinGroup = useCallback(async (groupId: number | string) => {
-    if (!group) {
-      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
-      return null;
-    }
-    try {
-      const result = await group.requestJoinGroup(groupId);
-      
-      // 가입 요청 후 그룹 정보를 다시 조회
-      try {
-        await fetchGroup(groupId);
-      } catch (error) {
-        console.warn(`그룹 ${groupId} 정보 업데이트 실패:`, error);
-      }
-    } catch (error) {
-      console.error(`그룹 ${groupId} 가입 요청 실패:`, error);
-      throw error;
-    }
-  }, [group, fetchGroup]);
-
-  // 그룹 생성
-  const createGroup = useCallback(async (groupData: {
-    name: string;
-    description?: string;
-    category: 'STUDY' | 'CASUAL';
-    max_members?: number;
-    thumbnail_url?: string;
-    deadline?: string;  // 마감 기한 추가
-  }) => {
-    if (!group) {
-      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
-      return null;
-    }
-    try {
-      setIsCreatingGroup(true);
-      const newGroup = await group.createGroup(groupData);
-      // 새 그룹을 목록에 추가하기 위해 목록을 다시 불러옴
-      await fetchGroups();
-      
-
-    } catch (error) {
-      console.error('그룹 생성 실패:', error);
-      throw error;
-    } finally {
-      setIsCreatingGroup(false);
-    }
-  }, [group, fetchGroups]);
-
-  // 멤버 승인
+  // 멤버 승인 (관리자 전용)
   const approveMember = useCallback(async (groupId: number | string, memberId: string) => {
     if (!group) {
       console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
       return;
     }
     try {
-      await group.approveMember(groupId, memberId);
+      await group.approveMemberAdmin(groupId, memberId);
       // 가입 요청 목록과 멤버 목록을 다시 불러옴
       await Promise.all([
         fetchJoinRequests(groupId),
@@ -288,7 +154,39 @@ export function useGroup() {
     }
   }, [group, fetchJoinRequests, fetchGroupMembers]);
 
-  // 그룹 삭제 (소유자만 가능)
+  // 멤버 거절 (관리자 전용)
+  const rejectMember = useCallback(async (groupId: number | string, memberId: string) => {
+    if (!group) {
+      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
+      return;
+    }
+    try {
+      await group.rejectMemberAdmin(groupId, memberId);
+      // 가입 요청 목록을 다시 불러옴
+      await fetchJoinRequests(groupId);
+    } catch (error) {
+      console.error(`멤버 ${memberId} 거절 실패:`, error);
+      throw error;
+    }
+  }, [group, fetchJoinRequests]);
+
+  // 그룹에서 멤버 제거 (관리자 전용)
+  const removeMember = useCallback(async (groupId: number | string, memberId: string) => {
+    if (!group) {
+      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
+      return;
+    }
+    try {
+      await group.removeMemberAdmin(groupId, memberId);
+      // 멤버 목록을 다시 불러옴
+      await fetchGroupMembers(groupId);
+    } catch (error) {
+      console.error(`멤버 ${memberId} 제거 실패:`, error);
+      throw error;
+    }
+  }, [group, fetchGroupMembers]);
+
+  // 그룹 삭제 (관리자 전용)
   const deleteGroup = useCallback(async (groupId: number | string) => {
     if (!group) {
       console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
@@ -296,7 +194,7 @@ export function useGroup() {
     }
     try {
       setIsDeletingGroup(true);
-      await group.deleteGroup(groupId);
+      await group.deleteGroupAdmin(groupId);
       
       // 삭제된 그룹을 목록에서 제거
       setGroups(prev => prev.filter(g => g.id !== groupId));
@@ -305,8 +203,6 @@ export function useGroup() {
       if (selectedGroup && selectedGroup.id === groupId) {
         handleGroupDeselect();
       }
-      
-      return { success: true, message: '그룹이 성공적으로 삭제되었습니다.' };
     } catch (error) {
       console.error(`그룹 ${groupId} 삭제 실패:`, error);
       throw error;
@@ -315,28 +211,11 @@ export function useGroup() {
     }
   }, [group, selectedGroup]);
 
-  // 그룹 노트 생성
-  const createGroupNote = useCallback(async (groupId: number | string, noteData: any) => {
-    if (!group) {
-      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
-      return null;
-    }
-    try {
-      setIsCreatingNote(true);
-      const newNote = await group.createGroupNote(groupId, noteData);
-    } catch (error) {
-      console.error('그룹 노트 생성 실패:', error);
-      throw error;
-    } finally {
-      setIsCreatingNote(false);
-    }
-  }, [group]);
-
   // 그룹 좋아요 토글
   const toggleGroupLike = useCallback(async (groupId: number | string) => {
     if (!group) {
       console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
-      return null;
+      return;
     }
     try {
       setIsTogglingLike(true);
@@ -359,8 +238,6 @@ export function useGroup() {
       if (selectedGroup && selectedGroup.id === groupId) {
         setSelectedGroup(prev => prev ? { ...prev, like_count: result.like_count } : null);
       }
-
-      return result;
     } catch (error) {
       console.error(`그룹 ${groupId} 좋아요 토글 실패:`, error);
       throw error;
@@ -398,10 +275,22 @@ export function useGroup() {
         ...prev,
         [groupId]: liked
       }));
-      return liked;
     } catch (error) {
       console.error(`그룹 ${groupId} 사용자 좋아요 상태 확인 실패:`, error);
-      return false;
+    }
+  }, [group]);
+
+  // 그룹 가입 요청
+  const requestJoinGroup = useCallback(async (groupId: number | string) => {
+    if (!group) {
+      console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
+      return;
+    }
+    try {
+      await group.requestJoinGroup(groupId);
+    } catch (error) {
+      console.error(`그룹 ${groupId} 가입 요청 실패:`, error);
+      throw error;
     }
   }, [group]);
 
@@ -411,7 +300,7 @@ export function useGroup() {
       const filtered = groups.filter(g => g.category === category);
       setGroups(filtered);
     } else {
-      fetchGroups({ page: 1, size: 20 });
+      fetchGroups();
     }
   }, [groups, fetchGroups]);
 
@@ -444,8 +333,6 @@ export function useGroup() {
     setJoinRequests([]);
   };
 
-
-
   return {
     // 상태
     groups,
@@ -466,20 +353,17 @@ export function useGroup() {
     
     // API 함수들
     fetchGroups,
-    fetchGroup,
     createGroup,
-    requestJoinGroup,
     fetchGroupMembers,
     fetchJoinRequests,
     approveMember,
     rejectMember,
     removeMember,
-    leaveGroup,
-    deleteGroup, // Added deleteGroup to the return object
-    createGroupNote,
+    deleteGroup,
     toggleGroupLike,
     fetchGroupLikes,
     checkUserLikedGroup,
+    requestJoinGroup,
     filterGroupsByCategory,
     
     // 핸들러들

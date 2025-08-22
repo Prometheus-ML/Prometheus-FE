@@ -248,6 +248,7 @@ export interface EventQueryParams {
   size?: number;
   gen?: number;
   event_type?: string;
+  not_event_type?: string;
   is_attendance_required?: boolean;
   start_date?: string; // YYYY-MM-DD 형식
   end_date?: string;   // YYYY-MM-DD 형식
@@ -295,6 +296,10 @@ export interface MyAttendanceDto {
   event_id: number;
   event_title: string;
   event_gen: number;
+  event_type?: string;
+  event_location?: string;
+  event_start_time?: string; // ISO 8601 형식
+  event_end_time?: string; // ISO 8601 형식
   member_id: string;
   member_name: string;
   status: string;

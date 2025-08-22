@@ -173,11 +173,21 @@ export const useAuthStore = create<AuthState>()(
             return true;
           } catch (error: any) {
             console.error('Google 로그인 실패:', error);
+            
+            // 서버에서 받은 detail 메시지가 있으면 그것을 사용
+            let errorMessage = '로그인 처리 중 오류가 발생했습니다.';
+            
+            if (error?.response?.data?.detail) {
+              errorMessage = error.response.data.detail;
+            } else if (error?.detail) {
+              errorMessage = error.detail;
+            } else if (error?.message) {
+              errorMessage = error.message;
+            }
+            
             set({
               isLoading: false,
-              error: error?.response?.status === 403 
-                ? '프로메테우스 멤버로 등록되어 있지 않습니다. 활동 당시의 전화번호를 통해 인증해주세요.'
-                : '로그인 처리 중 오류가 발생했습니다.',
+              error: errorMessage,
             });
             return false;
           }

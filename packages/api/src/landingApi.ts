@@ -4,6 +4,11 @@ import {
   LandingHonorHallListResponseDto,
   LandingInterviewListResponseDto,
   LandingLinkListResponseDto,
+  LandingHistoryListResponseDto,
+  LandingHistoryCreateRequestDto,
+  LandingHistoryCreateResponseDto,
+  LandingHistoryUpdateRequestDto,
+  LandingHistoryUpdateResponseDto,
   LandingInterviewCreateRequestDto,
   LandingInterviewCreateResponseDto,
   LandingInterviewUpdateRequestDto,
@@ -17,7 +22,8 @@ import {
   LandingSponsor,
   LandingHonorHall,
   LandingInterview,
-  LandingLink
+  LandingLink,
+  LandingHistory
 } from '@prometheus-fe/types';
 
 export class LandingApi {
@@ -26,6 +32,56 @@ export class LandingApi {
 
   constructor(apiClient: ApiClient) {
     this.api = apiClient;
+  }
+
+  // ===== 히스토리 API =====
+
+  // 히스토리 목록 조회 (JWT 토큰 필요)
+  async getHistories(params?: any): Promise<LandingHistoryListResponseDto> {
+    try {
+      const sp = new URLSearchParams();
+      if (params?.page) sp.set('page', String(params.page));
+      if (params?.size) sp.set('size', String(params.size));
+      
+      const query = sp.toString() ? `?${sp.toString()}` : '';
+      const response = await this.api.get<LandingHistoryListResponseDto>(`${this.base}/history${query}`);
+      return response;
+    } catch (error: any) {
+      console.error('Error fetching histories:', error);
+      throw new Error(error.message || 'Failed to fetch histories');
+    }
+  }
+
+  // 히스토리 생성 (인증 필요)
+  async createHistory(data: LandingHistoryCreateRequestDto): Promise<LandingHistoryCreateResponseDto> {
+    try {
+      const response = await this.api.post<LandingHistoryCreateResponseDto>(`${this.base}/history/`, data);
+      return response;
+    } catch (error: any) {
+      console.error('Error creating history:', error);
+      throw new Error(error.message || 'Failed to create history');
+    }
+  }
+
+  // 히스토리 수정 (인증 필요)
+  async updateHistory(historyId: number, data: LandingHistoryUpdateRequestDto): Promise<LandingHistoryUpdateResponseDto> {
+    try {
+      const response = await this.api.put<LandingHistoryUpdateResponseDto>(`${this.base}/history/${historyId}`, data);
+      return response;
+    } catch (error: any) {
+      console.error(`Error updating history ${historyId}:`, error);
+      throw new Error(error.message || 'Failed to update history');
+    }
+  }
+
+  // 히스토리 삭제 (인증 필요)
+  async deleteHistory(historyId: number): Promise<void> {
+    try {
+      await this.api.delete(`${this.base}/history/${historyId}`);
+    } catch (error: any) {
+      console.error(`Error deleting history ${historyId}:`, error);
+      throw new Error(error.message || 'Failed to delete history');
+    }
   }
 
   // ===== 후원사 API =====
@@ -160,6 +216,49 @@ export class LandingApi {
   }
 
   // ===== Admin API =====
+
+  // Admin 히스토리 목록 조회 (Super 이상)
+  async getAdminHistories(): Promise<LandingHistory[]> {
+    try {
+      const response = await this.api.get<LandingHistory[]>(`/admin/landing/history`);
+      return response;
+    } catch (error: any) {
+      console.error('Error fetching admin histories:', error);
+      throw new Error(error.message || 'Failed to fetch admin histories');
+    }
+  }
+
+  // Admin 히스토리 생성 (Super 이상)
+  async createAdminHistory(data: LandingHistoryCreateRequestDto): Promise<LandingHistoryCreateResponseDto> {
+    try {
+      const response = await this.api.post<LandingHistoryCreateResponseDto>(`/admin/landing/history`, data);
+      return response;
+    } catch (error: any) {
+      console.error('Error creating admin history:', error);
+      throw new Error(error.message || 'Failed to create admin history');
+    }
+  }
+
+  // Admin 히스토리 수정 (Super 이상)
+  async updateAdminHistory(historyId: number, data: LandingHistoryUpdateRequestDto): Promise<LandingHistoryUpdateResponseDto> {
+    try {
+      const response = await this.api.put<LandingHistoryUpdateResponseDto>(`/admin/landing/history/${historyId}`, data);
+      return response;
+    } catch (error: any) {
+      console.error(`Error updating admin history ${historyId}:`, error);
+      throw new Error(error.message || 'Failed to update admin history');
+    }
+  }
+
+  // Admin 히스토리 삭제 (Super 이상)
+  async deleteAdminHistory(historyId: number): Promise<void> {
+    try {
+      await this.api.delete(`/admin/landing/history/${historyId}`);
+    } catch (error: any) {
+      console.error(`Error deleting admin history ${historyId}:`, error);
+      throw new Error(error.message || 'Failed to delete admin history');
+    }
+  }
 
   // Admin 후원사 목록 조회 (Super 이상)
   async getAdminSponsors(): Promise<LandingSponsor[]> {

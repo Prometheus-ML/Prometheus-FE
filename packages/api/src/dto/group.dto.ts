@@ -2,7 +2,6 @@ import type {
   Group,
   GroupMember,
   GroupJoinRequest,
-  GroupNote,
   GroupLikeToggleResponse,
   GroupLikeInfo,
   ChatRoom,
@@ -14,73 +13,91 @@ interface BaseResponse {
   message?: string;
 }
 
-// 그룹 생성
-export interface GroupCreateRequest {
-  name: string;
-  description?: string;
-  category: 'STUDY' | 'CASUAL';
-  max_members?: number;
-  thumbnail_url?: string;
-  deadline?: string;  // 마감 기한 추가
-}
+// === 일반 사용자용 DTO ===
 
-export interface GroupCreateResponse extends BaseResponse {
-  group: Group;
-}
-
-// 그룹 업데이트
-export interface GroupUpdateRequest {
-  name?: string;
-  description?: string;
-  category?: 'STUDY' | 'CASUAL';
-  max_members?: number;
-  thumbnail_url?: string;
-  deadline?: string;  // 마감 기한 추가
-}
-
-export interface GroupUpdateResponse extends BaseResponse {
-  group: Group;
-}
-
-// 그룹 목록 조회
+// 그룹 목록 조회 (일반 사용자)
 export interface GetGroupsRequest {
   page?: number;
   size?: number;
 }
 
-export interface GetGroupsResponse {
-  total: number;
-  items: Group[];
+// 그룹 가입 요청
+export interface GroupJoinRequestDto {
+  group_id: number;
 }
 
-// 그룹 노트 생성
-export interface GroupNoteCreateRequest {
-  title: string;
-  content: string;
-  category?: string;
-  post_type?: string;
-}
-
-export interface GroupNoteCreateResponse extends BaseResponse {
-  note: GroupNote;
-}
-
-// 그룹 좋아요 관련
+// 그룹 좋아요 토글
 export interface GroupLikeToggleRequest {
   group_id: number;
 }
 
 export type GroupLikeToggleResponseType = GroupLikeToggleResponse;
 
-export interface GetGroupLikesResponse extends BaseResponse {
-  likes: GroupLikeInfo;
+// 내가 속한 그룹 목록 조회
+export interface GetMyGroupsRequest {
+  page?: number;
+  size?: number;
 }
 
-export interface CheckUserLikedGroupResponse extends BaseResponse {
-  liked: boolean;
+// 내 가입 신청 목록 조회
+export interface GetMyRequestsRequest {
+  page?: number;
+  size?: number;
 }
 
-export interface GroupDeleteResponse extends BaseResponse {
+// === 관리자용 DTO ===
+
+// 관리자용 그룹 생성
+export interface AdminGroupCreateRequest {
+  name: string;
+  description?: string;
+  category: 'STUDY' | 'CASUAL';
+  max_members?: number;
+  thumbnail_url?: string;
+  deadline?: string;
+}
+
+export interface AdminGroupCreateResponse {
+  id: number;
+}
+
+// 관리자용 그룹 수정
+export interface AdminGroupUpdateRequest {
+  name?: string;
+  description?: string;
+  category?: 'STUDY' | 'CASUAL';
+  max_members?: number;
+  thumbnail_url?: string;
+  deadline?: string;
+}
+
+// 관리자용 그룹 목록 조회
+export interface AdminGetGroupsRequest {
+  page?: number;
+  size?: number;
+  gen?: number;
+  status?: string;
+}
+
+// 관리자용 멤버 관리
+export interface AdminMemberApproveRequest {
+  member_id: string;
+}
+
+export interface AdminMemberRejectRequest {
+  member_id: string;
+}
+
+export interface AdminMemberRemoveRequest {
+  member_id: string;
+}
+
+// 관리자용 응답
+export interface AdminGroupDeleteResponse {
+  message: string;
+}
+
+export interface AdminMemberRemoveResponse {
   message: string;
 }
 

@@ -3,14 +3,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useGroup } from '@prometheus-fe/hooks';
-import { useImage } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
 import GlassCard from '../../src/components/GlassCard';
 import GroupModal from '../../src/components/GroupModal';
 import RedButton from '../../src/components/RedButton';
 import QueryBar from '../../src/components/QueryBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faUsers, faEye, faUserPlus, faCheck, faTimes, faSearch, faUndo, faHeart, faHeartBroken, faArrowLeft, faImage, faClock, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faUsers, faEye, faUserPlus, faCheck, faTimes, faSearch, faUndo, faHeart, faHeartBroken, faArrowLeft, faImage, faClock, faTrash, faCircle } from '@fortawesome/free-solid-svg-icons';
 import Image from 'next/image';
 
 const CATEGORIES = [
@@ -39,7 +38,6 @@ export default function GroupPage() {
     isTogglingLike,
     userLikedGroups,
     fetchGroups,
-    createGroup,
     requestJoinGroup,
     filterGroupsByCategory,
     toggleGroupLike,
@@ -48,24 +46,6 @@ export default function GroupPage() {
   } = useGroup();
 
   const { user } = useAuthStore();
-  
-  // useImage 훅 사용
-  const {
-    isUploading,
-    uploadError,
-    uploadImage,
-    validateImageFile,
-    getThumbnailUrl,
-    clearError
-  } = useImage({
-    onUploadStart: () => console.log('이미지 업로드 시작'),
-    onUploadSuccess: (response) => {
-      console.log('이미지 업로드 성공:', response);
-    },
-    onUploadError: (error) => {
-      console.error('이미지 업로드 실패:', error);
-    }
-  });
 
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('all');
@@ -73,16 +53,7 @@ export default function GroupPage() {
     search: '',
     category_filter: ''
   });
-  const [showCreateForm, setShowCreateForm] = useState(false);
   const [showGroupDetail, setShowGroupDetail] = useState(false);
-  const [newGroup, setNewGroup] = useState<any>({
-    name: '',
-    description: '',
-    category: 'STUDY',
-    max_members: undefined,
-    thumbnail_url: '',
-    deadline: '',  // 마감일 추가
-  });
 
   // 탭 변경 핸들러 (기존 필터에 추가하고 바로 검색 실행)
   const handleTabChange = (tabId: string) => {
@@ -162,38 +133,6 @@ export default function GroupPage() {
     setActiveTab('all');
   };
 
-  const handleCreateGroup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!newGroup.name.trim()) {
-      setError('그룹 이름을 입력해주세요.');
-      return;
-    }
-
-    try {
-      setError('');
-      // 마감일이 설정된 경우 ISO 문자열로 변환
-      const groupData = {
-        ...newGroup,
-        deadline: newGroup.deadline ? new Date(newGroup.deadline).toISOString() : undefined
-      };
-      await createGroup(groupData);
-      setNewGroup({
-        name: '',
-        description: '',
-        category: 'STUDY',
-        max_members: undefined,
-        thumbnail_url: '',
-        deadline: '',
-      });
-      setShowCreateForm(false);
-      await loadGroups();
-    } catch (err) {
-      console.error('그룹 생성 실패:', err);
-      setError('그룹 생성에 실패했습니다.');
-    }
-  };
-
   const handleGroupClick = async (groupId: number) => {
     try {
       // 그룹을 선택된 그룹으로 설정
@@ -231,33 +170,6 @@ export default function GroupPage() {
     }
   };
 
-  // 썸네일 파일 변경 핸들러
-  const handleThumbnailFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e?.target?.files?.[0];
-    if (!file) return;
-
-    // 이미지 파일 검증
-    const validationError = validateImageFile(file);
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-
-    // 이전 에러 클리어
-    clearError();
-    
-    try {
-      // useImage 훅을 사용하여 이미지 업로드
-      const imageUrl = await uploadImage(file, 'group');
-      if (imageUrl) {
-        setNewGroup((prev: any) => ({ ...prev, thumbnail_url: imageUrl }));
-      }
-    } catch (error) {
-      console.error('썸네일 이미지 업로드 처리 중 오류:', error);
-      setError('이미지 업로드에 실패했습니다.');
-    }
-  };
-
   return (
     <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
       {/* 헤더 */}
@@ -273,15 +185,6 @@ export default function GroupPage() {
             </div>
         </div>
           <div className="text-right">
-        {user && (
-          <RedButton
-            onClick={() => setShowCreateForm(!showCreateForm)}
-                className="inline-flex items-center text-sm font-medium mb-2"
-          >
-            <FontAwesomeIcon icon={faPlus} className="mr-2 h-4 w-4" />
-            그룹 만들기
-          </RedButton>
-        )}
             <p className="text-sm text-[#e0e0e0]">전체 <span className="text-[#ffa282] font-bold">{groups.length}</span>개</p>
           </div>
       </div>
@@ -324,177 +227,6 @@ export default function GroupPage() {
         </div>
       )}
 
-      {/* 그룹 생성 폼 */}
-      {showCreateForm && (
-        <GlassCard className="mb-6">
-          <div className="p-6">
-            <h3 className="text-lg font-semibold mb-4 text-white">새 그룹 만들기</h3>
-            <form onSubmit={handleCreateGroup}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-white mb-1">
-                    그룹 이름
-                  </label>
-                  <input
-                    type="text"
-                    value={newGroup.name}
-                    onChange={(e) => setNewGroup((prev: any) => ({ ...prev, name: e.target.value }))}
-                    className="w-full bg-white/20 text-black border border-white/30 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    placeholder="그룹 이름을 입력하세요"
-                    maxLength={200}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-white mb-1">
-                    카테고리
-                  </label>
-                  <select
-                    value={newGroup.category}
-                    onChange={(e) => setNewGroup((prev: any) => ({ ...prev, category: e.target.value as 'STUDY' | 'CASUAL' }))}
-                    className="w-full bg-white/20 text-white border border-white/30 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    required
-                  >
-                    {CATEGORIES.map(category => (
-                      <option key={category.value} value={category.value} className="bg-gray-800 text-white">
-                        {category.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-white mb-1">
-                  그룹 설명
-                </label>
-                <textarea
-                  value={newGroup.description}
-                  onChange={(e) => setNewGroup((prev: any) => ({ ...prev, description: e.target.value }))}
-                  rows={3}
-                  className="w-full bg-white/20 text-black border border-white/30 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  placeholder="그룹에 대한 설명을 입력하세요"
-                />
-              </div>
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-white mb-1">
-                  최대 인원
-                </label>
-                <input
-                  type="number"
-                  value={newGroup.max_members || ''}
-                  onChange={(e) => setNewGroup((prev: any) => ({ 
-                    ...prev, 
-                    max_members: e.target.value ? parseInt(e.target.value) : undefined 
-                  }))}
-                  className="w-full bg-white/20 text-black border border-white/30 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  placeholder="최대 인원 (선택사항)"
-                  min="1"
-                />
-              </div>
-              
-              {/* 마감일 설정 */}
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-white mb-1">
-                  마감일 (선택사항)
-                </label>
-                <input
-                  type="datetime-local"
-                  value={newGroup.deadline || ''}
-                  onChange={(e) => setNewGroup((prev: any) => ({ 
-                    ...prev, 
-                    deadline: e.target.value 
-                  }))}
-                  className="w-full bg-white/20 text-white border border-white/30 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  placeholder="마감일을 설정하세요"
-                />
-                <p className="text-xs text-gray-400 mt-1">
-                  마감일을 설정하지 않으면 무기한 진행됩니다.
-                </p>
-              </div>
-              
-              {/* 썸네일 이미지 업로드 */}
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-white mb-1">
-                  썸네일 이미지
-                </label>
-                <div className="space-y-2">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleThumbnailFileChange}
-                    disabled={isUploading}
-                    className="text-sm text-white file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-white/20 file:text-white hover:file:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
-                  />
-                  {isUploading && (
-                    <div className="text-sm text-blue-400 flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mr-2"></div>
-                      이미지 업로드 중...
-                    </div>
-                  )}
-                  {uploadError && (
-                    <div className="text-sm text-red-400">
-                      {uploadError}
-                    </div>
-                  )}
-                  {newGroup.thumbnail_url ? (
-                    <div className="relative inline-block">
-                      <Image
-                        src={getThumbnailUrl(newGroup.thumbnail_url, 300)}
-                        alt="그룹 썸네일"
-                        className="rounded border object-cover"
-                        width={300}
-                        height={200}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          if (target.src !== newGroup.thumbnail_url && newGroup.thumbnail_url) {
-                            target.src = newGroup.thumbnail_url;
-                          }
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setNewGroup((prev: any) => ({ ...prev, thumbnail_url: '' }))}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 transition-colors"
-                        title="이미지 제거"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="w-full h-48 bg-white/10 rounded-lg flex items-center justify-center">
-                      <FontAwesomeIcon icon={faImage} className="text-white/30 text-4xl" />
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-2 mt-4">
-                <RedButton type="submit" disabled={isCreatingGroup || isUploading}>
-                  {isCreatingGroup ? '생성 중...' : '그룹 만들기'}
-                </RedButton>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowCreateForm(false);
-                    setNewGroup({
-                      name: '',
-                      description: '',
-                      category: 'STUDY',
-                      max_members: undefined,
-                      thumbnail_url: '',
-                      deadline: '',  // 마감일 초기화
-                    });
-                  }}
-                  className="px-4 py-2 rounded-md bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-colors"
-                >
-                  취소
-                </button>
-              </div>
-            </form>
-          </div>
-        </GlassCard>
-      )}
-
       {/* 에러 메시지 */}
       {error && (
         <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400">
@@ -504,28 +236,58 @@ export default function GroupPage() {
 
       {/* 그룹 목록 */}
       {isLoadingGroups ? (
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="bg-white/10 rounded-lg p-4 border border-white/20 animate-pulse">
+              <div className="space-y-3">
+                {/* 썸네일 */}
+                <div className="w-full h-32 bg-gray-600 rounded-lg"></div>
+                
+                {/* 제목과 기수 */}
+                <div className="flex items-center gap-2">
+                  <div className="w-24 h-6 bg-gray-600 rounded flex-1"></div>
+                  <div className="w-16 h-5 bg-gray-600 rounded-full"></div>
+                </div>
+
+                {/* 카테고리와 상태 */}
+                <div className="flex items-center space-x-2">
+                  <div className="w-16 h-5 bg-gray-600 rounded"></div>
+                  <div className="w-12 h-5 bg-gray-600 rounded"></div>
+                </div>
+
+                {/* 설명 */}
+                <div className="h-10">
+                  <div className="w-full h-4 bg-gray-600 rounded mb-2"></div>
+                  <div className="w-3/4 h-4 bg-gray-600 rounded"></div>
+                </div>
+
+                {/* 통계 정보 */}
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-4 bg-gray-600 rounded"></div>
+                  <div className="w-12 h-4 bg-gray-600 rounded"></div>
+                  <div className="w-16 h-4 bg-gray-600 rounded"></div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
-          <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredGroups.map((group: any) => (
-              <GlassCard 
+            <div 
                 key={group.id} 
-                className="p-4 hover:bg-white/20 transition-colors cursor-pointer border border-white/20"
+              className="bg-white/10 rounded-lg p-4 border border-white/20 hover:bg-white/20 transition-colors cursor-pointer group"
                 onClick={() => handleGroupClick(group.id)}
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    {/* 그룹 썸네일 */}
-                    <div className="mb-3">
-                      <div className="w-20 h-20 rounded-lg overflow-hidden bg-white/10">
+              <div className="space-y-3">
+                {/* 썸네일 */}
+                <div className="w-full h-32 rounded-lg overflow-hidden bg-white/10">
                         {group.thumbnail_url ? (
                           <Image
-                            src={getThumbnailUrl(group.thumbnail_url, 200)}
+                      src={group.thumbnail_url}
                             alt={group.name}
-                            width={80}
-                            height={80}
+                      width={300}
+                      height={128}
                             className="w-full h-full object-cover"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
@@ -536,72 +298,90 @@ export default function GroupPage() {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <FontAwesomeIcon icon={faUsers} className="text-white/30 text-2xl" />
+                      <FontAwesomeIcon icon={faUsers} className="text-white/30 text-4xl" />
                           </div>
                         )}
+                </div>
+                
+                {/* 제목과 기수 */}
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2 flex-1 mr-2">
+                    <FontAwesomeIcon icon={faCircle} className="w-2 h-2 text-[#3FFF4F] flex-shrink-0" />
+                    <h3 className="text-lg font-semibold text-white line-clamp-2 flex-1">
+                      {group.name}
+                    </h3>
+                    <span className="px-1.5 py-0.5 text-xs rounded-full font-medium bg-[#8B0000] text-[#ffa282] flex-shrink-0">
+                      {group.owner_gen}기
+                    </span>
                       </div>
                     </div>
                     
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-lg font-semibold text-white">{group.name}</h3>
-                      <span className={`px-2 py-1 text-xs rounded-full border ${group.category === 'STUDY' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-green-500/20 text-green-300 border-green-500/30'}`}>
+                {/* 카테고리와 상태 */}
+                <div className="flex items-center space-x-2">
+                  <span className="px-1.5 py-0.5 bg-gray-500/20 text-gray-300 text-xs rounded">
                         {group.category === 'STUDY' ? '스터디 그룹' : '취미 그룹'}
                       </span>
-                      <span className={`px-2 py-1 text-xs rounded-full border ${group.deadline ? 'bg-red-500/20 text-red-300 border-red-500/30' : 'bg-green-500/20 text-green-300 border-green-500/30'}`}>
+                  <span className={`px-1.5 py-0.5 text-xs rounded ${
+                    group.deadline ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-[#3FFF4F]'
+                  }`}>
                         {group.deadline ? '마감됨' : '진행중'}
                       </span>
-                      <span className="px-2 py-1 text-xs rounded-full bg-yellow-500/20 text-yellow-300">
-                        {group.owner_gen}기 {group.owner_name}
-                      </span>
                     </div>
-                    {group.description && (
-                      <p className="text-gray-300 text-sm mb-2 line-clamp-2">
+
+                {/* 설명 (두 줄 고정) */}
+                <div className="h-10">
+                  {group.description ? (
+                    <p className="text-gray-300 text-sm line-clamp-2">
                         {group.description}
                       </p>
-                    )}
-                    <div className="flex items-center space-x-4 text-sm text-gray-300">
+                  ) : (
+                    <div className="h-10"></div>
+                  )}
+                </div>
+
+                {/* 통계 정보 */}
+                <div className="space-y-2 text-sm text-white/60">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
                       <span className="flex items-center">
-                        <FontAwesomeIcon icon={faUsers} className="mr-1" />
+                        <FontAwesomeIcon icon={faUsers} className="mr-1 w-4 h-4" />
                         {group.current_member_count || 0}
                         {group.max_members ? `/${group.max_members}` : ''}명
                       </span>
                       <span className="flex items-center">
-                        <FontAwesomeIcon icon={faHeart} className="mr-1" />
+                        <FontAwesomeIcon icon={faHeart} className="mr-1 w-4 h-4" />
                         {group.like_count || 0}개
-                      </span>
-                      {/* 마감일 정보 표시 */}
-                      <span className="flex items-center">
-                        <FontAwesomeIcon icon={faClock} className="mr-1" />
-                        {group.deadline ? new Date(group.deadline).toLocaleDateString() : '무기한'}
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2 ml-4">
-                    {/* 좋아요 버튼 */}
+                  <div className="flex items-center space-x-2">
+                    <FontAwesomeIcon icon={faClock} className="w-4 h-4" />
+                    <span>{group.deadline ? new Date(group.deadline).toLocaleDateString() : '무기한'}</span>
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    운영자: {group.owner_name}
+                    </div>
+                  </div>
+
+                {/* 액션 버튼들 */}
+                <div className="flex items-center justify-between pt-2">
                     <button
                       onClick={(e) => handleLikeToggle(group.id, e)}
-                      disabled={isTogglingLike}
-                      className={`flex items-center space-x-1 px-2 py-1 rounded text-sm transition-colors ${
-                        userLikedGroups[group.id]
-                          ? 'text-red-400 hover:text-red-300 bg-red-500/20'
-                          : 'text-gray-400 hover:text-gray-300 bg-white/10 hover:bg-white/20'
-                      }`}
-                    >
-                      <FontAwesomeIcon 
-                        icon={userLikedGroups[group.id] ? faHeart : faHeartBroken} 
-                        className="mr-1" 
-                      />
-                      {userLikedGroups[group.id] ? '좋아요' : '좋아요'}
+                    className="flex items-center space-x-1 px-2 py-1 rounded text-sm transition-colors text-gray-400 hover:text-gray-300 bg-white/10 hover:bg-white/20"
+                  >
+                    <FontAwesomeIcon icon={faHeart} className="w-3 h-3" />
+                    <span className="text-xs">좋아요</span>
                     </button>
                     
+                  <div className="flex space-x-2">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleGroupClick(group.id);
                       }}
-                      className="text-blue-400 hover:text-blue-300 text-sm px-2 py-1 rounded hover:bg-blue-500/20 transition-colors"
+                      className="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 rounded hover:bg-blue-500/20 transition-colors"
                     >
-                      <FontAwesomeIcon icon={faEye} className="mr-1" />
+                      <FontAwesomeIcon icon={faEye} className="mr-1 w-3 h-3" />
                       상세보기
                     </button>
                     {user && user.id !== group.owner_id && (
@@ -610,15 +390,16 @@ export default function GroupPage() {
                           e.stopPropagation();
                           handleJoinGroup(group.id);
                         }}
-                        className="text-green-400 hover:text-green-300 text-sm px-2 py-1 rounded hover:bg-green-500/20 transition-colors"
+                        className="text-green-400 hover:text-green-300 text-xs px-2 py-1 rounded hover:bg-green-500/20 transition-colors"
                       >
-                        <FontAwesomeIcon icon={faUserPlus} className="mr-1" />
-                        가입신청
+                        <FontAwesomeIcon icon={faUserPlus} className="mr-1 w-3 h-3" />
+                        가입
                       </button>
                     )}
                   </div>
                 </div>
-              </GlassCard>
+              </div>
+            </div>
             ))}
           </div>
       )}
@@ -627,7 +408,9 @@ export default function GroupPage() {
       {!isLoadingGroups && filteredGroups.length === 0 && (
         <div className="px-4 py-5 sm:p-6">
           <div className="text-center">
-            <FontAwesomeIcon icon={faUsers} className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
             <h3 className="mt-2 text-sm font-medium text-white">그룹이 없습니다.</h3>
             <p className="mt-1 text-sm text-gray-300">
                 {(filters.search || filters.category_filter) ? '검색 결과가 없습니다.' : '아직 등록된 그룹이 없습니다.'}
