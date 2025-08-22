@@ -4,20 +4,20 @@ import { useState, useEffect } from 'react';
 import Navigation from '../../src/components/Navigation';
 import { useLanding } from '@prometheus-fe/hooks';
 
-export default function ReviewPage() {
-  const { reviews, getReviews, isLoadingReviews } = useLanding();
+export default function InterviewPage() {
+  const { interviews, getInterviews, isLoadingInterviews } = useLanding();
 
   useEffect(() => {
-    const fetchReviews = async () => {
+    const fetchInterviews = async () => {
       try {
-        await getReviews({ page: 1, size: 20 });
+        await getInterviews({ page: 1, size: 20 });
       } catch (error) {
-        console.error('리뷰 조회 실패:', error);
+        console.error('인터뷰 조회 실패:', error);
       }
     };
 
-    fetchReviews();
-  }, [getReviews]);
+    fetchInterviews();
+  }, [getInterviews]);
 
   return (
     <div className="min-h-screen text-white w-full bg-black">
@@ -27,56 +27,50 @@ export default function ReviewPage() {
         <div className="w-full max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h1 className="text-4xl md:text-5xl font-kimm-bold mb-4 bg-gradient-to-r from-[#8B0000] via-[#c2402a] to-[#ffa282] bg-clip-text text-transparent">
-              REVIEW
+              INTERVIEW
             </h1>
             <p className="text-xl text-[#e0e0e0]">
-              프로메테우스 활동 후기
+              프로메테우스 활동 인터뷰
             </p>
           </div>
           
-          {isLoadingReviews ? (
+          {isLoadingInterviews ? (
             <div className="flex justify-center items-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
             </div>
-          ) : reviews.length > 0 ? (
+          ) : interviews.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {reviews.map((review) => (
-                <div key={review.id} className="bg-gray-900 rounded-lg p-6 hover:bg-gray-800 transition-colors duration-300">
+              {interviews.map((interview) => (
+                <div key={interview.id} className="bg-gray-900 rounded-lg p-6 hover:bg-gray-800 transition-colors duration-300">
                   <div className="flex items-center mb-4">
                     <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center mr-4">
                       <span className="text-white font-bold">
-                        {review.member_id.charAt(0).toUpperCase()}
+                        {interview.member_id.charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-white">{review.member_id}</h3>
-                      {review.gen !== undefined && (
-                        <p className="text-sm text-gray-400">{review.gen}기</p>
+                      <h3 className="text-lg font-semibold text-white">{interview.member_id}</h3>
+                      {interview.gen !== undefined && (
+                        <p className="text-sm text-gray-400">{interview.gen}기</p>
                       )}
                       <div className="flex items-center space-x-2">
                         <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <span
-                              key={i}
-                              className={`text-sm ${i < review.rating ? 'text-yellow-400' : 'text-gray-600'}`}
-                            >
-                              ★
-                            </span>
-                          ))}
+                          <span className="text-sm text-gray-400">
+                            {interview.member_name} ({interview.member_gen}기)
+                          </span>
                         </div>
-                        <span className="text-xs text-gray-400">({review.rating}/5)</span>
                       </div>
                     </div>
                   </div>
                   <p className="text-gray-300 mb-4 line-clamp-4">
-                    &quot;{review.content}&quot;
+                    &quot;{interview.content}&quot;
                   </p>
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-500">
-                      {new Date(review.created_at).toLocaleDateString()}
+                      {new Date(interview.created_at).toLocaleDateString()}
                     </span>
                     <span className="text-xs bg-red-600 text-white px-2 py-1 rounded">
-                      활동후기
+                      활동인터뷰
                     </span>
                   </div>
                 </div>
@@ -87,9 +81,9 @@ export default function ReviewPage() {
               <div className="w-24 h-24 bg-gray-800 rounded-lg flex items-center justify-center mx-auto mb-6">
                 <span className="text-gray-400 text-2xl">📝</span>
               </div>
-              <h3 className="text-2xl font-semibold text-white mb-4">아직 리뷰가 없습니다</h3>
+              <h3 className="text-2xl font-semibold text-white mb-4">아직 인터뷰가 없습니다</h3>
               <p className="text-gray-400 text-lg">
-                프로메테우스 활동 후기를 작성해보세요.
+                프로메테우스 활동 인터뷰를 작성해보세요.
               </p>
             </div>
           )}

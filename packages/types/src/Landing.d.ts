@@ -4,9 +4,9 @@ export interface LandingSponsor {
   id: number;
   name: string;
   logo_url: string | null;
-  purpose: string;
-  amount: number;
-  note: string;
+  purpose: string | null;
+  amount: number | null;
+  note: string | null;
   sponsored_at: string;
 }
 
@@ -15,12 +15,13 @@ export interface LandingHonorHall {
   purpose: string;
 }
 
-export interface LandingReview {
+export interface LandingInterview {
   id: number;
   member_id: string;
-  gen?: number;
+  member_name: string;
+  member_gen: number;
+  gen: number;
   content: string;
-  rating: number;
   created_at: string;
 }
 
@@ -29,6 +30,7 @@ export interface LandingLink {
   title: string;
   url: string;
   image_url: string | null;
+  post_date: string;
   created_at: string;
 }
 
@@ -57,13 +59,13 @@ export interface LandingHonorHallListResponse {
   size: number;
 }
 
-export interface LandingReviewListParams {
+export interface LandingInterviewListParams {
   page?: number;
   size?: number;
 }
 
-export interface LandingReviewListResponse {
-  reviews: LandingReview[];
+export interface LandingInterviewListResponse {
+  interviews: LandingInterview[];
   total: number;
   page: number;
   size: number;
@@ -99,17 +101,17 @@ export interface LandingHonorHallCreateRequest {
   honored_at?: string;
 }
 
-export interface LandingReviewCreateRequest {
+export interface LandingInterviewCreateRequest {
   member_id: string;
-  gen?: number;
+  gen: number;
   content: string;
-  rating: number;
 }
 
 export interface LandingLinkCreateRequest {
   title: string;
   url: string;
   image_url?: string;
+  post_date: string;
 }
 
 // Update Request 타입들
@@ -130,16 +132,16 @@ export interface LandingHonorHallUpdateRequest {
   honored_at?: string;
 }
 
-export interface LandingReviewUpdateRequest {
-  gen?: number;
+export interface LandingInterviewUpdateRequest {
+  gen: number;
   content: string;
-  rating: number;
 }
 
 export interface LandingLinkUpdateRequest {
   title: string;
   url: string;
   image_url?: string;
+  post_date: string;
 }
 
 // Response 타입들
@@ -159,11 +161,11 @@ export interface LandingHonorHallUpdateResponse {
   id: number;
 }
 
-export interface LandingReviewCreateResponse {
+export interface LandingInterviewCreateResponse {
   id: number;
 }
 
-export interface LandingReviewUpdateResponse {
+export interface LandingInterviewUpdateResponse {
   id: number;
 }
 

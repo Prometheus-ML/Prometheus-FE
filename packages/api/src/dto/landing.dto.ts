@@ -6,9 +6,9 @@ export interface LandingSponsorListResponseDto {
     id: number;
     name: string;
     logo_url: string | null;
-    purpose: string;
-    amount: number;
-    note: string;
+    purpose: string | null;
+    amount: number | null;
+    note: string | null;
     sponsored_at: string;
   }[];
   total: number;
@@ -24,13 +24,15 @@ export interface LandingHonorHallListResponseDto {
   }[];
 }
 
-// 리뷰 목록 조회 응답
-export interface LandingReviewListResponseDto {
-  reviews: {
+// 인터뷰 목록 조회 응답 (공개)
+export interface LandingInterviewListResponseDto {
+  interviews: {
     id: number;
     member_id: string;
+    member_name: string;
+    member_gen: number;
+    gen: number;
     content: string;
-    rating: number;
     created_at: string;
   }[];
   total: number;
@@ -45,6 +47,7 @@ export interface LandingLinkListResponseDto {
     title: string;
     url: string;
     image_url: string | null;
+    post_date: string;
     created_at: string;
   }[];
   total: number;
@@ -52,26 +55,26 @@ export interface LandingLinkListResponseDto {
   size: number;
 }
 
-// 리뷰 생성 요청
-export interface LandingReviewCreateRequestDto {
+// 인터뷰 생성 요청
+export interface LandingInterviewCreateRequestDto {
   member_id: string;
+  gen: number;
   content: string;
-  rating: number;
 }
 
-// 리뷰 생성 응답
-export interface LandingReviewCreateResponseDto {
+// 인터뷰 생성 응답
+export interface LandingInterviewCreateResponseDto {
   id: number;
 }
 
-// 리뷰 수정 요청
-export interface LandingReviewUpdateRequestDto {
+// 인터뷰 수정 요청
+export interface LandingInterviewUpdateRequestDto {
+  gen: number;
   content: string;
-  rating: number;
 }
 
-// 리뷰 수정 응답
-export interface LandingReviewUpdateResponseDto {
+// 인터뷰 수정 응답
+export interface LandingInterviewUpdateResponseDto {
   id: number;
 }
 
@@ -80,6 +83,7 @@ export interface LandingLinkCreateRequestDto {
   title: string;
   url: string;
   image_url?: string;
+  post_date: string;
 }
 
 // 링크 생성 응답
@@ -92,6 +96,7 @@ export interface LandingLinkUpdateRequestDto {
   title: string;
   url: string;
   image_url?: string;
+  post_date: string;
 }
 
 // 링크 수정 응답

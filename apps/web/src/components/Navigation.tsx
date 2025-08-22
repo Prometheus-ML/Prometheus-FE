@@ -26,8 +26,8 @@ const Navigation = () => {
       name: "PROJECT",
     },
     {
-      path: "/review",
-      name: "REVIEW"
+      path: "/interview",
+      name: "INTERVIEW"
     },
     {
       path: "/news",

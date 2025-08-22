@@ -3,17 +3,17 @@ import { useApi } from '@prometheus-fe/context';
 import {
   LandingSponsor,
   LandingHonorHall,
-  LandingReview,
+  LandingInterview,
   LandingLink,
   LandingSponsorListParams,
   LandingSponsorListResponse,
-  LandingReviewListParams,
+  LandingInterviewListParams,
   LandingLinkListParams,
   LandingSponsorCreateRequest,
   LandingHonorHallCreateRequest,
-  LandingReviewCreateRequest,
+  LandingInterviewCreateRequest,
   LandingLinkCreateRequest,
-  LandingReviewUpdateRequest,
+  LandingInterviewUpdateRequest,
   LandingLinkUpdateRequest
 } from '@prometheus-fe/types';
 
@@ -23,32 +23,32 @@ export const useLanding = () => {
   // 상태 관리
   const [sponsors, setSponsors] = useState<LandingSponsor[]>([]);
   const [honorHall, setHonorHall] = useState<LandingHonorHall[]>([]);
-  const [reviews, setReviews] = useState<LandingReview[]>([]);
+  const [interviews, setInterviews] = useState<LandingInterview[]>([]);
   const [links, setLinks] = useState<LandingLink[]>([]);
-  const [selectedReview, setSelectedReview] = useState<LandingReview | null>(null);
+  const [selectedInterview, setSelectedInterview] = useState<LandingInterview | null>(null);
   const [selectedLink, setSelectedLink] = useState<LandingLink | null>(null);
   
   // Admin 상태 관리
   const [adminSponsors, setAdminSponsors] = useState<LandingSponsor[]>([]);
   const [adminHonorHall, setAdminHonorHall] = useState<LandingHonorHall[]>([]);
-  const [adminReviews, setAdminReviews] = useState<LandingReview[]>([]);
+  const [adminInterviews, setAdminInterviews] = useState<LandingInterview[]>([]);
   const [adminLinks, setAdminLinks] = useState<LandingLink[]>([]);
   
   // 로딩 상태
   const [isLoadingSponsors, setIsLoadingSponsors] = useState<boolean>(false);
   const [isLoadingHonorHall, setIsLoadingHonorHall] = useState<boolean>(false);
-  const [isLoadingReviews, setIsLoadingReviews] = useState<boolean>(false);
+  const [isLoadingInterviews, setIsLoadingInterviews] = useState<boolean>(false);
   const [isLoadingLinks, setIsLoadingLinks] = useState<boolean>(false);
   
   // Admin 로딩 상태
   const [isLoadingAdminSponsors, setIsLoadingAdminSponsors] = useState<boolean>(false);
   const [isLoadingAdminHonorHall, setIsLoadingAdminHonorHall] = useState<boolean>(false);
-  const [isLoadingAdminReviews, setIsLoadingAdminReviews] = useState<boolean>(false);
+  const [isLoadingAdminInterviews, setIsLoadingAdminInterviews] = useState<boolean>(false);
   const [isLoadingAdminLinks, setIsLoadingAdminLinks] = useState<boolean>(false);
   
   // 페이지네이션 상태
   const [sponsorsTotal, setSponsorsTotal] = useState<number>(0);
-  const [reviewsTotal, setReviewsTotal] = useState<number>(0);
+  const [interviewsTotal, setInterviewsTotal] = useState<number>(0);
   const [linksTotal, setLinksTotal] = useState<number>(0);
 
   // ===== 후원사 API =====
@@ -92,64 +92,64 @@ export const useLanding = () => {
     }
   }, [landing]);
 
-  // ===== 리뷰 API =====
+  // ===== 인터뷰 API =====
 
-  // 리뷰 목록 조회 (공개)
-  const getReviews = useCallback(async (params?: LandingReviewListParams): Promise<LandingReview[]> => {
+  // 인터뷰 목록 조회 (공개)
+  const getInterviews = useCallback(async (params?: LandingInterviewListParams): Promise<LandingInterview[]> => {
     if (!landing) {
       throw new Error('Landing API not available');
     }
     try {
-      setIsLoadingReviews(true);
-      const data = await landing.getReviews(params);
-      setReviews(data || []);
-      setReviewsTotal(data?.length || 0);
+      setIsLoadingInterviews(true);
+      const data = await landing.getInterviews(params);
+      setInterviews(data || []);
+      setInterviewsTotal(data?.length || 0);
       return data || [];
     } catch (error) {
-      console.error('Failed to fetch reviews:', error);
+      console.error('Failed to fetch interviews:', error);
       throw error;
     } finally {
-      setIsLoadingReviews(false);
+      setIsLoadingInterviews(false);
     }
   }, [landing]);
 
-  // 리뷰 생성 (인증 필요)
-  const createReview = useCallback(async (data: LandingReviewCreateRequest): Promise<number> => {
+  // 인터뷰 생성 (인증 필요)
+  const createInterview = useCallback(async (data: LandingInterviewCreateRequest): Promise<number> => {
     if (!landing) {
       throw new Error('Landing API not available');
     }
     try {
-      const response = await landing.createReview(data);
+      const response = await landing.createInterview(data);
       return response.id;
     } catch (error) {
-      console.error('Failed to create review:', error);
+      console.error('Failed to create interview:', error);
       throw error;
     }
   }, [landing]);
 
-  // 리뷰 수정 (인증 필요)
-  const updateReview = useCallback(async (reviewId: number, data: LandingReviewUpdateRequest): Promise<number> => {
+  // 인터뷰 수정 (인증 필요)
+  const updateInterview = useCallback(async (interviewId: number, data: LandingInterviewUpdateRequest): Promise<number> => {
     if (!landing) {
       throw new Error('Landing API not available');
     }
     try {
-      const response = await landing.updateReview(reviewId, data);
+      const response = await landing.updateInterview(interviewId, data);
       return response.id;
     } catch (error) {
-      console.error(`Failed to update review ${reviewId}:`, error);
+      console.error(`Failed to update interview ${interviewId}:`, error);
       throw error;
     }
   }, [landing]);
 
-  // 리뷰 삭제 (인증 필요)
-  const deleteReview = useCallback(async (reviewId: number): Promise<void> => {
+  // 인터뷰 삭제 (인증 필요)
+  const deleteInterview = useCallback(async (interviewId: number): Promise<void> => {
     if (!landing) {
       throw new Error('Landing API not available');
     }
     try {
-      await landing.deleteReview(reviewId);
+      await landing.deleteInterview(interviewId);
     } catch (error) {
-      console.error(`Failed to delete review ${reviewId}:`, error);
+      console.error(`Failed to delete interview ${interviewId}:`, error);
       throw error;
     }
   }, [landing]);
@@ -308,61 +308,61 @@ export const useLanding = () => {
     }
   }, [landing]);
 
-  // Admin 리뷰 목록 조회 (Super 이상)
-  const getAdminReviews = useCallback(async (): Promise<LandingReview[]> => {
+  // Admin 인터뷰 목록 조회 (Super 이상)
+  const getAdminInterviews = useCallback(async (): Promise<LandingInterview[]> => {
     if (!landing) {
       throw new Error('Landing API not available');
     }
     try {
-      setIsLoadingAdminReviews(true);
-      const data = await landing.getAdminReviews();
-      setAdminReviews(data || []);
+      setIsLoadingAdminInterviews(true);
+      const data = await landing.getAdminInterviews();
+      setAdminInterviews(data || []);
       return data || [];
     } catch (error) {
-      console.error('Failed to fetch admin reviews:', error);
+      console.error('Failed to fetch admin interviews:', error);
       throw error;
     } finally {
-      setIsLoadingAdminReviews(false);
+      setIsLoadingAdminInterviews(false);
     }
   }, [landing]);
 
-  // Admin 리뷰 생성 (Super 이상)
-  const createAdminReview = useCallback(async (data: LandingReviewCreateRequest): Promise<number> => {
+  // Admin 인터뷰 생성 (Super 이상)
+  const createAdminInterview = useCallback(async (data: LandingInterviewCreateRequest): Promise<number> => {
     if (!landing) {
       throw new Error('Landing API not available');
     }
     try {
-      const response = await landing.createAdminReview(data);
+      const response = await landing.createAdminInterview(data);
       return response.id;
     } catch (error) {
-      console.error('Failed to create admin review:', error);
+      console.error('Failed to create admin interview:', error);
       throw error;
     }
   }, [landing]);
 
-  // Admin 리뷰 수정 (Super 이상)
-  const updateAdminReview = useCallback(async (reviewId: number, data: LandingReviewUpdateRequest): Promise<number> => {
+  // Admin 인터뷰 수정 (Super 이상)
+  const updateAdminInterview = useCallback(async (interviewId: number, data: LandingInterviewUpdateRequest): Promise<number> => {
     if (!landing) {
       throw new Error('Landing API not available');
     }
     try {
-      const response = await landing.updateAdminReview(reviewId, data);
+      const response = await landing.updateAdminInterview(interviewId, data);
       return response.id;
     } catch (error) {
-      console.error(`Failed to update admin review ${reviewId}:`, error);
+      console.error(`Failed to update admin interview ${interviewId}:`, error);
       throw error;
     }
   }, [landing]);
 
-  // Admin 리뷰 삭제 (Super 이상)
-  const deleteAdminReview = useCallback(async (reviewId: number): Promise<void> => {
+  // Admin 인터뷰 삭제 (Super 이상)
+  const deleteAdminInterview = useCallback(async (interviewId: number): Promise<void> => {
     if (!landing) {
       throw new Error('Landing API not available');
     }
     try {
-      await landing.deleteAdminReview(reviewId);
+      await landing.deleteAdminInterview(interviewId);
     } catch (error) {
-      console.error(`Failed to delete admin review ${reviewId}:`, error);
+      console.error(`Failed to delete admin interview ${interviewId}:`, error);
       throw error;
     }
   }, [landing]);
@@ -427,12 +427,12 @@ export const useLanding = () => {
   }, [landing]);
 
   // 선택된 항목 관리
-  const handleReviewSelect = useCallback((review: LandingReview): void => {
-    setSelectedReview(review);
+  const handleInterviewSelect = useCallback((interview: LandingInterview): void => {
+    setSelectedInterview(interview);
   }, []);
 
-  const handleReviewDeselect = useCallback((): void => {
-    setSelectedReview(null);
+  const handleInterviewDeselect = useCallback((): void => {
+    setSelectedInterview(null);
   }, []);
 
   const handleLinkSelect = useCallback((link: LandingLink): void => {
@@ -453,9 +453,9 @@ export const useLanding = () => {
     setHonorHall([]);
   }, []);
 
-  const clearReviews = useCallback((): void => {
-    setReviews([]);
-    setReviewsTotal(0);
+  const clearInterviews = useCallback((): void => {
+    setInterviews([]);
+    setInterviewsTotal(0);
   }, []);
 
   const clearLinks = useCallback((): void => {
@@ -467,32 +467,32 @@ export const useLanding = () => {
     // 상태
     sponsors,
     honorHall,
-    reviews,
+    interviews,
     links,
-    selectedReview,
+    selectedInterview,
     selectedLink,
     
     // Admin 상태
     adminSponsors,
     adminHonorHall,
-    adminReviews,
+    adminInterviews,
     adminLinks,
     
     // 로딩 상태
     isLoadingSponsors,
     isLoadingHonorHall,
-    isLoadingReviews,
+    isLoadingInterviews,
     isLoadingLinks,
     
     // Admin 로딩 상태
     isLoadingAdminSponsors,
     isLoadingAdminHonorHall,
-    isLoadingAdminReviews,
+    isLoadingAdminInterviews,
     isLoadingAdminLinks,
     
     // 페이지네이션
     sponsorsTotal,
-    reviewsTotal,
+    interviewsTotal,
     linksTotal,
     
     // 후원사 API 함수들
@@ -501,11 +501,11 @@ export const useLanding = () => {
     // 명예의전당 API 함수들
     getHonorHall,
     
-    // 리뷰 API 함수들
-    getReviews,
-    createReview,
-    updateReview,
-    deleteReview,
+    // 인터뷰 API 함수들
+    getInterviews,
+    createInterview,
+    updateInterview,
+    deleteInterview,
     
     // 링크 API 함수들
     getLinks,
@@ -516,29 +516,29 @@ export const useLanding = () => {
     // Admin API 함수들
     getAdminSponsors,
     getAdminHonorHall,
-    getAdminReviews,
+    getAdminInterviews,
     getAdminLinks,
     createSponsor,
     deleteSponsor,
     createHonorHall,
     deleteHonorHall,
-    createAdminReview,
-    updateAdminReview,
-    deleteAdminReview,
+    createAdminInterview,
+    updateAdminInterview,
+    deleteAdminInterview,
     createAdminLink,
     updateAdminLink,
     deleteAdminLink,
     
     // 선택 관리
-    handleReviewSelect,
-    handleReviewDeselect,
+    handleInterviewSelect,
+    handleInterviewDeselect,
     handleLinkSelect,
     handleLinkDeselect,
     
     // 초기화 함수들
     clearSponsors,
     clearHonorHall,
-    clearReviews,
+    clearInterviews,
     clearLinks,
   };
 };

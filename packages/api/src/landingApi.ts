@@ -2,12 +2,12 @@ import { ApiClient } from './apiClient';
 import {
   LandingSponsorListResponseDto,
   LandingHonorHallListResponseDto,
-  LandingReviewListResponseDto,
+  LandingInterviewListResponseDto,
   LandingLinkListResponseDto,
-  LandingReviewCreateRequestDto,
-  LandingReviewCreateResponseDto,
-  LandingReviewUpdateRequestDto,
-  LandingReviewUpdateResponseDto,
+  LandingInterviewCreateRequestDto,
+  LandingInterviewCreateResponseDto,
+  LandingInterviewUpdateRequestDto,
+  LandingInterviewUpdateResponseDto,
   LandingLinkCreateRequestDto,
   LandingLinkCreateResponseDto,
   LandingLinkUpdateRequestDto,
@@ -16,7 +16,7 @@ import {
 import {
   LandingSponsor,
   LandingHonorHall,
-  LandingReview,
+  LandingInterview,
   LandingLink
 } from '@prometheus-fe/types';
 
@@ -61,51 +61,51 @@ export class LandingApi {
 
   // ===== 리뷰 API =====
 
-  // 리뷰 목록 조회 (공개)
-  async getReviews(params?: any): Promise<LandingReview[]> {
+  // 인터뷰 목록 조회 (공개)
+  async getInterviews(params?: any): Promise<LandingInterview[]> {
     try {
       const sp = new URLSearchParams();
       if (params?.page) sp.set('page', String(params.page));
       if (params?.size) sp.set('size', String(params.size));
       
       const query = sp.toString() ? `?${sp.toString()}` : '';
-      const response = await this.api.get<LandingReview[]>(`${this.base}/reviews${query}`);
+      const response = await this.api.get<LandingInterview[]>(`${this.base}/interviews${query}`);
       return response;
     } catch (error: any) {
-      console.error('Error fetching reviews:', error);
-      throw new Error(error.message || 'Failed to fetch reviews');
+      console.error('Error fetching interviews:', error);
+      throw new Error(error.message || 'Failed to fetch interviews');
     }
   }
 
-  // 리뷰 생성 (인증 필요)
-  async createReview(data: LandingReviewCreateRequestDto): Promise<LandingReviewCreateResponseDto> {
+  // 인터뷰 생성 (인증 필요)
+  async createInterview(data: LandingInterviewCreateRequestDto): Promise<LandingInterviewCreateResponseDto> {
     try {
-      const response = await this.api.post<LandingReviewCreateResponseDto>(`${this.base}/reviews/`, data);
+      const response = await this.api.post<LandingInterviewCreateResponseDto>(`${this.base}/interviews/`, data);
       return response;
     } catch (error: any) {
-      console.error('Error creating review:', error);
-      throw new Error(error.message || 'Failed to create review');
+      console.error('Error creating interview:', error);
+      throw new Error(error.message || 'Failed to create interview');
     }
   }
 
-  // 리뷰 수정 (인증 필요)
-  async updateReview(reviewId: number, data: LandingReviewUpdateRequestDto): Promise<LandingReviewUpdateResponseDto> {
+  // 인터뷰 수정 (인증 필요)
+  async updateInterview(interviewId: number, data: LandingInterviewUpdateRequestDto): Promise<LandingInterviewUpdateResponseDto> {
     try {
-      const response = await this.api.put<LandingReviewUpdateResponseDto>(`${this.base}/reviews/${reviewId}`, data);
+      const response = await this.api.put<LandingInterviewUpdateResponseDto>(`${this.base}/interviews/${interviewId}`, data);
       return response;
     } catch (error: any) {
-      console.error(`Error updating review ${reviewId}:`, error);
-      throw new Error(error.message || 'Failed to update review');
+      console.error(`Error updating interview ${interviewId}:`, error);
+      throw new Error(error.message || 'Failed to update interview');
     }
   }
 
-  // 리뷰 삭제 (인증 필요)
-  async deleteReview(reviewId: number): Promise<void> {
+  // 인터뷰 삭제 (인증 필요)
+  async deleteInterview(interviewId: number): Promise<void> {
     try {
-      await this.api.delete(`${this.base}/reviews/${reviewId}`);
+      await this.api.delete(`${this.base}/interviews/${interviewId}`);
     } catch (error: any) {
-      console.error(`Error deleting review ${reviewId}:`, error);
-      throw new Error(error.message || 'Failed to delete review');
+      console.error(`Error deleting interview ${interviewId}:`, error);
+      throw new Error(error.message || 'Failed to delete interview');
     }
   }
 
@@ -164,7 +164,7 @@ export class LandingApi {
   // Admin 후원사 목록 조회 (Super 이상)
   async getAdminSponsors(): Promise<LandingSponsor[]> {
     try {
-      const response = await this.api.get<LandingSponsor[]>(`${this.base}/admin/sponsors`);
+      const response = await this.api.get<LandingSponsor[]>(`/admin/landing/sponsors`);
       return response;
     } catch (error: any) {
       console.error('Error fetching admin sponsors:', error);
@@ -175,7 +175,7 @@ export class LandingApi {
   // Admin 후원사 생성 (Super 이상)
   async createAdminSponsor(data: any): Promise<any> {
     try {
-      const response = await this.api.post(`${this.base}/admin/sponsors`, data);
+      const response = await this.api.post(`/admin/landing/sponsors`, data);
       return response;
     } catch (error: any) {
       console.error('Error creating admin sponsor:', error);
@@ -186,7 +186,7 @@ export class LandingApi {
   // Admin 후원사 삭제 (Super 이상)
   async deleteAdminSponsor(sponsorId: number): Promise<void> {
     try {
-      await this.api.delete(`${this.base}/admin/sponsors/${sponsorId}`);
+      await this.api.delete(`/admin/landing/sponsors/${sponsorId}`);
     } catch (error: any) {
       console.error(`Error deleting admin sponsor ${sponsorId}:`, error);
       throw new Error(error.message || 'Failed to delete admin sponsor');
@@ -196,7 +196,7 @@ export class LandingApi {
   // Admin 명예의전당 목록 조회 (Super 이상)
   async getAdminHonorHall(): Promise<LandingHonorHall[]> {
     try {
-      const response = await this.api.get<LandingHonorHall[]>(`${this.base}/admin/honor-hall`);
+      const response = await this.api.get<LandingHonorHall[]>(`/admin/landing/honor-hall`);
       return response;
     } catch (error: any) {
       console.error('Error fetching admin honor hall:', error);
@@ -207,7 +207,7 @@ export class LandingApi {
   // Admin 명예의전당 생성 (Super 이상)
   async createAdminHonorHall(data: any): Promise<any> {
     try {
-      const response = await this.api.post(`${this.base}/admin/honor-hall`, data);
+      const response = await this.api.post(`/admin/landing/honor-hall`, data);
       return response;
     } catch (error: any) {
       console.error('Error creating admin honor hall:', error);
@@ -218,60 +218,60 @@ export class LandingApi {
   // Admin 명예의전당 삭제 (Super 이상)
   async deleteAdminHonorHall(honorHallId: number): Promise<void> {
     try {
-      await this.api.delete(`${this.base}/admin/honor-hall/${honorHallId}`);
+      await this.api.delete(`/admin/landing/honor-hall/${honorHallId}`);
     } catch (error: any) {
       console.error(`Error deleting admin honor hall ${honorHallId}:`, error);
       throw new Error(error.message || 'Failed to delete admin honor hall');
     }
   }
 
-  // Admin 리뷰 목록 조회 (Super 이상)
-  async getAdminReviews(): Promise<LandingReview[]> {
+  // Admin 인터뷰 목록 조회 (Super 이상)
+  async getAdminInterviews(): Promise<LandingInterview[]> {
     try {
-      const response = await this.api.get<LandingReview[]>(`${this.base}/admin/reviews`);
+      const response = await this.api.get<LandingInterview[]>(`/admin/landing/interviews`);
       return response;
     } catch (error: any) {
-      console.error('Error fetching admin reviews:', error);
-      throw new Error(error.message || 'Failed to fetch admin reviews');
+      console.error('Error fetching admin interviews:', error);
+      throw new Error(error.message || 'Failed to fetch admin interviews');
     }
   }
 
-  // Admin 리뷰 생성 (Super 이상)
-  async createAdminReview(data: LandingReviewCreateRequestDto): Promise<LandingReviewCreateResponseDto> {
+  // Admin 인터뷰 생성 (Super 이상)
+  async createAdminInterview(data: LandingInterviewCreateRequestDto): Promise<LandingInterviewCreateResponseDto> {
     try {
-      const response = await this.api.post<LandingReviewCreateResponseDto>(`${this.base}/admin/reviews`, data);
+      const response = await this.api.post<LandingInterviewCreateResponseDto>(`/admin/landing/interviews`, data);
       return response;
     } catch (error: any) {
-      console.error('Error creating admin review:', error);
-      throw new Error(error.message || 'Failed to create admin review');
+      console.error('Error creating admin interview:', error);
+      throw new Error(error.message || 'Failed to create admin interview');
     }
   }
 
-  // Admin 리뷰 수정 (Super 이상)
-  async updateAdminReview(reviewId: number, data: LandingReviewUpdateRequestDto): Promise<LandingReviewUpdateResponseDto> {
+  // Admin 인터뷰 수정 (Super 이상)
+  async updateAdminInterview(interviewId: number, data: LandingInterviewUpdateRequestDto): Promise<LandingInterviewUpdateResponseDto> {
     try {
-      const response = await this.api.put<LandingReviewUpdateResponseDto>(`${this.base}/admin/reviews/${reviewId}`, data);
+      const response = await this.api.put<LandingInterviewUpdateResponseDto>(`/admin/landing/interviews/${interviewId}`, data);
       return response;
     } catch (error: any) {
-      console.error(`Error updating admin review ${reviewId}:`, error);
-      throw new Error(error.message || 'Failed to update admin review');
+      console.error(`Error updating admin interview ${interviewId}:`, error);
+      throw new Error(error.message || 'Failed to update admin interview');
     }
   }
 
-  // Admin 리뷰 삭제 (Super 이상)
-  async deleteAdminReview(reviewId: number): Promise<void> {
+  // Admin 인터뷰 삭제 (Super 이상)
+  async deleteAdminInterview(interviewId: number): Promise<void> {
     try {
-      await this.api.delete(`${this.base}/admin/reviews/${reviewId}`);
+      await this.api.delete(`/admin/landing/interviews/${interviewId}`);
     } catch (error: any) {
-      console.error(`Error deleting admin review ${reviewId}:`, error);
-      throw new Error(error.message || 'Failed to delete admin review');
+      console.error(`Error deleting admin interview ${interviewId}:`, error);
+      throw new Error(error.message || 'Failed to delete admin interview');
     }
   }
 
   // Admin 링크 목록 조회 (Super 이상)
   async getAdminLinks(): Promise<LandingLink[]> {
     try {
-      const response = await this.api.get<LandingLink[]>(`${this.base}/admin/links`);
+      const response = await this.api.get<LandingLink[]>(`/admin/landing/links`);
       return response;
     } catch (error: any) {
       console.error('Error fetching admin links:', error);
@@ -282,7 +282,7 @@ export class LandingApi {
   // Admin 링크 생성 (Super 이상)
   async createAdminLink(data: LandingLinkCreateRequestDto): Promise<LandingLinkCreateResponseDto> {
     try {
-      const response = await this.api.post<LandingLinkCreateResponseDto>(`${this.base}/admin/links`, data);
+      const response = await this.api.post<LandingLinkCreateResponseDto>(`/admin/landing/links`, data);
       return response;
     } catch (error: any) {
       console.error('Error creating admin link:', error);
@@ -293,7 +293,7 @@ export class LandingApi {
   // Admin 링크 수정 (Super 이상)
   async updateAdminLink(linkId: number, data: LandingLinkUpdateRequestDto): Promise<LandingLinkUpdateResponseDto> {
     try {
-      const response = await this.api.put<LandingLinkUpdateResponseDto>(`${this.base}/admin/links/${linkId}`, data);
+      const response = await this.api.put<LandingLinkUpdateResponseDto>(`/admin/landing/links/${linkId}`, data);
       return response;
     } catch (error: any) {
       console.error(`Error updating admin link ${linkId}:`, error);
@@ -304,7 +304,7 @@ export class LandingApi {
   // Admin 링크 삭제 (Super 이상)
   async deleteAdminLink(linkId: number): Promise<void> {
     try {
-      await this.api.delete(`${this.base}/admin/links/${linkId}`);
+      await this.api.delete(`/admin/landing/links/${linkId}`);
     } catch (error: any) {
       console.error(`Error deleting admin link ${linkId}:`, error);
       throw new Error(error.message || 'Failed to delete admin link');

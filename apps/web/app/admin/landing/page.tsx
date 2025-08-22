@@ -7,11 +7,11 @@ import { useImage } from '@prometheus-fe/hooks';
 import { 
   LandingSponsor, 
   LandingHonorHall, 
-  LandingReview,
+  LandingInterview,
   LandingLink,
   LandingSponsorCreateRequest,
   LandingHonorHallCreateRequest,
-  LandingReviewCreateRequest,
+  LandingInterviewCreateRequest,
   LandingLinkCreateRequest
 } from '@prometheus-fe/types';
 import GlassCard from '../../../src/components/GlassCard';
@@ -486,7 +486,7 @@ export default function AdminLandingPage() {
   // Hydration 완료 상태 관리
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'sponsors' | 'honor-hall' | 'reviews' | 'links'>('sponsors');
+  const [activeTab, setActiveTab] = useState<'sponsors' | 'honor-hall' | 'interviews' | 'links'>('sponsors');
   const [showSponsorModal, setShowSponsorModal] = useState(false);
   const [showHonorHallModal, setShowHonorHallModal] = useState(false);
   const [selectedSponsor, setSelectedSponsor] = useState<LandingSponsor | null>(null);
@@ -495,23 +495,23 @@ export default function AdminLandingPage() {
   const {
     adminSponsors,
     adminHonorHall,
-    adminReviews,
+    adminInterviews,
     adminLinks,
     isLoadingAdminSponsors,
     isLoadingAdminHonorHall,
-    isLoadingAdminReviews,
+    isLoadingAdminInterviews,
     isLoadingAdminLinks,
     getAdminSponsors,
     getAdminHonorHall,
-    getAdminReviews,
+    getAdminInterviews,
     getAdminLinks,
     createSponsor,
     deleteSponsor,
     createHonorHall,
     deleteHonorHall,
-    createAdminReview,
-    updateAdminReview,
-    deleteAdminReview,
+    createAdminInterview,
+    updateAdminInterview,
+    deleteAdminInterview,
     createAdminLink,
     updateAdminLink,
     deleteAdminLink,
@@ -547,8 +547,8 @@ export default function AdminLandingPage() {
         await getAdminSponsors();
       } else if (activeTab === 'honor-hall') {
         await getAdminHonorHall();
-      } else if (activeTab === 'reviews') {
-        await getAdminReviews();
+      } else if (activeTab === 'interviews') {
+        await getAdminInterviews();
       } else if (activeTab === 'links') {
         await getAdminLinks();
       }
@@ -645,14 +645,14 @@ export default function AdminLandingPage() {
             명예의전당 관리
           </button>
           <button
-            onClick={() => setActiveTab('reviews')}
+            onClick={() => setActiveTab('interviews')}
             className={`px-4 py-2 rounded-md font-medium transition-colors ${
-              activeTab === 'reviews'
+              activeTab === 'interviews'
                 ? 'bg-red-500 text-white'
                 : 'text-white hover:bg-white/10'
             }`}
           >
-            리뷰 관리
+            인터뷰 관리
           </button>
           <button
             onClick={() => setActiveTab('links')}
@@ -803,45 +803,45 @@ export default function AdminLandingPage() {
         </GlassCard>
       )}
 
-      {/* 리뷰 관리 탭 */}
-      {activeTab === 'reviews' && (
+      {/* 인터뷰 관리 탭 */}
+      {activeTab === 'interviews' && (
         <GlassCard className="overflow-hidden">
-          {isLoadingAdminReviews ? (
+          {isLoadingAdminInterviews ? (
             <div className="flex justify-center items-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
             </div>
           ) : (
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-white">리뷰 목록</h2>
+                <h2 className="text-lg font-semibold text-white">인터뷰 목록</h2>
                 <RedButton className="inline-flex items-center">
                   <FontAwesomeIcon icon={faPlus} className="mr-2 h-4 w-4" />
-                  리뷰 추가
+                  인터뷰 추가
                 </RedButton>
               </div>
               
-              {adminReviews.length === 0 ? (
+              {adminInterviews.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <FontAwesomeIcon icon={faStar} className="text-gray-400 text-2xl" />
                   </div>
-                  <h3 className="text-lg font-semibold text-white mb-2">리뷰가 없습니다</h3>
-                  <p className="text-gray-300">첫 번째 리뷰를 추가해보세요.</p>
+                  <h3 className="text-lg font-semibold text-white mb-2">인터뷰가 없습니다</h3>
+                  <p className="text-gray-300">첫 번째 인터뷰를 추가해보세요.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {adminReviews.map((review) => (
-                    <GlassCard key={review.id} className="p-4">
+                  {adminInterviews.map((interview) => (
+                    <GlassCard key={interview.id} className="p-4">
                       <div className="flex items-center justify-between mb-3">
                         <div>
-                          <h3 className="font-semibold text-white">{review.member_id}</h3>
-                          {review.gen !== undefined && (
-                            <p className="text-sm text-gray-400">{review.gen}기</p>
+                          <h3 className="font-semibold text-white">{interview.member_id}</h3>
+                          {interview.gen !== undefined && (
+                            <p className="text-sm text-gray-400">{interview.gen}기</p>
                           )}
                         </div>
                         <div className="flex space-x-2">
                           <button
-                            onClick={() => deleteAdminReview(review.id)}
+                            onClick={() => deleteAdminInterview(interview.id)}
                             className="text-red-400 hover:text-red-300 text-sm"
                           >
                             <FontAwesomeIcon icon={faTrash} className="mr-1" />
@@ -850,9 +850,9 @@ export default function AdminLandingPage() {
                         </div>
                       </div>
                       <div className="space-y-2 text-sm text-gray-300">
-                        <p><span className="font-medium">평점:</span> {review.rating}/5</p>
-                        <p><span className="font-medium">내용:</span> {review.content}</p>
-                        <p><span className="font-medium">작성일:</span> {new Date(review.created_at).toLocaleDateString()}</p>
+                        <p><span className="font-medium">기수:</span> {interview.gen}기</p>
+                        <p><span className="font-medium">내용:</span> {interview.content}</p>
+                        <p><span className="font-medium">작성일:</span> {new Date(interview.created_at).toLocaleDateString()}</p>
                       </div>
                     </GlassCard>
                   ))}
