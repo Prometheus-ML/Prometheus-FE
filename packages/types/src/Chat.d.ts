@@ -98,6 +98,7 @@ export interface WebSocketMessage {
   file_name?: string;
   file_size?: number;
   timestamp?: string;
+  sender_name?: string;
 }
 
 export interface WebSocketResponse {
@@ -112,6 +113,7 @@ export interface ChatConnectionStatus {
   type: 'connection_status';
   status: 'connected' | 'disconnected' | 'error';
   chat_room_id: number;
+  member_id?: string;
   timestamp: string;
 }
 
@@ -120,12 +122,28 @@ export interface TypingIndicator {
   chat_room_id: number;
   sender_id: string;
   is_typing: boolean;
+  timestamp?: string;
 }
 
 export interface ReadReceipt {
   type: 'read_receipt';
   message_id: number;
-  sender_id: string;
+  read_by: string;
+  timestamp?: string;
+}
+
+export interface MessageSentConfirmation {
+  type: 'message_sent';
+  success: boolean;
+  message_id: number;
+  error?: string;
+  timestamp: string;
+}
+
+export interface HeartbeatMessage {
+  type: 'heartbeat' | 'heartbeat_ack';
+  chat_room_id: number;
+  timestamp: string;
 }
 
 export type ChatWebSocketEvent = 
@@ -133,4 +151,6 @@ export type ChatWebSocketEvent =
   | ChatConnectionStatus 
   | TypingIndicator 
   | ReadReceipt 
+  | MessageSentConfirmation
+  | HeartbeatMessage
   | WebSocketResponse;

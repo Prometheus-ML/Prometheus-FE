@@ -25,13 +25,28 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 export default function Page() {
-  const isAuthenticated = useAuthStore((s: any) => s.isAuthenticated);
-  const canAccessAdministrator = useAuthStore((s: any) => s.canAccessAdministrator);
-  const logout = useAuthStore((s: any) => s.logout);
+  const authStore = useAuthStore();
   const [daysCount, setDaysCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { myProfile, getMyProfile, isLoadingProfile } = useMember();
+
+  // 안전한 인증 상태 확인 함수
+  const isAuthenticated = () => {
+    return typeof authStore.isAuthenticated === 'function' && authStore.isAuthenticated();
+  };
+
+  // 안전한 권한 확인 함수
+  const canAccessAdministrator = () => {
+    return typeof authStore.canAccessAdministrator === 'function' && authStore.canAccessAdministrator();
+  };
+
+  // 안전한 로그아웃 함수
+  const logout = () => {
+    if (typeof authStore.logout === 'function') {
+      authStore.logout();
+    }
+  };
 
   // 로그아웃 핸들러 추가
   const handleLogout = () => {
@@ -50,6 +65,7 @@ export default function Page() {
   }, []);
 
   useEffect(() => {
+    // 안전하게 인증 상태 확인
     if (!isAuthenticated()) return;
     
     getMyProfile()
@@ -66,7 +82,7 @@ export default function Page() {
       .catch((error: Error) => {
         console.error('Failed to fetch user profile:', error);
       });
-  }, [isAuthenticated, getMyProfile]);
+  }, [getMyProfile]);
 
   // Skeleton UI Component
   const SkeletonCard = () => (

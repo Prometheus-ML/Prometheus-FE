@@ -85,6 +85,18 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
     error: null
   });
 
+  // 상태 변경 로깅
+  useEffect(() => {
+    console.log('Chat state updated:', {
+      currentRoom: state.currentRoom,
+      currentRoomId: state.currentRoom?.id,
+      isConnected: state.isConnected,
+      messagesCount: state.messages.length,
+      isLoading: state.isLoading,
+      error: state.error
+    });
+  }, [state.currentRoom, state.isConnected, state.messages.length, state.isLoading, state.error]);
+
   // 웹소켓 관련 refs
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -159,11 +171,12 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
 
       ws.onmessage = (event) => {
         try {
+          console.log('Raw WebSocket message received:', event.data);
           const data: ChatWebSocketEvent = JSON.parse(event.data);
-          console.log('WebSocket message received:', data);
-          handleWebSocketMessage(data);
+          console.log('Parsed WebSocket message:', data);
+          handleWebSocketMessage(data, roomId); // roomId를 직접 전달
         } catch (error) {
-          console.error('Failed to parse WebSocket message:', error);
+          console.error('Failed to parse WebSocket message:', error, 'Raw data:', event.data);
         }
       };
 
@@ -243,43 +256,89 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
   }, []);
 
   // 웹소켓 메시지 처리
-  const handleWebSocketMessage = useCallback((data: ChatWebSocketEvent) => {
+  const handleWebSocketMessage = useCallback((data: ChatWebSocketEvent, roomId: number) => {
     console.log('Processing WebSocket message:', data);
+    console.log('Current room state when processing message:', state.currentRoom);
     
     // 타입 가드를 사용하여 각 이벤트 타입을 안전하게 처리
     if ('type' in data) {
       switch (data.type) {
         case 'chat_message':
-          // ChatMessage 타입인지 확인 (모든 필수 속성이 있는지)
-          if ('id' in data && 'chat_room_id' in data && 'sender_id' in data && 
-              'content' in data && 'message_type' in data && 'created_at' in data) {
-            const message = data as unknown as ChatMessage;
+          console.log('Raw chat message data:', data); // 디버깅용
+          
+          // 백엔드 메시지 구조를 직접 확인하고 처리
+          if (data.type === 'chat_message' && 
+              typeof (data as any).id === 'number' && 
+              typeof (data as any).chat_room_id === 'number' && 
+              typeof (data as any).sender_id === 'string' && 
+              typeof (data as any).content === 'string') {
             
-            setState(prev => {
-              // 임시 메시지가 있다면 실제 메시지로 교체, 없다면 새로 추가
-              const existingTempMessage = prev.messages.find(m => 
-                m.id < 0 && m.sender_id === message.sender_id && 
-                m.content === message.content && 
-                Math.abs(new Date(m.created_at).getTime() - new Date(message.created_at).getTime()) < 5000 // 5초 이내
-              );
-              
-              if (existingTempMessage) {
-                // 임시 메시지를 실제 메시지로 교체
-                return {
-                  ...prev,
-                  messages: prev.messages
-                    .filter(m => m.id !== existingTempMessage.id)
-                    .concat(message)
-                };
-              } else {
-                // 새 메시지 추가
-                return {
-                  ...prev,
-                  messages: prev.messages.filter(m => m.id !== message.id).concat(message)
-                };
-              }
+            // 백엔드 메시지 구조를 ChatMessage 타입으로 직접 변환
+            const message: ChatMessage = {
+              id: (data as any).id,
+              chat_room_id: (data as any).chat_room_id,
+              sender_id: (data as any).sender_id,
+              sender_name: (data as any).sender_name || (data as any).sender_id,
+              content: (data as any).content,
+              message_type: (data as any).message_type || 'text',
+              file_url: (data as any).file_url,
+              file_name: (data as any).file_name,
+              file_size: (data as any).file_size,
+              is_deleted: (data as any).is_deleted || false,
+              created_at: (data as any).created_at || (data as any).timestamp || new Date().toISOString(),
+              updated_at: (data as any).updated_at || (data as any).created_at || (data as any).timestamp || new Date().toISOString()
+            };
+            
+            console.log('Processed chat message:', {
+              messageId: message.id,
+              roomId: message.chat_room_id,
+              senderId: message.sender_id,
+              content: message.content
             });
-            console.log('Chat message processed:', message);
+            
+            // 현재 채팅방의 메시지인지 확인
+            if (message.chat_room_id === roomId) {
+              console.log('Message is for current room, updating state');
+              setState(prev => {
+                // 임시 메시지가 있다면 실제 메시지로 교체, 없다면 새로 추가
+                const existingTempMessage = prev.messages.find(m => 
+                  m.id < 0 && m.sender_id === message.sender_id && 
+                  m.content === message.content && 
+                  Math.abs(new Date(m.created_at).getTime() - new Date(message.created_at).getTime()) < 10000 // 10초로 연장
+                );
+                
+                if (existingTempMessage) {
+                  console.log('Replacing temporary message with real message:', existingTempMessage.id, '->', message.id);
+                  // 임시 메시지를 실제 메시지로 교체
+                  return {
+                    ...prev,
+                    messages: prev.messages
+                      .filter(m => m.id !== existingTempMessage.id)
+                      .concat(message)
+                  };
+                } else {
+                  console.log('Adding new message to state:', message.id);
+                  // 새 메시지 추가 (중복 방지)
+                  const messageExists = prev.messages.some(m => m.id === message.id);
+                  if (!messageExists) {
+                    return {
+                      ...prev,
+                      messages: [...prev.messages, message]
+                    };
+                  } else {
+                    console.log('Message already exists in state, skipping:', message.id);
+                    return prev;
+                  }
+                }
+              });
+              console.log('Chat message processed and state updated:', message);
+            } else {
+              console.log('Message is not for current room, ignoring:', {
+                messageRoomId: message.chat_room_id,
+                currentRoomId: roomId,
+                hasCurrentRoom: true
+              });
+            }
           } else {
             console.warn('Invalid chat message format:', data);
           }
@@ -312,6 +371,12 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
           // 메시지 전송 확인 처리
           break;
           
+        case 'heartbeat':
+        case 'heartbeat_ack':
+          console.log('Heartbeat message received:', data);
+          // 하트비트 응답 처리
+          break;
+          
         default:
           console.log('Unknown WebSocket message type:', data.type);
       }
@@ -319,15 +384,40 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
                'content' in data && 'message_type' in data && 'created_at' in data) {
       // ChatMessage 타입인지 확인 (모든 필수 속성이 있는지)
       const message = data as unknown as ChatMessage;
-      setState(prev => ({
-        ...prev,
-        messages: prev.messages.filter(m => m.id !== message.id).concat(message)
-      }));
-      console.log('Chat message added to state (fallback)');
+      
+      console.log('Processing chat message (fallback):', {
+        messageId: message.id,
+        roomId: message.chat_room_id,
+        senderId: message.sender_id,
+        content: message.content
+      });
+      
+      // 현재 채팅방의 메시지인지 확인
+      if (message.chat_room_id === roomId) {
+        setState(prev => {
+          const messageExists = prev.messages.some(m => m.id === message.id);
+          if (!messageExists) {
+            return {
+              ...prev,
+              messages: [...prev.messages, message]
+            };
+          } else {
+            console.log('Message already exists in state (fallback), skipping:', message.id);
+            return prev;
+          }
+        });
+        console.log('Chat message added to state (fallback)');
+      } else {
+        console.log('Message is not for current room (fallback), ignoring:', {
+          messageRoomId: message.chat_room_id,
+          currentRoomId: roomId,
+          hasCurrentRoom: true
+        });
+      }
     } else {
       console.log('Unrecognized WebSocket message format:', data);
     }
-  }, []);
+  }, []); // state.currentRoom 의존성 제거
 
   // 채팅방 생성
   const createRoom = useCallback(async (data: ChatRoomCreate): Promise<ChatRoom | null> => {
@@ -408,6 +498,7 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
         return;
       }
       
+      console.log('Setting loading state and clearing previous data');
       setState(prev => ({ 
         ...prev, 
         isLoading: true, 
@@ -417,22 +508,68 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
       }));
       
       // 1. 채팅방 정보 조회
+      console.log('Fetching chat room info for roomId:', roomId);
       const room = await chatApi.getChatRoom(roomId);
+      console.log('Chat room info loaded:', room);
       
-      // 2. 현재 채팅방 설정
-      setState(prev => ({ 
-        ...prev, 
-        currentRoom: room,
-        isLoading: false 
-      }));
+      if (!room) {
+        throw new Error('Failed to load chat room info');
+      }
+      
+      // 2. 현재 채팅방 설정 (WebSocket 연결 전에 먼저 설정)
+      console.log('Setting current room in state:', room);
+      setState(prev => {
+        const newState = { 
+          ...prev, 
+          currentRoom: room,
+          isLoading: false 
+        };
+        console.log('New state after setting current room:', newState);
+        return newState;
+      });
+      
+      console.log('Current room set, connecting WebSocket...');
       
       // 3. 웹소켓 연결
       await connect(roomId);
       
-      // 4. 연결 완료 후 히스토리 로드
-      setTimeout(() => {
-        loadHistory({ chat_room_id: roomId });
-      }, 500); // 연결 안정화를 위해 약간의 지연
+      // 4. 연결 완료 대기 및 히스토리 로드
+      const waitForConnection = (): Promise<void> => {
+        return new Promise((resolve, reject) => {
+          let attempts = 0;
+          const maxAttempts = 20; // 최대 10초 대기
+          
+          const checkConnection = () => {
+            attempts++;
+            console.log(`Checking WebSocket connection (attempt ${attempts}/${maxAttempts}), isConnected:`, state.isConnected);
+            
+            if (state.isConnected) {
+              console.log('WebSocket connected successfully, resolving promise');
+              resolve();
+            } else if (attempts >= maxAttempts) {
+              console.error('WebSocket connection timeout');
+              reject(new Error('WebSocket connection timeout'));
+            } else {
+              setTimeout(checkConnection, 500);
+            }
+          };
+          
+          checkConnection();
+        });
+      };
+      
+      try {
+        await waitForConnection();
+        console.log('WebSocket connection confirmed, loading chat history');
+        await loadHistory({ chat_room_id: roomId });
+      } catch (connectionError) {
+        console.error('Failed to establish WebSocket connection:', connectionError);
+        setState(prev => ({ 
+          ...prev, 
+          error: '웹소켓 연결에 실패했습니다.',
+          isLoading: false 
+        }));
+      }
       
     } catch (error) {
       console.error('Failed to select chat room:', error);
@@ -442,7 +579,7 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
         isLoading: false 
       }));
     }
-  }, [chatApi, connect, state.currentRoom?.id]);
+  }, [chatApi, connect, state.currentRoom?.id, state.isConnected, loadHistory]);
 
   // 채팅방 나가기
   const leaveRoom = useCallback(async (roomId: number): Promise<boolean> => {
@@ -513,7 +650,8 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
         sender_id: currentUserId,
         content,
         message_type: messageType,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        sender_name: user?.name || user?.email || currentUserId  // 발신자 이름 추가
       };
 
       wsRef.current.send(JSON.stringify(message));
@@ -636,7 +774,7 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
       const readData: ReadReceipt = {
         type: 'read_receipt',
         message_id: messageId,
-        sender_id: currentUserId
+        read_by: currentUserId
       };
 
       wsRef.current.send(JSON.stringify(readData));

@@ -8,7 +8,9 @@ import {
   CoffeeChatListParams,
   CoffeeChatListResponse,
   CoffeeChatCreateRequest,
-  CoffeeChatRespondRequest
+  CoffeeChatRespondRequest,
+  CoffeeChatRespondResponse,
+  ChatRoomInfo
 } from '@prometheus-fe/types';
 
 export const useCoffeeChat = () => {
@@ -20,6 +22,10 @@ export const useCoffeeChat = () => {
   const [receivedRequests, setReceivedRequests] = useState<CoffeeChatRequest[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<CoffeeChatRequest | null>(null);
   const [contactInfo, setContactInfo] = useState<CoffeeChatContactInfo | null>(null);
+  
+  // 채팅방 관련 상태 추가
+  const [chatRoom, setChatRoom] = useState<ChatRoomInfo | null>(null);
+  const [isChatRoomCreated, setIsChatRoomCreated] = useState<boolean>(false);
   
   // 로딩 상태
   const [isLoadingMembers, setIsLoadingMembers] = useState<boolean>(false);
@@ -103,14 +109,64 @@ export const useCoffeeChat = () => {
     }
   }, [coffeeChat]);
 
-  // 커피챗 요청 응답
-  const respondToRequest = useCallback(async (requestId: number, data: CoffeeChatRespondRequest): Promise<CoffeeChatRequest> => {
+  // 커피챗 요청 응답 (채팅방 생성 정보 포함)
+  const respondToRequest = useCallback(async (requestId: number, data: CoffeeChatRespondRequest): Promise<CoffeeChatRespondResponse> => {
     if (!coffeeChat) {
       throw new Error('Coffee chat API not available');
     }
     try {
       const response = await coffeeChat.respondToRequest(requestId, data);
-      return response;
+      
+      // 응답 결과를 도메인 타입으로 변환
+      const coffeeChatRequest: CoffeeChatRequest = {
+        id: response.coffee_chat_request.id,
+        requester_id: response.coffee_chat_request.requester_id,
+        recipient_id: response.coffee_chat_request.recipient_id,
+        status: response.coffee_chat_request.status,
+        message: response.coffee_chat_request.message,
+        response_message: response.coffee_chat_request.response_message,
+        requested_at: response.coffee_chat_request.requested_at,
+        responded_at: response.coffee_chat_request.responded_at,
+        requester_name: response.coffee_chat_request.requester_name,
+        requester_gen: response.coffee_chat_request.requester_gen,
+        requester_school: response.coffee_chat_request.requester_school,
+        requester_major: response.coffee_chat_request.requester_major,
+        recipient_name: response.coffee_chat_request.recipient_name,
+        recipient_gen: response.coffee_chat_request.recipient_gen,
+        recipient_school: response.coffee_chat_request.recipient_school,
+        recipient_major: response.coffee_chat_request.recipient_major,
+      };
+
+      const result: CoffeeChatRespondResponse = {
+        coffee_chat_request: coffeeChatRequest,
+        chat_room_created: response.chat_room_created,
+        chat_room: response.chat_room ? {
+          id: response.chat_room.id,
+          name: response.chat_room.name,
+          room_type: response.chat_room.room_type,
+          is_active: response.chat_room.is_active,
+          created_at: response.chat_room.created_at,
+          updated_at: response.chat_room.updated_at,
+          coffee_chat_id: response.chat_room.coffee_chat_id,
+        } : null,
+      };
+
+      // 채팅방 생성 상태 업데이트
+      setIsChatRoomCreated(response.chat_room_created);
+      setChatRoom(result.chat_room);
+
+      // 수락된 경우 요청 목록에서 상태 업데이트
+      if (data.status === 'accepted') {
+        setReceivedRequests(prev => 
+          prev.map(req => 
+            req.id === requestId 
+              ? { ...req, status: 'accepted', response_message: data.response_message }
+              : req
+          )
+        );
+      }
+
+      return result;
     } catch (error) {
       console.error('Failed to respond to coffee chat request:', error);
       throw error;
@@ -148,6 +204,36 @@ export const useCoffeeChat = () => {
     }
   }, [coffeeChat]);
 
+  // 커피챗 채팅방 조회
+  const getChatRoom = useCallback(async (requestId: number): Promise<ChatRoomInfo | null> => {
+    if (!coffeeChat) {
+      throw new Error('Coffee chat API not available');
+    }
+    try {
+      const data = await coffeeChat.getChatRoom(requestId);
+      
+      if (data) {
+        const chatRoom: ChatRoomInfo = {
+          id: data.id,
+          name: data.name,
+          room_type: data.room_type,
+          is_active: data.is_active,
+          created_at: data.created_at,
+          updated_at: data.updated_at,
+          coffee_chat_id: data.coffee_chat_id,
+        };
+        
+        setChatRoom(chatRoom);
+        return chatRoom;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Failed to fetch chat room:', error);
+      throw error;
+    }
+  }, [coffeeChat]);
+
   // 선택된 요청 관리
   const handleRequestSelect = useCallback((request: CoffeeChatRequest): void => {
     setSelectedRequest(request);
@@ -178,6 +264,12 @@ export const useCoffeeChat = () => {
     setContactInfo(null);
   }, []);
 
+  // 채팅방 정보 초기화
+  const clearChatRoom = useCallback((): void => {
+    setChatRoom(null);
+    setIsChatRoomCreated(false);
+  }, []);
+
   return {
     // 상태
     availableMembers,
@@ -185,6 +277,8 @@ export const useCoffeeChat = () => {
     receivedRequests,
     selectedRequest,
     contactInfo,
+    chatRoom,
+    isChatRoomCreated,
     
     // 로딩 상태
     isLoadingMembers,
@@ -204,6 +298,7 @@ export const useCoffeeChat = () => {
     getReceivedRequests,
     respondToRequest,
     getContactInfo,
+    getChatRoom,
     
     // 선택 관리
     handleRequestSelect,
@@ -214,5 +309,6 @@ export const useCoffeeChat = () => {
     clearSentRequests,
     clearReceivedRequests,
     clearContactInfo,
+    clearChatRoom,
   };
 };

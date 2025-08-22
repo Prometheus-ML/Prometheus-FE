@@ -5,7 +5,8 @@ import {
   CoffeeChatRequestResponseDto,
   CoffeeChatRequestListResponseDto,
   CoffeeChatRespondRequestDto,
-  CoffeeChatContactInfoResponseDto
+  CoffeeChatContactInfoResponseDto,
+  CoffeeChatRespondResponseDto
 } from './dto/coffeeChat.dto';
 
 export class CoffeeChatApi {
@@ -80,9 +81,9 @@ export class CoffeeChatApi {
   }
 
   // 커피챗 요청 응답
-  async respondToRequest(requestId: number, data: CoffeeChatRespondRequestDto): Promise<CoffeeChatRequestResponseDto> {
+  async respondToRequest(requestId: number, data: CoffeeChatRespondRequestDto): Promise<CoffeeChatRespondResponseDto> {
     try {
-      const response = await this.api.put<CoffeeChatRequestResponseDto>(`${this.base}/requests/${requestId}/respond`, data);
+      const response = await this.api.put<CoffeeChatRespondResponseDto>(`${this.base}/requests/${requestId}/respond`, data);
       return response;
     } catch (error: any) {
       console.error(`Error responding to coffee chat request ${requestId}:`, error);
@@ -98,6 +99,33 @@ export class CoffeeChatApi {
     } catch (error: any) {
       console.error(`Error fetching contact info for request ${requestId}:`, error);
       throw new Error(error.message || 'Failed to fetch contact info');
+    }
+  }
+
+  // 커피챗 채팅방 조회
+  async getChatRoom(requestId: number): Promise<{
+    id: number;
+    name: string;
+    room_type: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+    coffee_chat_id: number | null;
+  }> {
+    try {
+      const response = await this.api.get<{
+        id: number;
+        name: string;
+        room_type: string;
+        is_active: boolean;
+        created_at: string;
+        updated_at: string;
+        coffee_chat_id: number | null;
+      }>(`${this.base}/requests/${requestId}/chat-room`);
+      return response;
+    } catch (error: any) {
+      console.error(`Error fetching chat room for request ${requestId}:`, error);
+      throw new Error(error.message || 'Failed to fetch chat room');
     }
   }
 }

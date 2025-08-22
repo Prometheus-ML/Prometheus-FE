@@ -78,7 +78,7 @@ function CoffeeChatRequestModal({
 }
 
 export default function CoffeeChatPage() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const { 
     getAvailableMembers, 
     createRequest, 
@@ -208,6 +208,12 @@ export default function CoffeeChatPage() {
   const handleCreateRequest = useCallback(async (message: string) => {
     if (!requestTarget) return;
     
+    // 자기 자신에게 요청하는지 확인
+    if (user && requestTarget.id === user.id) {
+      alert('자기 자신에게는 커피챗을 요청할 수 없습니다.');
+      return;
+    }
+    
     try {
       setIsRequesting(true);
       const payload: CoffeeChatCreateRequest = {
@@ -224,7 +230,7 @@ export default function CoffeeChatPage() {
     } finally {
       setIsRequesting(false);
     }
-  }, [requestTarget, createRequest, closeRequest, fetchSent]);
+  }, [requestTarget, user, createRequest, closeRequest, fetchSent]);
 
   // 요청 응답
   const respond = useCallback(async (req: CoffeeChatRequest, status: 'accepted' | 'rejected') => {

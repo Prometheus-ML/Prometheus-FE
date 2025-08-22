@@ -137,7 +137,10 @@ export class ChatApi {
     const wsBaseUrl = baseUrl.replace('http://', 'ws://').replace('https://', 'wss://');
     
     // 연결 최적화를 위한 쿼리 파라미터 추가
-    return `${wsBaseUrl}/api/v1/chat/ws/${chatRoomId}?token=${token}&optimize=true`;
+    // optimize=true: 서버에서 즉시 연결 상태 전송
+    // reconnect=true: 재연결 지원 활성화
+    // heartbeat=true: 하트비트 메시지 활성화
+    return `${wsBaseUrl}/api/v1/chat/ws/${chatRoomId}?token=${token}&optimize=true&reconnect=true&heartbeat=true`;
   }
 }
 

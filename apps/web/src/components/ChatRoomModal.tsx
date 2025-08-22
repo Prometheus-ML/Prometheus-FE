@@ -31,12 +31,33 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
   const { currentRoom, messages, isConnected, isLoading, error } = state;
   const { selectRoom, sendMessage, connect, disconnect, loadHistory } = actions;
 
+  // 자동 스크롤 함수
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior });
+      setShouldAutoScroll(true);
+      setShowScrollButton(false);
+    }
+  }, []);
+
+  // 컴포넌트 렌더링 시 상태 로깅
+  console.log('ChatRoomModal render state:', {
+    isOpen,
+    selectedRoom: selectedRoom?.id,
+    currentRoom: currentRoom?.id,
+    isConnected,
+    isLoading,
+    error,
+    messagesCount: messages.length
+  });
+
   // 채팅방 선택 시 자동 연결
   useEffect(() => {
     if (isOpen && selectedRoom) {
       const initializeRoom = async () => {
         try {
           console.log('Initializing chat room:', selectedRoom);
+          console.log('Current state - currentRoom:', currentRoom, 'isConnected:', isConnected);
           
           // 이미 같은 채팅방에 연결되어 있다면 재연결하지 않음
           if (currentRoom?.id === selectedRoom.id && isConnected) {
@@ -44,8 +65,18 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
             return;
           }
           
+          // 기존 연결이 있다면 먼저 해제
+          if (isConnected) {
+            console.log('Disconnecting from previous room before connecting to new room');
+            disconnect();
+            // 연결 해제 완료를 기다림
+            await new Promise(resolve => setTimeout(resolve, 200));
+          }
+          
+          console.log('Calling selectRoom with roomId:', selectedRoom.id);
           await selectRoom(selectedRoom.id);
           console.log('Room selection completed');
+          
         } catch (error) {
           console.error('Failed to select room:', error);
         }
@@ -53,7 +84,41 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
       
       initializeRoom();
     }
-  }, [isOpen, selectedRoom, selectRoom, currentRoom?.id, isConnected]);
+  }, [isOpen, selectedRoom, selectRoom, currentRoom?.id, isConnected, disconnect]);
+
+  // WebSocket 연결 상태 변경 시 히스토리 로드
+  useEffect(() => {
+    console.log('Connection status changed:', { isConnected, currentRoom, selectedRoom, messagesLength: messages.length });
+    
+    if (isConnected && currentRoom && selectedRoom && currentRoom.id === selectedRoom.id) {
+      console.log('WebSocket connected, loading chat history for room:', currentRoom.id);
+      // 이미 메시지가 있다면 히스토리를 다시 로드하지 않음
+      if (messages.length === 0) {
+        loadHistory({ chat_room_id: currentRoom.id });
+      } else {
+        // 기존 메시지가 있다면 맨 아래로 스크롤
+        setTimeout(() => scrollToBottom('auto'), 100);
+      }
+    }
+  }, [isConnected, currentRoom, selectedRoom, loadHistory, messages.length, scrollToBottom]);
+
+  // 메시지가 추가될 때마다 자동 스크롤
+  useEffect(() => {
+    if (shouldAutoScroll && messages.length > 0) {
+      // 메시지가 추가될 때마다 자동으로 맨 아래로 스크롤
+      setTimeout(() => scrollToBottom('smooth'), 50);
+    }
+  }, [messages, shouldAutoScroll, scrollToBottom]);
+
+  // 채팅방 변경 시 스크롤 초기화 및 메시지 정리
+  useEffect(() => {
+    if (selectedRoom) {
+      setShouldAutoScroll(true);
+      setShowScrollButton(false);
+      // 채팅방 변경 시 즉시 맨 아래로 스크롤
+      setTimeout(() => scrollToBottom('auto'), 100);
+    }
+  }, [selectedRoom, scrollToBottom]);
 
   // 스크롤 위치 확인 및 자동 스크롤 제어
   const handleScroll = useCallback(() => {
@@ -66,36 +131,18 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
     setShowScrollButton(!isAtBottom);
   }, []);
 
-  // 자동 스크롤 함수
-  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior });
-      setShouldAutoScroll(true);
-      setShowScrollButton(false);
-    }
-  }, []);
-
-  // 새 메시지가 올 때 자동 스크롤
-  useEffect(() => {
-    if (shouldAutoScroll && messages.length > 0) {
-      setTimeout(() => scrollToBottom('smooth'), 100);
-    }
-  }, [messages, shouldAutoScroll, scrollToBottom]);
-
-  // 채팅방 변경 시 스크롤 초기화
-  useEffect(() => {
-    if (selectedRoom) {
-      setShouldAutoScroll(true);
-      setShowScrollButton(false);
-      setTimeout(() => scrollToBottom('auto'), 200);
-    }
-  }, [selectedRoom, scrollToBottom]);
-
   // 메시지 전송
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // currentRoom 상태 확인
+    if (!currentRoom) {
+      console.error('Current room is not set, cannot send message');
+      return;
+    }
+    
     if (messageInput.trim() && isConnected) {
-      console.log('Sending message:', messageInput, 'to room:', selectedRoom.id);
+      console.log('Sending message:', messageInput, 'to room:', currentRoom.id);
       
       const messageToSend = messageInput.trim();
       const success = await sendMessage(messageToSend);
@@ -104,14 +151,16 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
         setMessageInput('');
         console.log('Message sent successfully');
         setShouldAutoScroll(true);
-        setTimeout(() => scrollToBottom('smooth'), 100);
+        // 메시지 전송 후 즉시 맨 아래로 스크롤
+        setTimeout(() => scrollToBottom('smooth'), 50);
       } else {
         console.error('Failed to send message');
       }
     } else {
       console.log('Cannot send message:', { 
         hasInput: !!messageInput.trim(), 
-        isConnected 
+        isConnected,
+        currentRoomId: currentRoom?.id
       });
     }
   };
@@ -214,6 +263,7 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
                 )}
               </div>
             ) : (
+              // 메시지를 시간순으로 정렬 (과거 → 최신)
               messages.map((message) => (
                 <div
                   key={message.id}
@@ -246,7 +296,7 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
               </div>
             )}
             
-            {/* 스크롤 위치 마커 */}
+            {/* 스크롤 위치 마커 (메시지 영역 맨 아래) */}
             <div ref={messagesEndRef} />
           </div>
         </div>

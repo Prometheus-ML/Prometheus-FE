@@ -57,6 +57,21 @@ export interface CoffeeChatRespondRequestDto {
   response_message: string | null;
 }
 
+// 커피챗 응답 결과 응답
+export interface CoffeeChatRespondResponseDto {
+  coffee_chat_request: CoffeeChatRequestResponseDto;
+  chat_room_created: boolean;
+  chat_room: {
+    id: number;
+    name: string;
+    room_type: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+    coffee_chat_id: number | null;
+  } | null;
+}
+
 // 커피챗 연락처 정보 응답
 export interface CoffeeChatContactInfoResponseDto {
   request_id: number;
