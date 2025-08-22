@@ -225,25 +225,6 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
           </button>
         </div>
 
-        {/* 연결 상태 표시 */}
-        {!isConnected && (
-          <div className="flex-shrink-0 p-3 bg-yellow-500/20 border-b border-yellow-500/30">
-            <div className="text-sm text-yellow-200 text-center font-pretendard">
-              {isLoading ? '연결 중...' : '연결되지 않음'}
-              {error && <span className="ml-2 text-yellow-300">({error})</span>}
-            </div>
-          </div>
-        )}
-
-        {/* 연결 성공 표시 */}
-        {isConnected && (
-          <div className="flex-shrink-0 p-3 bg-green-500/20 border-b border-green-500/30">
-            <div className="text-sm text-green-200 text-center font-pretendard">
-              연결됨 ✓
-            </div>
-          </div>
-        )}
-
         {/* 채팅 메시지 영역 */}
         <div 
           ref={messagesContainerRef}
@@ -253,10 +234,10 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
           <div className="space-y-4">
             {messages.length === 0 ? (
               <div className="text-center text-white/60 text-sm py-8 font-pretendard">
-                {isLoading ? (
+                {isLoading || !isConnected ? (
                   <div className="flex flex-col items-center space-y-2">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white/50"></div>
-                    <span>메시지를 불러오는 중...</span>
+                    <span>로딩 중...</span>
                   </div>
                 ) : (
                   '아직 메시지가 없습니다.'
@@ -281,7 +262,11 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
                       {/* 시간 표시 (왼쪽) */}
                       {message.sender_id === user?.id && (
                         <div className="text-xs text-white/50 font-pretendard mb-2">
-                          {new Date(message.created_at).toLocaleTimeString()}
+                          {new Date(message.created_at).toLocaleTimeString('ko-KR', { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            hour12: false 
+                          })}
                         </div>
                       )}
                       
@@ -333,7 +318,11 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
                       {/* 시간 표시 (오른쪽) */}
                       {message.sender_id !== user?.id && (
                         <div className="text-xs text-white/50 font-pretendard mb-2">
-                          {new Date(message.created_at).toLocaleTimeString()}
+                          {new Date(message.created_at).toLocaleTimeString('ko-KR', { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            hour12: false 
+                          })}
                         </div>
                       )}
                     </div>
