@@ -13,6 +13,7 @@ import {
   createCommunityApi,
   createGroupApi,
   createEventApi,
+  createChatApi,
   AuthApi,
   MemberApi,
   CoffeeChatApi,
@@ -21,7 +22,8 @@ import {
   StorageApi,
   CommunityApi,
   GroupApi,
-  EventApi
+  EventApi,
+  ChatApi
 } from '@prometheus-fe/api';
 import { useAuthStore } from '@prometheus-fe/stores';
 
@@ -36,6 +38,7 @@ type ApiInstances = {
   community: CommunityApi;
   group: GroupApi;
   event: EventApi;
+  chat: ChatApi;
 };
 
 const ApiContext = createContext<ApiInstances | null>(null);
@@ -98,6 +101,7 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
       community: createCommunityApi(client),
       group: createGroupApi(client),
       event: createEventApi(client),
+      chat: createChatApi(client),
     } as const as ApiInstances;
   }, []);
 

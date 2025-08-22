@@ -8,4 +8,5 @@ export * from './Storage';
 export * from './Community';
 export * from './Group';
 export * from './Event';
+export * from './Chat';
 

@@ -6,3 +6,4 @@ export * from './useMember';
 export * from './useEvent';
 export * from './useCoffeeChat';
 export * from './useLanding';
+export * from './useChat';

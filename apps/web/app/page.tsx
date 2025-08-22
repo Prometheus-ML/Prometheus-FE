@@ -7,6 +7,8 @@ import Image from 'next/image';
 import type { MyProfileResponse } from '@prometheus-fe/types';
 import GlassCard from '../src/components/GlassCard';
 import RedButton from '../src/components/RedButton';
+import ChatToggle from '../src/components/ChatToggle';
+import ChatModal from '../src/components/ChatModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faBell, 
@@ -28,6 +30,7 @@ export default function Page() {
   const logout = useAuthStore((s: any) => s.logout);
   const [daysCount, setDaysCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const { myProfile, getMyProfile, isLoadingProfile } = useMember();
 
   // 로그아웃 핸들러 추가
@@ -299,6 +302,12 @@ export default function Page() {
           </>
         )}
       </main>
+
+      {/* Chat Toggle Button */}
+      <ChatToggle onToggle={setIsChatOpen} isOpen={isChatOpen} />
+      
+      {/* Chat Modal */}
+      <ChatModal isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </div>
   );
 }
