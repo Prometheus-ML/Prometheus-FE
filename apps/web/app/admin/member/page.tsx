@@ -286,18 +286,40 @@ export default function AdminMemberPage() {
         try {
           const csv = e.target?.result as string;
           const lines = csv.split('\n');
-          const headers = lines[0].split(',').map(h => h.trim());
+          const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
           
           const members = [];
           
           for (let i = 1; i < lines.length; i++) {
             if (lines[i].trim() === '') continue;
             
-            const values = lines[i].split(',').map(v => v.trim());
+            // CSV 파싱을 위한 정규식 사용 (쉼표로 분리하되 따옴표 안의 쉼표는 무시)
+            const values: string[] = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let j = 0; j < lines[i].length; j++) {
+              const char = lines[i][j];
+              if (char === '"') {
+                inQuotes = !inQuotes;
+              } else if (char === ',' && !inQuotes) {
+                values.push(current.trim());
+                current = '';
+              } else {
+                current += char;
+              }
+            }
+            values.push(current.trim()); // 마지막 값 추가
+            
             const member: any = {};
             
             headers.forEach((header, index) => {
               let value: any = values[index] || '';
+              
+              // 따옴표 제거
+              if (typeof value === 'string') {
+                value = value.replace(/^"|"$/g, '');
+              }
               
               if (header === 'gen' || header === 'student_id') {
                 value = parseInt(value) || 0;
@@ -439,7 +461,7 @@ export default function AdminMemberPage() {
             {/* CSV 다운로드 */}
             <RedButton
               onClick={() => {
-                // CSV 다운로드 로직 - MemberCreateRequest의 모든 필드 포함
+                // CSV 다운로드 로직 - 현재 멤버 목록을 CSV로 다운로드
                 const headers = [
                   'name', 'email', 'gen', 'school', 'major', 'student_id', 'birthdate', 
                   'phone', 'gender', 'grant', 'status', 'profile_image_url', 'activity_start_date', 
@@ -448,39 +470,51 @@ export default function AdminMemberPage() {
                   'active_gens', 'history'
                 ];
                 
-                // 예시 데이터 (첫 번째 행) - MemberCreateRequest의 모든 필드
-                const exampleData = [
-                  '홍길동',
-                  'hong@example.com',
-                  '5',
-                  '프메대학교',
-                  '인공지능학과',
-                  '21',
-                  '2000-01-01',
-                  '010-1234-5678',
-                  '남성',
-                  'member',
-                  'active',
-                  'https://example.com/profile.jpg',
-                  '2024-03-01',
-                  'https://github.com/honggildong',
-                  'https://notion.so/honggildong',
-                  'https://figma.com/honggildong',
-                  'honggildong',
-                  'honggildong_ai',
-                  'ENFP',
-                  '안녕하세요! 저는 AI에 관심이 많은 학생입니다. 다양한 프로젝트를 통해 실력을 키우고 싶습니다.',
-                  'AI 스터디 그룹 리더, 웹 개발 프로젝트 참여, 해커톤 수상 경험',
-                  'true',
-                  '3;4;5',
-                  'AI 챗봇 개발;웹 애플리케이션 프로젝트;머신러닝 스터디'
-                ];
+                // 현재 멤버 목록을 CSV 형식으로 변환
+                const csvRows = [headers.join(',')];
                 
-                const csvContent = [
-                  headers.join(','),
-                  exampleData.map(field => `"${field}"`).join(',')
-                ].join('\n');
+                list.forEach(member => {
+                  const row = [
+                    member.name || '',
+                    member.email || '',
+                    member.gen || 0,
+                    member.school || '',
+                    member.major || '',
+                    (member as any).student_id || 0,
+                    (member as any).birthdate || '',
+                    (member as any).phone || '',
+                    (member as any).gender || '',
+                    member.grant || '',
+                    member.status || '',
+                    member.profile_image_url || '',
+                    (member as any).activity_start_date || '',
+                    (member as any).github || '',
+                    (member as any).notion || '',
+                    (member as any).figma || '',
+                    (member as any).kakao_id || '',
+                    (member as any).instagram_id || '',
+                    (member as any).mbti || '',
+                    (member as any).self_introduction || '',
+                    (member as any).additional_career || '',
+                    (member as any).coffee_chat_enabled || false,
+                    (member as any).active_gens ? (member as any).active_gens.join(';') : '',
+                    (member as any).history ? (member as any).history.join(';') : ''
+                  ];
+                  
+                  // CSV 형식에 맞게 따옴표 처리
+                  const escapedRow = row.map(field => {
+                    const fieldStr = String(field);
+                    // 쉼표, 따옴표, 줄바꿈이 포함된 경우 따옴표로 감싸고 내부 따옴표는 이스케이프
+                    if (fieldStr.includes(',') || fieldStr.includes('"') || fieldStr.includes('\n')) {
+                      return `"${fieldStr.replace(/"/g, '""')}"`;
+                    }
+                    return fieldStr;
+                  });
+                  
+                  csvRows.push(escapedRow.join(','));
+                });
                 
+                const csvContent = csvRows.join('\n');
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement('a');
                 const url = URL.createObjectURL(blob);

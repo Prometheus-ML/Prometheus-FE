@@ -436,7 +436,7 @@ export default function EventModal({
                               </div>
 
                               {/* 시간 조정 입력 필드들 */}
-                              <div className="grid grid-cols-2 gap-3 mb-3">
+                              <div className="grid grid-cols-3 gap-3 mb-3">
                                 <div>
                                   <label className="block text-xs text-gray-300 mb-1">출석 시작 시간</label>
                                   <input
@@ -444,56 +444,39 @@ export default function EventModal({
                                     value={formData.attendanceStartTime ? formData.attendanceStartTime.toTimeString().slice(0, 5) : ''}
                                     onChange={(e) => {
                                       const [hours, minutes] = e.target.value.split(':');
-                                      const newTime = new Date(formData.attendanceStartTime || formData.startTime);
+                                      const newTime = new Date(formData.startTime); // 이벤트 시작 날짜 사용
                                       newTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
                                       setFormData({ ...formData, attendanceStartTime: newTime });
                                     }}
                                     className="w-full px-2 py-1 text-xs bg-white/10 border border-white/20 rounded text-white focus:ring-1 focus:ring-red-500 focus:border-red-500"
                                   />
                                 </div>
-                                <div>
+                          <div>
                                   <label className="block text-xs text-gray-300 mb-1">출석 종료 시간</label>
-                                  <input
+                            <input
                                     type="time"
                                     value={formData.attendanceEndTime ? formData.attendanceEndTime.toTimeString().slice(0, 5) : ''}
                                     onChange={(e) => {
                                       const [hours, minutes] = e.target.value.split(':');
-                                      const newTime = new Date(formData.attendanceEndTime || formData.endTime);
+                                      const newTime = new Date(formData.endTime); // 이벤트 종료 날짜 사용
                                       newTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
                                       setFormData({ ...formData, attendanceEndTime: newTime });
                                     }}
                                     className="w-full px-2 py-1 text-xs bg-white/10 border border-white/20 rounded text-white focus:ring-1 focus:ring-red-500 focus:border-red-500"
-                                  />
-                                </div>
-                                <div>
+                            />
+                          </div>
+                          <div>
                                   <label className="block text-xs text-gray-300 mb-1">지각 허용 시간 (분)</label>
-                                  <input
+                            <input
                                     type="number"
                                     min="0"
                                     max="60"
                                     value={formData.lateThresholdMinutes}
                                     onChange={(e) => setFormData({ ...formData, lateThresholdMinutes: parseInt(e.target.value) || 0 })}
                                     className="w-full px-2 py-1 text-xs bg-white/10 border border-white/20 rounded text-white focus:ring-1 focus:ring-red-500 focus:border-red-500"
-                                  />
-                                </div>
-                                <div className="flex items-end">
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      // 기본값으로 리셋
-                                      setFormData({
-                                        ...formData,
-                                        attendanceStartTime: formData.startTime,
-                                        attendanceEndTime: formData.endTime,
-                                        lateThresholdMinutes: 15
-                                      });
-                                    }}
-                                    className="w-full px-2 py-1 text-xs bg-gray-600 hover:bg-gray-500 text-white rounded transition-colors"
-                                  >
-                                    기본값으로 리셋
-                                  </button>
-                                </div>
-                              </div>
+                            />
+                          </div>
+                        </div>
 
                               {/* 시간 조건 체크리스트 */}
                               <div className="mt-3 space-y-1">
@@ -501,8 +484,8 @@ export default function EventModal({
                                   <FontAwesomeIcon icon={timeViz.startTime <= timeViz.attendanceStartTime ? faCheck : faTimes} className="mr-1" />
                                   시작 시간 ≤ 출석 시작 시간
                                 </div>
-                                <div className={`flex items-center text-xs ${timeViz.attendanceStartTime < timeViz.lateThreshold ? 'text-green-400' : 'text-red-400'}`}>
-                                  <FontAwesomeIcon icon={timeViz.attendanceStartTime < timeViz.lateThreshold ? faCheck : faTimes} className="mr-1" />
+                                <div className={`flex items-center text-xs ${timeViz.lateThreshold <= timeViz.attendanceEndTime ? 'text-green-400' : 'text-red-400'}`}>
+                                  <FontAwesomeIcon icon={timeViz.lateThreshold <= timeViz.attendanceEndTime ? faCheck : faTimes} className="mr-1" />
                                   출석 시작 + 지각시간 ≤ 출석 종료
                                 </div>
                                 <div className={`flex items-center text-xs ${timeViz.attendanceEndTime <= timeViz.endTime ? 'text-green-400' : 'text-red-400'}`}>
@@ -511,52 +494,29 @@ export default function EventModal({
                                 </div>
                               </div>
                               
-                              {/* 시간 조건 체크리스트 */}
-                              <div className="mt-3 space-y-1">
-                                <div className={`flex items-center text-xs ${timeViz.startTime <= timeViz.attendanceStartTime ? 'text-green-400' : 'text-red-400'}`}>
-                                  <FontAwesomeIcon icon={timeViz.startTime <= timeViz.attendanceStartTime ? faCheck : faTimes} className="mr-1" />
-                                  시작 시간 ≤ 출석 시작 시간
-                                </div>
-                                <div className={`flex items-center text-xs ${timeViz.attendanceStartTime < timeViz.lateThreshold ? 'text-green-400' : 'text-red-400'}`}>
-                                  <FontAwesomeIcon icon={timeViz.attendanceStartTime < timeViz.lateThreshold ? faCheck : faTimes} className="mr-1" />
-                                  출석 시작 + 지각시간 ≤ 출석 종료
-                                </div>
-                                <div className={`flex items-center text-xs ${timeViz.attendanceEndTime <= timeViz.endTime ? 'text-green-400' : 'text-red-400'}`}>
-                                  <FontAwesomeIcon icon={timeViz.attendanceEndTime <= timeViz.endTime ? faCheck : faTimes} className="mr-1" />
-                                  출석 종료 ≤ 종료 시간
-                                </div>
+                              {/* 기본값 리셋 버튼 */}
+                              <div className="mt-3">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    // 기본값으로 리셋 - 이벤트 시작/종료 시간과 동일하게 설정
+                                    setFormData({
+                                      ...formData,
+                                      attendanceStartTime: new Date(formData.startTime),
+                                      attendanceEndTime: new Date(formData.endTime),
+                                      lateThresholdMinutes: 15
+                                    });
+                                  }}
+                                  className="w-full px-3 py-2 text-xs bg-gray-600 hover:bg-gray-500 text-white rounded transition-colors"
+                                >
+                                  기본값으로 리셋
+                                </button>
                               </div>
                             </div>
                           );
                         })()}
 
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                              <label htmlFor="attendanceStartTime" className="block text-sm font-medium text-white mb-1">
-                                출석 시작 시간
-                              </label>
-                            <input
-                                id="attendanceStartTime"
-                              type="datetime-local"
-                              value={formData.attendanceStartTime ? formatDateForInput(formData.attendanceStartTime) : ''}
-                              onChange={(e) => setFormData({ ...formData, attendanceStartTime: new Date(e.target.value) })}
-                                className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
-                            />
-                          </div>
 
-                          <div>
-                              <label htmlFor="attendanceEndTime" className="block text-sm font-medium text-white mb-1">
-                                출석 종료 시간
-                              </label>
-                            <input
-                                id="attendanceEndTime"
-                              type="datetime-local"
-                              value={formData.attendanceEndTime ? formatDateForInput(formData.attendanceEndTime) : ''}
-                              onChange={(e) => setFormData({ ...formData, attendanceEndTime: new Date(e.target.value) })}
-                                className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
-                            />
-                          </div>
-                        </div>
 
                         <div>
                             <label htmlFor="lateThresholdMinutes" className="block text-sm font-medium text-white mb-1">
