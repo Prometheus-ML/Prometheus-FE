@@ -360,9 +360,9 @@ export default function GroupPage() {
                         {group.category === 'STUDY' ? '스터디 그룹' : '취미 그룹'}
                       </span>
                   <span className={`px-1.5 py-0.5 text-xs rounded ${
-                    group.deadline ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-[#3FFF4F]'
+                    group.deadline && new Date(group.deadline) < new Date() ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-[#3FFF4F]'
                   }`}>
-                        {group.deadline ? '마감됨' : '진행중'}
+                        {group.deadline && new Date(group.deadline) < new Date() ? '마감됨' : '진행중'}
                       </span>
                     </div>
 
@@ -394,7 +394,24 @@ export default function GroupPage() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <FontAwesomeIcon icon={faClock} className="w-4 h-4" />
-                    <span>{group.deadline ? new Date(group.deadline).toLocaleDateString() : '무기한'}</span>
+                    <span>
+                      {group.deadline ? (
+                        (() => {
+                          const today = new Date();
+                          const deadline = new Date(group.deadline);
+                          const diffTime = deadline.getTime() - today.getTime();
+                          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                          
+                          if (diffDays < 0) {
+                            return `마감됨 (${new Date(group.deadline).toLocaleDateString()})`;
+                          } else if (diffDays === 0) {
+                            return `오늘 마감 (${new Date(group.deadline).toLocaleDateString()})`;
+                          } else {
+                            return `D-${diffDays}`;
+                          }
+                        })()
+                      ) : '무기한'}
+                    </span>
                   </div>
                   <div className="text-xs text-gray-400">
                     운영자: {group.owner_name}

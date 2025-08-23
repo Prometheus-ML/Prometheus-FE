@@ -12,8 +12,7 @@ import {
   faTimes, 
   faHeart, 
   faHeartBroken, 
-  faTrash,
-  faClock
+  faTrash
 } from '@fortawesome/free-solid-svg-icons';
 import Image from 'next/image';
 import type { Group } from '@prometheus-fe/types';
@@ -337,7 +336,6 @@ export default function GroupModal({ group, isOpen, onClose }: GroupModalProps) 
                     <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded">
                       {member.gen}기
                     </span>
-                    <span className="text-gray-300 text-sm">({member.member_id})</span>
                     <span className={`px-2 py-1 text-xs rounded ${
                       member.role === 'owner' 
                         ? 'bg-yellow-500/20 text-yellow-300' 
@@ -373,33 +371,39 @@ export default function GroupModal({ group, isOpen, onClose }: GroupModalProps) 
               <div className="mt-6">
                 <h3 className="text-lg font-semibold text-white mb-3">가입 신청</h3>
                 <div className="space-y-2">
-                  {joinRequests.map((request: any) => (
-                    <div key={request.id} className="flex items-center justify-between p-2 bg-white/10 rounded">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-white font-medium">{request.name}</span>
-                        <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded">
-                          {request.gen}기
-                        </span>
-                        <span className="text-gray-300 text-sm">({request.member_id})</span>
+                  {joinRequests.length > 0 ? (
+                    joinRequests.map((request: any) => (
+                      <div key={request.id} className="flex items-center justify-between p-2 bg-white/10 rounded">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-white font-medium">{request.name}</span>
+                          <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded">
+                            {request.gen}기
+                          </span>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleApproveMember(request.id)}
+                            className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+                          >
+                            <FontAwesomeIcon icon={faCheck} className="mr-1" />
+                            승인
+                          </button>
+                          <button
+                            onClick={() => handleRejectMember(request.id)}
+                            className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                          >
+                            <FontAwesomeIcon icon={faTimes} className="mr-1" />
+                            거절
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleApproveMember(request.id)}
-                          className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
-                        >
-                          <FontAwesomeIcon icon={faCheck} className="mr-1" />
-                          승인
-                        </button>
-                        <button
-                          onClick={() => handleRejectMember(request.id)}
-                          className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
-                        >
-                          <FontAwesomeIcon icon={faTimes} className="mr-1" />
-                          거절
-                        </button>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-gray-400 bg-white/5 rounded border border-white/10">
+                      <FontAwesomeIcon icon={faUsers} className="mr-2 text-gray-500" />
+                      아직 가입 신청이 없습니다
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             )}
