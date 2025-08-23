@@ -1,6 +1,7 @@
 import React from 'react';
 import { AppProviders } from '../src/context/AppProviders';
 import Navigation from '../src/components/Navigation';
+import ChatToggleWrapper from '../src/components/ChatToggleWrapper';
 import './globals.css';
 
 export const metadata = {
@@ -23,13 +24,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* Prometheus Background */}
           <div className="prometheus-bg"></div>
           
-          {/* Navigation */}
-          <Navigation />
-          
-          {/* Main Content Container */}
-          <div className="relative z-10 pt-16">
-            <AppProviders>{children}</AppProviders>
-          </div>
+          {/* AppProviders로 전체 앱을 감싸기 */}
+          <AppProviders>
+            {/* Navigation */}
+            <Navigation />
+            
+            {/* Main Content Container */}
+            <div className="relative z-10 pt-16">
+              {children}
+            </div>
+            
+            {/* Chat Toggle */}
+            <ChatToggleWrapper />
+          </AppProviders>
         </div>
       </body>
     </html>

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { usePathname } from 'next/navigation';
 
 interface ChatToggleProps {
   onToggle: (isOpen: boolean) => void;
@@ -8,6 +9,13 @@ interface ChatToggleProps {
 }
 
 const ChatToggle: React.FC<ChatToggleProps> = ({ onToggle, isOpen }) => {
+  const pathname = usePathname();
+  
+  // 루트 페이지(/)에서는 ChatToggle을 숨김
+  if (pathname === '/' || pathname === '/auth/login' || pathname === '/auth/google') {
+    return null;
+  }
+
   const handleClick = () => {
     onToggle(!isOpen);
   };
