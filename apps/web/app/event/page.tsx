@@ -48,7 +48,7 @@ const EventCardSkeleton = () => (
   <GlassCard className="p-4 border border-white/20 animate-pulse">
     <div className="space-y-3">
       {/* 제목과 기수 */}
-      <div className="flex items-start justify-between">
+    <div className="flex items-start justify-between">
         <div className="flex items-center gap-2 flex-1 mr-2">
           <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
           <div className="w-48 h-6 bg-gray-600 rounded flex-1"></div>
@@ -61,14 +61,14 @@ const EventCardSkeleton = () => (
         <div className="h-5 w-16 bg-gray-600 rounded"></div>
         <div className="w-3 h-3 bg-gray-600 rounded"></div>
         <div className="w-3 h-3 bg-gray-600 rounded"></div>
-      </div>
-
+        </div>
+        
       {/* 설명 */}
       <div className="h-10">
         <div className="w-full h-4 bg-gray-600 rounded mb-2"></div>
         <div className="w-3/4 h-4 bg-gray-600 rounded"></div>
-      </div>
-
+        </div>
+        
       {/* 장소와 날짜 */}
       <div className="space-y-2">
         <div className="flex items-center space-x-2">
@@ -80,7 +80,7 @@ const EventCardSkeleton = () => (
           <div className="w-32 h-4 bg-gray-600 rounded"></div>
         </div>
       </div>
-
+      
       {/* 출석 체크 섹션 */}
       <div className="bg-white/10 rounded-lg p-4 border border-white/20">
         <div className="space-y-3">
@@ -268,11 +268,11 @@ export default function EventPage() {
 
       <div className="px-4 py-6">
         {/* 출석 가능한 행사 */}
-        <div className="mb-8">
+          <div className="mb-8">
           <h2 className="text-xl font-bold text-white mb-4 flex items-center">
             <FontAwesomeIcon icon={faCheck} className="mr-2 w-5 h-5" />
             출석 가능한 행사
-          </h2>
+              </h2>
           <p className="text-white/70 mb-4">지금 출석 체크할 수 있는 행사</p>
           
           {isLoadingAttendableEvents ? (
@@ -405,13 +405,13 @@ export default function EventPage() {
                            </>
                          );
                        })()}
-                     </div>
+                    </div>
                   </div>
                 </GlassCard>
               ))}
             </div>
           )}
-        </div>
+          </div>
 
         {/* 이전 출석 목록 */}
         <div className="mb-8">
@@ -460,14 +460,14 @@ export default function EventPage() {
                    key={attendance.id} 
                    className="bg-white/10 rounded-lg p-4 border border-white/20 hover:bg-white/20 transition-colors group"
                  >
-                   <div className="flex items-center justify-between mb-3">
-                     <div className="flex items-center space-x-3">
-                       <span className={`px-3 py-1 text-sm rounded-full border ${getStatusColor(attendance.status)}`}>
-                         {getStatusText(attendance.status)}
-                       </span>
-                       <span className="text-white font-medium">
-                         {attendance.eventTitle}
-                       </span>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <span className={`px-3 py-1 text-sm rounded-full border ${getStatusColor(attendance.status)}`}>
+                        {getStatusText(attendance.status)}
+                      </span>
+                      <span className="text-white font-medium">
+                        {attendance.eventTitle}
+                      </span>
                        <span className={`px-1.5 py-0.5 text-xs rounded-full font-medium flex font-semibold items-center gap-1 flex-shrink-0 ${getGenColor(attendance.eventGen)}`}>
                          {attendance.eventGen}기
                        </span>
@@ -482,45 +482,45 @@ export default function EventPage() {
                          title="상세보기"
                          onClick={() => handleAttendanceCardClick(attendance)}
                        />
-                     </div>
-                   </div>
-                   
+                    </div>
+                  </div>
+                  
                                        <div className="text-sm text-gray-300 space-y-2">
                       {/* 장소와 이벤트 시간 */}
                       <div className="flex items-center space-x-2">
                         <FontAwesomeIcon icon={faMapMarkerAlt} className="w-4 h-4" />
                         <span>{attendance.eventLocation || '장소 미정'}</span>
                         <span className="text-gray-500">|</span>
-                        <FontAwesomeIcon icon={faCalendarAlt} className="w-4 h-4" />
+                      <FontAwesomeIcon icon={faCalendarAlt} className="w-4 h-4" />
                         <span>
                           {attendance.eventStartTime && attendance.eventEndTime 
                             ? `${attendance.eventStartTime.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })} ${attendance.eventStartTime.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })} - ${attendance.eventEndTime.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })}`
                             : '시간 미정'
                           }
                         </span>
-                      </div>
+                    </div>
                       
                       {/* 출석 시간 */}
-                      {attendance.checkedInAt && (
+                    {attendance.checkedInAt && (
                         <div className="flex items-center space-x-2">
-                          <FontAwesomeIcon icon={faClock} className="w-4 h-4" />
+                        <FontAwesomeIcon icon={faClock} className="w-4 h-4" />
                           <span>
                             출석: {new Date(attendance.checkedInAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })}
                           </span>
-                        </div>
-                      )}
+                      </div>
+                    )}
                       
                       {/* 사유 */}
-                      {attendance.reason && (
-                        <div className="flex items-center space-x-2">
-                          <FontAwesomeIcon icon={faComment} className="w-4 h-4" />
-                          <span>사유: {attendance.reason}</span>
-                        </div>
-                      )}
-                    </div>
-                 </div>
-               ))}
-             </div>
+                    {attendance.reason && (
+                      <div className="flex items-center space-x-2">
+                        <FontAwesomeIcon icon={faComment} className="w-4 h-4" />
+                        <span>사유: {attendance.reason}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 

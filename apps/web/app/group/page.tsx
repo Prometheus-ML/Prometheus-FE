@@ -216,21 +216,21 @@ export default function GroupPage() {
             </div>
           </div>
           <div className="text-right flex items-center gap-3">
-            {user && (
+        {user && (
               <button
-                onClick={() => setShowCreateForm(!showCreateForm)}
+            onClick={() => setShowCreateForm(!showCreateForm)}
                 className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
-              >
+          >
                 <FontAwesomeIcon icon={faPlus} className="w-5 h-5" />
               </button>
-            )}
+        )}
             <p className="text-sm text-[#e0e0e0]">전체 <span className="text-[#ffa282] font-bold">{groups.length}</span>개</p>
           </div>
         </div>
       </header>
 
       <div className="px-4 py-6">
-        {/* 검색 및 필터 */}
+      {/* 검색 및 필터 */}
         <div className="mb-6 space-y-4">
           <QueryBar
             searchTerm={filters.search}

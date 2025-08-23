@@ -1,20 +1,26 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ProjectForm from '@/src/components/ProjectForm';
 import { useProject } from '@prometheus-fe/hooks';
+import { useAuthStore } from '@prometheus-fe/stores';
+import GlassCard from '../../../../src/components/GlassCard';
 import RedButton from '../../../../src/components/RedButton';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faList } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
 export default function NewProjectPage() {
   const router = useRouter();
   const { createProject } = useProject();
+  const { canAccessAdministrator } = useAuthStore();
 
-  // TODO: Replace with actual auth logic
-  const canCreate = true; // Administrator 이상만 생성 가능
-  const weights = { Root: 0, Super: 1, Administrator: 2, Member: 3 };
+
+
+  // 권한 확인
+  const canCreate = canAccessAdministrator();
 
   const handleSubmit = async (formData: any) => {
     try {
@@ -59,7 +65,7 @@ export default function NewProjectPage() {
               <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
             </Link>
             <div>
-              <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">프로젝트 생성</h1>
+              <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">프로젝트 생성 (관리자)</h1>
               <p className="text-sm font-pretendard text-[#e0e0e0]">새로운 프로젝트 등록</p>
             </div>
           </div>
@@ -67,12 +73,22 @@ export default function NewProjectPage() {
       </header>
 
       <div className="px-4 py-6">
-        <ProjectForm 
+        {/* 프로젝트 폼 */}
+        <GlassCard className="mb-6">
+          <div className="p-6">
+            <h2 className="text-lg font-semibold text-white mb-4">프로젝트 정보</h2>
+                    <ProjectForm 
           initial={{}}
           mode="create"
+          showStatus={true}
+          isAdmin={true}
           onSubmit={handleSubmit}
         />
+          </div>
+        </GlassCard>
       </div>
     </div>
   );
 }
+
+

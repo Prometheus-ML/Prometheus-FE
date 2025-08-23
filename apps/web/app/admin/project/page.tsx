@@ -14,7 +14,7 @@ export default function AdminProjectPage() {
   const { 
     projects, 
     isLoadingProjects, 
-    fetchProjects, 
+    fetchProjectsForAdmin, 
     searchQuery, 
     statusFilter, 
     setSearch, 
@@ -71,7 +71,7 @@ export default function AdminProjectPage() {
       console.log('AdminProjectPage: 프로젝트 목록 로드 시작');
       
       // 백엔드에서 모든 프로젝트를 가져옴 (클라이언트 사이드 필터링)
-      await fetchProjects();
+      await fetchProjectsForAdmin();
       console.log('AdminProjectPage: 프로젝트 목록 로드 완료');
     } catch (err) {
       console.error('AdminProjectPage: 프로젝트 목록 로드 실패:', err);
@@ -311,10 +311,10 @@ export default function AdminProjectPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      {project.panel_url ? (
+                      {project.thumbnail_url ? (
                         <div className="relative h-16 w-16">
                           <Image
-                            src={getThumbnailUrl(project.panel_url, 80)}
+                            src={getThumbnailUrl(project.thumbnail_url, 80)}
                             alt={project.title}
                             fill
                             className="rounded-lg object-cover"
@@ -378,7 +378,7 @@ export default function AdminProjectPage() {
                       상세보기
                     </Link>
                     <Link 
-                      href={`/project/${project.id}/edit`}
+                      href={`/admin/project/${project.id}/edit`}
                       className="text-green-400 hover:text-green-300 text-sm font-medium"
                     >
                       편집

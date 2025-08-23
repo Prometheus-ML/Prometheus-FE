@@ -652,46 +652,46 @@ export default function ProjectDetailPage() {
 
       <div className="w-full">
         <div className="p-6">
-          <h2 className="text-lg font-semibold mb-4 text-white flex items-center">
-            <FontAwesomeIcon icon={faUsers} className="mr-2" />
-              구성원
-          </h2>
-          {isLoadingMembers ? (
-            <div className="flex justify-center items-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600" />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {projectMembers.map((m) => (
-                <div
-                  key={m.id}
-                  className="bg-white/10 border border-white/20 rounded-lg p-3 text-center"
-                >
-                  <div className="flex items-center justify-center gap-1 mb-2">
-                      {m.member_gen !== null && m.member_gen !== undefined && (
-                      <span className={`px-1.5 py-0.5 text-xs rounded-full font-medium flex items-center gap-1 bg-[#8B0000] text-[#ffa282]`}>
-                          {m.member_gen}기
-                        </span>
-                      )}
-                    <h3 className="text-lg font-semibold text-white">{m.member_name || '알 수 없음'}</h3>
-                    
-                    <div className="text-xs text-gray-300">/ {m.role === 'team_leader' ? '팀장' : m.role === 'team_member' ? '팀원' : m.role || '팀원'}</div>
-                    </div>
-                      {m.contribution && (
-                    <div className="text-xs text-gray-300 mt-2 truncate" title={m.contribution}>
-                      {m.contribution}
-                    </div>
-                  )}
-                </div>
-              ))}
+            <h2 className="text-lg font-semibold mb-4 text-white flex items-center">
+              <FontAwesomeIcon icon={faUsers} className="mr-2" />
+                구성원
+            </h2>
+            {isLoadingMembers ? (
+              <div className="flex justify-center items-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {projectMembers.map((m) => (
+                  <div
+                    key={m.id}
+                    className="bg-white/10 border border-white/20 rounded-lg p-3 text-center"
+                  >
+                    <div className="flex items-center justify-center gap-1 mb-2">
+                        {m.member_gen !== null && m.member_gen !== undefined && (
+                        <span className={`px-1.5 py-0.5 text-xs rounded-full font-medium flex items-center gap-1 bg-[#8B0000] text-[#ffa282]`}>
+                            {m.member_gen}기
+                          </span>
+                        )}
+                      <h3 className="text-lg font-semibold text-white">{m.member_name || '알 수 없음'}</h3>
+                      
+                      <div className="text-xs text-gray-300">/ {m.role === 'team_leader' ? '팀장' : m.role === 'team_member' ? '팀원' : m.role || '팀원'}</div>
+                      </div>
+                        {m.contribution && (
+                      <div className="text-xs text-gray-300 mt-2 truncate" title={m.contribution}>
+                        {m.contribution}
+                      </div>
+                    )}
+                  </div>
+                ))}
 
-              {projectMembers.length === 0 && (
-                <div className="col-span-full text-center py-8 text-gray-400">
-                  등록된 구성원이 없습니다.
-                </div>
-              )}
-            </div>
-          )}
+                {projectMembers.length === 0 && (
+                  <div className="col-span-full text-center py-8 text-gray-400">
+                    등록된 구성원이 없습니다.
+                  </div>
+                )}
+              </div>
+            )}
         </div>
       </div>
 

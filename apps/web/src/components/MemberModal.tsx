@@ -346,13 +346,18 @@ export default function MemberModal({ isOpen, member, onClose, onSubmit, onDelet
         delete (submitData as any).grant;
       }
       
+      // 수정 모드일 때 id 포함
+      if (isEdit && member) {
+        (submitData as any).id = member.id;
+      }
+      
       onSubmit(submitData);
     } catch (error) {
       console.error('Submit error:', error);
     } finally {
       setIsSubmitting(false);
     }
-  }, [isEdit, form, canModifyEntireMember, onSubmit]);
+  }, [isEdit, form, canModifyEntireMember, onSubmit, member]);
 
   // 삭제 처리
   const handleDelete = useCallback(async (): Promise<void> => {
@@ -736,7 +741,7 @@ export default function MemberModal({ isOpen, member, onClose, onSubmit, onDelet
                               {form.profile_image_url && !imageError ? (
                                 <div className="relative w-16 h-16">
                                   {imageLoading && (
-                                    <div className="absolute inset-0 flex items-center justify-center bg-white/10 rounded-full">
+                                    <div className="absolute inset-0 flex items-center justify-center bg-white/10 rounded-full z-10">
                                       <svg className="animate-spin h-6 w-6 text-white" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
@@ -750,8 +755,17 @@ export default function MemberModal({ isOpen, member, onClose, onSubmit, onDelet
                                     className="rounded-full object-cover border-2 border-white/20"
                                     onLoadingComplete={onProfileImageLoad}
                                     onError={onProfileImageError}
-                                    unoptimized // useImage로 이미 최적화된 이미지이므로
+                                    unoptimized
                                   />
+                                  {/* 이미지 제거 버튼 */}
+                                  <button
+                                    type="button"
+                                    onClick={() => setForm(prev => ({ ...prev, profile_image_url: '' }))}
+                                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                                    title="이미지 제거"
+                                  >
+                                    ✕
+                                  </button>
                                 </div>
                               ) : (
                                 <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
@@ -775,7 +789,7 @@ export default function MemberModal({ isOpen, member, onClose, onSubmit, onDelet
                                 type="button"
                                 onClick={triggerProfileImageSelect}
                                 disabled={isUploadingImage || (isEdit && !canModifyEntireMember())}
-                                className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-white bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-black bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 {!isUploadingImage ? (
                                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

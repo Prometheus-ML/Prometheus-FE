@@ -179,7 +179,7 @@ const Navigation = () => {
                     : 'ml-2 py-1 px-2 bg-[#B91C1C] text-white rounded'
                 }`}
               >
-                PROFILE
+                MY
               </button>
             )}
           </>

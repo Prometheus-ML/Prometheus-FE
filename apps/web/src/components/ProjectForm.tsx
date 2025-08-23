@@ -4,7 +4,9 @@ import { useState, useEffect, ChangeEvent } from 'react';
 import Image from 'next/image';
 import { useImage, useProject } from '@prometheus-fe/hooks';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFolder } from '@fortawesome/free-solid-svg-icons';
+import { faFolder, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { SearchMemberBar } from './SearchMemberBar';
+import { MemberSummaryResponse } from '@prometheus-fe/types';
 
 interface ProjectMember {
   member_id: string;
@@ -32,6 +34,7 @@ interface ProjectFormProps {
   initial?: Partial<ProjectFormData>;
   mode?: 'create' | 'edit';
   showStatus?: boolean;
+  isAdmin?: boolean;
   onSubmit: (data: ProjectFormData) => void;
 }
 
@@ -39,6 +42,7 @@ export default function ProjectForm({
   initial = {}, 
   mode = 'create', 
   showStatus = false, 
+  isAdmin = false,
   onSubmit 
 }: ProjectFormProps) {
   const [formData, setFormData] = useState<ProjectFormData>({
@@ -55,6 +59,7 @@ export default function ProjectForm({
   });
 
   const [keywordInput, setKeywordInput] = useState('');
+  const [showMemberSearch, setShowMemberSearch] = useState(false);
 
   // useImage 훅 사용
   const {
@@ -154,6 +159,20 @@ export default function ProjectForm({
     }
   };
 
+  const handleAddMember = (member: MemberSummaryResponse) => {
+    const newMember: ProjectMember = {
+      member_id: member.id,
+      member_name: member.name,
+      member_gen: member.gen,
+      role: 'team_member',
+      contribution: ''
+    };
+    
+    const updatedMembers = [...formData.members, newMember];
+    updateFormData('members', updatedMembers);
+    setShowMemberSearch(false);
+  };
+
   const handlePanelFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e?.target?.files?.[0];
     if (!file) return;
@@ -250,6 +269,39 @@ export default function ProjectForm({
         />
       </div>
 
+      {/* Admin 모드일 때만 기수와 상태 설정 가능 */}
+      {isAdmin && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm mb-1 font-medium text-white">기수</label>
+            <select
+              value={formData.gen || 0}
+              onChange={(e) => updateFormData('gen', parseInt(e.target.value))}
+              className="border border-white/30 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white text-black"
+            >
+              <option value={0}>0기</option>
+              {Array.from({ length: 15 }, (_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  {i + 1}기
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm mb-1 font-medium text-white">상태</label>
+            <select
+              value={formData.status}
+              onChange={(e) => updateFormData('status', e.target.value as 'active' | 'completed' | 'paused')}
+              className="border border-white/30 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white text-black"
+            >
+              <option value="active">진행중</option>
+              <option value="completed">완료</option>
+              <option value="paused">중지</option>
+            </select>
+          </div>
+        </div>
+      )}
+
       <div>
         <label className="block text-sm mb-1 font-medium text-white">키워드</label>
         <div className="flex flex-wrap gap-2 mb-2">
@@ -281,7 +333,37 @@ export default function ProjectForm({
 
       {/* 멤버 관리 섹션 */}
       <div>
-        <label className="block text-sm mb-1 font-medium text-white">팀원</label>
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm font-medium text-white">팀원</label>
+          {isAdmin && (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setShowMemberSearch(true)}
+                className="inline-flex items-center px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+              >
+                <FontAwesomeIcon icon={faPlus} className="mr-1 h-3 w-3" />
+                팀원 추가
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (formData.members.length > 0) {
+                    const updatedMembers = [...formData.members];
+                    updatedMembers.pop(); // 마지막 팀원 제거
+                    updateFormData('members', updatedMembers);
+                  }
+                }}
+                disabled={formData.members.length === 0}
+                className="inline-flex items-center px-2 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FontAwesomeIcon icon={faTrash} className="mr-1 h-3 w-3" />
+                팀원 제거
+              </button>
+            </div>
+          )}
+        </div>
+        
         <div className="space-y-2 mb-3">
           {formData.members.map((member, index) => (
             <div
@@ -289,30 +371,62 @@ export default function ProjectForm({
               className="p-3 border border-white/30 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
             >
               <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center justify-center gap-1 mb-2">
+                <div className="flex items-center gap-2">
                   {member.member_gen !== null && member.member_gen !== undefined && (
                     <span className={`px-1.5 py-0.5 text-xs rounded-full font-medium flex items-center gap-1 bg-[#8B0000] text-[#ffa282]`}>
                       {member.member_gen}기
                     </span>
                   )}
                   <h3 className="text-lg font-semibold text-white">{member.member_name || '알 수 없음'}</h3>
-                        
-                  <span className="text-gray-300 ml-2">/ {member.role === 'team_leader' ? '팀장' : member.role === 'team_member' ? '팀원' : member.role || '팀원'}</span>
+                  <span className="text-gray-300">/ {member.role === 'team_leader' ? '팀장' : member.role === 'team_member' ? '팀원' : member.role || '팀원'}</span>
                 </div>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updatedMembers = [...formData.members];
+                      updatedMembers.splice(index, 1);
+                      updateFormData('members', updatedMembers);
+                    }}
+                    className="text-red-400 hover:text-red-300 transition-colors p-1 rounded hover:bg-red-500/20"
+                    title="팀원 제거"
+                  >
+                    <FontAwesomeIcon icon={faTrash} className="h-4 w-4" />
+                  </button>
+                )}
               </div>
-              <div>
-                <label className="block text-xs mb-1 font-medium text-gray-300">기여 내용</label>
-                <input
-                  value={member.contribution || ''}
-                  onChange={(e) => {
-                    const updatedMembers = [...formData.members];
-                    updatedMembers[index] = { ...member, contribution: e.target.value };
-                    updateFormData('members', updatedMembers);
-                  }}
-                  className="w-full text-sm text-white bg-white/20 border border-white/30 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent placeholder-gray-400"
-                  placeholder="기여 내용을 입력하세요"
-                />
-              </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                 {isAdmin && (
+                   <div>
+                     <label className="block text-xs mb-1 font-medium text-gray-300">역할 설정</label>
+                     <select
+                       value={member.role || 'team_member'}
+                       onChange={(e) => {
+                         const updatedMembers = [...formData.members];
+                         updatedMembers[index] = { ...member, role: e.target.value };
+                         updateFormData('members', updatedMembers);
+                       }}
+                       className="w-full text-sm text-white bg-white/20 border border-white/30 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                     >
+                       <option value="team_leader">팀장</option>
+                       <option value="team_member">팀원</option>
+                     </select>
+                   </div>
+                 )}
+                 <div className={isAdmin ? '' : 'md:col-span-2'}>
+                   <label className="block text-xs mb-1 font-medium text-gray-300">기여 내용</label>
+                   <input
+                     value={member.contribution || ''}
+                     onChange={(e) => {
+                       const updatedMembers = [...formData.members];
+                       updatedMembers[index] = { ...member, contribution: e.target.value };
+                       updateFormData('members', updatedMembers);
+                     }}
+                     className="w-full text-sm text-white bg-white/20 border border-white/30 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent placeholder-gray-400"
+                     placeholder="기여 내용을 입력하세요"
+                   />
+                 </div>
+               </div>
             </div>
           ))}
         </div>
@@ -383,7 +497,7 @@ export default function ProjectForm({
         </div>
 
         <div>
-          <label className="block text-sm mb-1 font-medium text-white">패널 이미지</label>
+          <label className="block text-sm mb-1 font-medium text-white">판넬 이미지</label>
           <div className="space-y-2">
             <input
               type="file"
@@ -396,7 +510,7 @@ export default function ProjectForm({
               <div className="relative inline-block">
                 <Image
                   src={getThumbnailUrl(formData.panel_url, 300)}
-                  alt="프로젝트 패널"
+                  alt="프로젝트 판넬"
                   className="rounded border object-cover"
                   width={300}
                   height={200}
@@ -434,14 +548,31 @@ export default function ProjectForm({
         </button>
       </div>
 
-      {/* AddMemberModal 사용 */}
-      {/* <AddMemberModal
-        show={false} // 모달 자체를 제거하고 폼 내부에서 직접 처리
-        mode="add" // 모달 자체를 제거하고 폼 내부에서 직접 처리
-        member={undefined} // 모달 자체를 제거하고 폼 내부에서 직접 처리
-        onClose={() => {}} // 모달 자체를 제거하고 폼 내부에서 직접 처리
-        onSubmit={() => {}} // 모달 자체를 제거하고 폼 내부에서 직접 처리
-      /> */}
+      {/* 팀원 검색 모달 */}
+      {showMemberSearch && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-white mb-4">팀원 추가</h3>
+            
+            <SearchMemberBar
+              onMemberSelect={handleAddMember}
+              onMemberDeselect={() => setShowMemberSearch(false)}
+              placeholder="멤버를 검색하세요..."
+              className="mb-4"
+            />
+            
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setShowMemberSearch(false)}
+                className="flex-1 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

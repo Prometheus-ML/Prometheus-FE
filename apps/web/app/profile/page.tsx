@@ -230,7 +230,7 @@ export default function MyPage() {
             {/* 기본 정보: 읽기 전용 */}
             {profileInnerTab === 'basic' && (
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs text-gray-400 font-medium">이름</label>
                     <div className="mt-1 text-white font-medium">{myProfile.name}</div>
@@ -333,108 +333,108 @@ export default function MyPage() {
                   )}
                 </div>
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
                       <label className="text-xs text-gray-400 font-medium">GitHub</label>
-                      <input 
-                        value={myProfileDraft.github || ''} 
-                        onChange={(e) => setMyProfileDraft(prev => ({ ...prev, github: e.target.value }))}
-                        disabled={!profileEditMode} 
-                        type="url" 
+                    <input 
+                      value={myProfileDraft.github || ''} 
+                      onChange={(e) => setMyProfileDraft(prev => ({ ...prev, github: e.target.value }))}
+                      disabled={!profileEditMode} 
+                      type="url" 
                         className={`mt-1 w-full border rounded px-3 py-2 placeholder-gray-400 disabled:opacity-50 ${
                           profileEditMode 
                             ? 'border-gray-300 bg-white text-gray-800' 
                             : 'border-white/20 bg-white/10 text-white'
                         }`}
-                      />
-                    </div>
-                    <div>
+                    />
+                  </div>
+                  <div>
                       <label className="text-xs text-gray-400 font-medium">Notion</label>
-                      <input 
-                        value={myProfileDraft.notion || ''} 
-                        onChange={(e) => setMyProfileDraft(prev => ({ ...prev, notion: e.target.value }))}
-                        disabled={!profileEditMode} 
-                        type="url" 
+                    <input 
+                      value={myProfileDraft.notion || ''} 
+                      onChange={(e) => setMyProfileDraft(prev => ({ ...prev, notion: e.target.value }))}
+                      disabled={!profileEditMode} 
+                      type="url" 
                         className={`mt-1 w-full border rounded px-3 py-2 placeholder-gray-400 disabled:opacity-50 ${
                           profileEditMode 
                             ? 'border-gray-300 bg-white text-gray-800' 
                             : 'border-white/20 bg-white/10 text-white'
                         }`}
-                      />
-                    </div>
-                    <div>
+                    />
+                  </div>
+                  <div>
                       <label className="text-xs text-gray-400 font-medium">Figma</label>
-                      <input 
-                        value={myProfileDraft.figma || ''} 
-                        onChange={(e) => setMyProfileDraft(prev => ({ ...prev, figma: e.target.value }))}
-                        disabled={!profileEditMode} 
-                        type="url" 
+                    <input 
+                      value={myProfileDraft.figma || ''} 
+                      onChange={(e) => setMyProfileDraft(prev => ({ ...prev, figma: e.target.value }))}
+                      disabled={!profileEditMode} 
+                      type="url" 
                         className={`mt-1 w-full border rounded px-3 py-2 placeholder-gray-400 disabled:opacity-50 ${
                           profileEditMode 
                             ? 'border-gray-300 bg-white text-gray-800' 
                             : 'border-white/20 bg-white/10 text-white'
                         }`}
-                      />
-                    </div>
-                    <div>
+                    />
+                  </div>
+                  <div>
                       <label className="text-xs text-gray-400 font-medium">카카오 ID</label>
-                      <input 
-                        value={myProfileDraft.kakao_id || ''} 
-                        onChange={(e) => setMyProfileDraft(prev => ({ ...prev, kakao_id: e.target.value }))}
-                        disabled={!profileEditMode} 
-                        type="text" 
+                    <input 
+                      value={myProfileDraft.kakao_id || ''} 
+                      onChange={(e) => setMyProfileDraft(prev => ({ ...prev, kakao_id: e.target.value }))}
+                      disabled={!profileEditMode} 
+                      type="text" 
                         className={`mt-1 w-full border rounded px-3 py-2 placeholder-gray-400 disabled:opacity-50 ${
                           profileEditMode 
                             ? 'border-gray-300 bg-white text-gray-800' 
                             : 'border-white/20 bg-white/10 text-white'
                         }`}
-                      />
-                    </div>
-                    <div>
+                    />
+                  </div>
+                  <div>
                       <label className="text-xs text-gray-400 font-medium">인스타그램 ID</label>
-                      <input 
-                        value={myProfileDraft.instagram_id || ''} 
-                        onChange={(e) => setMyProfileDraft(prev => ({ ...prev, instagram_id: e.target.value }))}
-                        disabled={!profileEditMode} 
-                        type="text" 
+                    <input 
+                      value={myProfileDraft.instagram_id || ''} 
+                      onChange={(e) => setMyProfileDraft(prev => ({ ...prev, instagram_id: e.target.value }))}
+                      disabled={!profileEditMode} 
+                      type="text" 
                         className={`mt-1 w-full border rounded px-3 py-2 placeholder-gray-400 disabled:opacity-50 ${
                           profileEditMode 
                             ? 'border-gray-300 bg-white text-gray-800' 
                             : 'border-white/20 bg-white/10 text-white'
                         }`}
-                      />
-                    </div>
-                    <div>
+                    />
+                  </div>
+                  <div>
                       <label className="text-xs text-gray-400 font-medium">MBTI</label>
-                      <input 
-                        value={myProfileDraft.mbti || ''} 
-                        onChange={(e) => setMyProfileDraft(prev => ({ ...prev, mbti: e.target.value }))}
-                        disabled={!profileEditMode} 
-                        type="text" 
-                        maxLength={4} 
+                    <input 
+                      value={myProfileDraft.mbti || ''} 
+                      onChange={(e) => setMyProfileDraft(prev => ({ ...prev, mbti: e.target.value }))}
+                      disabled={!profileEditMode} 
+                      type="text" 
+                      maxLength={4} 
                         className={`mt-1 w-full border rounded px-3 py-2 placeholder-gray-400 disabled:opacity-50 ${
                           profileEditMode 
                             ? 'border-gray-300 bg-white text-gray-800' 
                             : 'border-white/20 bg-white/10 text-white'
                         }`}
-                      />
-                    </div>
-                    <div>
+                    />
+                  </div>
+                  <div>
                       <label className="text-xs text-gray-400 font-medium">커피챗 활성화</label>
-                      <select 
-                        value={myProfileDraft.coffee_chat_enabled ? 'true' : 'false'} 
-                        onChange={(e) => setMyProfileDraft(prev => ({ ...prev, coffee_chat_enabled: e.target.value === 'true' }))}
-                        disabled={!profileEditMode} 
+                    <select 
+                      value={myProfileDraft.coffee_chat_enabled ? 'true' : 'false'} 
+                      onChange={(e) => setMyProfileDraft(prev => ({ ...prev, coffee_chat_enabled: e.target.value === 'true' }))}
+                      disabled={!profileEditMode} 
                         className={`mt-1 w-full border rounded px-3 py-2 disabled:opacity-50 ${
                           profileEditMode 
                             ? 'border-gray-300 bg-white text-gray-800' 
                             : 'border-white/20 bg-white/10 text-white'
                         }`}
-                      >
-                        <option value="true">활성화</option>
-                        <option value="false">비활성화</option>
-                      </select>
-                    </div>
+                    >
+                      <option value="true">활성화</option>
+                      <option value="false">비활성화</option>
+                    </select>
+                  </div>
                   </div>
                   
                   <div>
