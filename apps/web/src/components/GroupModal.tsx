@@ -10,10 +10,12 @@ import {
   faUsers, 
   faCheck, 
   faTimes, 
-  faHeart, 
-  faHeartBroken, 
-  faTrash
+  faTrash,
+  faUserPlus,
+  faClock
 } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as faHeartSolid } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 import Image from 'next/image';
 import type { Group } from '@prometheus-fe/types';
 
@@ -50,6 +52,11 @@ export default function GroupModal({ group, isOpen, onClose }: GroupModalProps) 
     checkUserLikedGroup,
     canViewJoinRequests,
     canDeleteGroup,
+    requestJoinGroup, // 가입 신청 함수 추가
+    checkUserMembership, // 가입 상태 확인 함수 추가
+    canJoinGroup, // 가입 가능 여부 확인 함수 추가
+    hasPendingRequest, // 가입 신청 중인지 확인 함수 추가
+    isGroupMember, // 이미 멤버인지 확인 함수 추가
   } = useGroup();
 
   const [error, setError] = useState('');
@@ -128,6 +135,11 @@ export default function GroupModal({ group, isOpen, onClose }: GroupModalProps) 
       await approveMember(group.id, request.member_id);
       await fetchJoinRequests(group.id);
       await fetchGroupMembers(group.id);
+      
+      // 승인된 사용자의 가입 상태 업데이트 (해당 사용자가 현재 로그인한 사용자인 경우)
+      if (user && user.id === request.member_id) {
+        await checkUserMembership(group.id);
+      }
     } catch (err) {
       console.error('멤버 승인 실패:', err);
       setError('멤버 승인에 실패했습니다.');
@@ -141,6 +153,11 @@ export default function GroupModal({ group, isOpen, onClose }: GroupModalProps) 
       
       await rejectMember(group.id, request.member_id);
       await fetchJoinRequests(group.id);
+      
+      // 거절된 사용자의 가입 상태 업데이트 (해당 사용자가 현재 로그인한 사용자인 경우)
+      if (user && user.id === request.member_id) {
+        await checkUserMembership(group.id);
+      }
     } catch (err) {
       console.error('멤버 거절 실패:', err);
       setError('멤버 거절에 실패했습니다.');
@@ -155,6 +172,11 @@ export default function GroupModal({ group, isOpen, onClose }: GroupModalProps) 
     try {
       await removeMember(group.id, memberId);
       await fetchGroupMembers(group.id);
+      
+      // 제거된 사용자의 가입 상태 업데이트 (해당 사용자가 현재 로그인한 사용자인 경우)
+      if (user && user.id === memberId) {
+        await checkUserMembership(group.id);
+      }
     } catch (err) {
       console.error('멤버 제거 실패:', err);
       setError('멤버 제거에 실패했습니다.');
@@ -176,18 +198,33 @@ export default function GroupModal({ group, isOpen, onClose }: GroupModalProps) 
     }
   };
 
+  const handleJoinGroup = async () => {
+    try {
+      await requestJoinGroup(group.id);
+      // 가입 신청 후 가입 상태 다시 확인
+      await checkUserMembership(group.id);
+      alert('가입 신청이 완료되었습니다.');
+      // 가입 신청 후 모달 닫기
+      onClose();
+    } catch (err) {
+      console.error('그룹 가입 신청 실패:', err);
+      setError('그룹 가입 신청에 실패했습니다.');
+    }
+  };
+
   // 컴포넌트가 마운트될 때 필요한 데이터 로드
   useEffect(() => {
     if (isOpen && group) {
       fetchGroupMembers(group.id);
       fetchGroupLikes(group.id).catch(() => {});
       checkUserLikedGroup(group.id).catch(() => {});
+      checkUserMembership(group.id).catch(() => {}); // 가입 상태 확인 추가
       
       if (canViewJoinRequests(group)) {
         fetchJoinRequests(group.id).catch(() => {});
       }
     }
-  }, [isOpen, group, fetchGroupMembers, fetchGroupLikes, checkUserLikedGroup, canViewJoinRequests]);
+  }, [isOpen, group, fetchGroupMembers, fetchGroupLikes, checkUserLikedGroup, canViewJoinRequests, checkUserMembership]);
 
   if (!isOpen || !group) return null;
 
@@ -298,8 +335,8 @@ export default function GroupModal({ group, isOpen, onClose }: GroupModalProps) 
             </div>
           </div>
 
-          {/* 좋아요 버튼 */}
-          <div className="mt-4">
+          {/* 좋아요 버튼과 가입 신청 버튼을 나란히 배치 */}
+          <div className="mt-4 flex items-center space-x-3">
             <button
               onClick={handleLikeToggle}
               disabled={isTogglingLike}
@@ -310,13 +347,50 @@ export default function GroupModal({ group, isOpen, onClose }: GroupModalProps) 
               }`}
             >
               <FontAwesomeIcon 
-                icon={userLikedGroups[group.id] ? faHeart : faHeartBroken} 
+                icon={userLikedGroups[group.id] ? faHeartSolid : faHeartRegular} 
                 className="mr-2" 
               />
               <span>
                 {userLikedGroups[group.id] ? '좋아요 취소' : '좋아요'}
               </span>
             </button>
+
+            {/* 가입 관련 버튼 - 오너가 아닌 사용자에게만 표시 */}
+            {user && user.id !== group.owner_id && (
+              <>
+                {/* 가입 신청 버튼 - 가입 가능한 경우에만 표시 */}
+                {canJoinGroup(group.id) && (
+                  <button
+                    onClick={handleJoinGroup}
+                    disabled={!!(group.deadline && new Date(group.deadline) < new Date())}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-colors ${
+                      group.deadline && new Date(group.deadline) < new Date()
+                        ? 'bg-gray-600/20 text-gray-400 border-gray-600/30 cursor-not-allowed'
+                        : 'bg-green-600/20 text-green-400 border-green-600/30 hover:bg-green-600/30'
+                    }`}
+                  >
+                    <FontAwesomeIcon icon={faUserPlus} className="mr-2" />
+                    <span>{group.deadline && new Date(group.deadline) < new Date() ? '마감됨' : '가입 신청'}</span>
+                  </button>
+                )}
+
+                {/* 가입 신청 중 표시 */}
+                {hasPendingRequest(group.id) && (
+                  <div className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-yellow-600/20 text-yellow-400 border border-yellow-600/30">
+                    <FontAwesomeIcon icon={faClock} className="mr-2" />
+                    <span>가입 신청 중</span>
+                  </div>
+                )}
+
+                {/* 이미 멤버인 경우 표시 */}
+                {isGroupMember(group.id) && (
+                  <div className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-blue-600/20 text-blue-400 border border-blue-600/30">
+                    <FontAwesomeIcon icon={faCheck} className="mr-2" />
+                    <span>이미 멤버</span>
+                  </div>
+                  )}
+              </>
+            )}
           </div>
         </div>
 

@@ -27,6 +27,8 @@ export function useGroup() {
   const [isTogglingLike, setIsTogglingLike] = useState(false);
   const [isDeletingGroup, setIsDeletingGroup] = useState(false);
   const [isLeavingGroup, setIsLeavingGroup] = useState(false);
+  const [userMembershipStatus, setUserMembershipStatus] = useState<Record<number, 'member' | 'pending' | 'none'>>({});
+  const [isCheckingMembership, setIsCheckingMembership] = useState(false);
 
   // 사용자가 가입 요청을 볼 수 있는 권한이 있는지 확인
   const canViewJoinRequests = useCallback((group?: Group | null) => {
@@ -358,6 +360,82 @@ export function useGroup() {
     setJoinRequests([]);
   };
 
+  // 사용자의 그룹 가입 상태 확인
+  const checkUserMembership = useCallback(async (groupId: number | string) => {
+    if (!group || !user) {
+      setUserMembershipStatus(prev => ({
+        ...prev,
+        [Number(groupId)]: 'none'
+      }));
+      return;
+    }
+
+    try {
+      setIsCheckingMembership(true);
+      
+      // 먼저 멤버 목록에서 사용자 확인
+      const groupMembers = await group.listGroupMembers(groupId);
+      const isMember = groupMembers.some((member: any) => member.member_id === user.id);
+      
+      if (isMember) {
+        setUserMembershipStatus(prev => ({
+          ...prev,
+          [Number(groupId)]: 'member'
+        }));
+        return;
+      }
+
+      // 가입 요청 목록에서 사용자 확인
+      try {
+        const joinRequests = await group.listGroupJoinRequests(groupId);
+        const hasPendingRequest = joinRequests.some((request: any) => request.member_id === user.id);
+        
+        setUserMembershipStatus(prev => ({
+          ...prev,
+          [Number(groupId)]: hasPendingRequest ? 'pending' : 'none'
+        }));
+      } catch (error) {
+        // 가입 요청 목록을 볼 수 없는 경우 (권한 없음) 멤버가 아닌 것으로 간주
+        setUserMembershipStatus(prev => ({
+          ...prev,
+          [Number(groupId)]: 'none'
+        }));
+      }
+    } catch (error) {
+      console.error(`그룹 ${groupId} 가입 상태 확인 실패:`, error);
+      setUserMembershipStatus(prev => ({
+        ...prev,
+        [Number(groupId)]: 'none'
+      }));
+    } finally {
+      setIsCheckingMembership(false);
+    }
+  }, [group, user]);
+
+  // 사용자가 그룹에 가입할 수 있는지 확인
+  const canJoinGroup = useCallback((groupId: number | string) => {
+    if (!user) return false;
+    
+    const status = userMembershipStatus[Number(groupId)];
+    return status === 'none'; // 가입 신청도 안 한 상태여야 함
+  }, [user, userMembershipStatus]);
+
+  // 사용자가 가입 신청 중인지 확인
+  const hasPendingRequest = useCallback((groupId: number | string) => {
+    if (!user) return false;
+    
+    const status = userMembershipStatus[Number(groupId)];
+    return status === 'pending';
+  }, [user, userMembershipStatus]);
+
+  // 사용자가 이미 멤버인지 확인
+  const isGroupMember = useCallback((groupId: number | string) => {
+    if (!user) return false;
+    
+    const status = userMembershipStatus[Number(groupId)];
+    return status === 'member';
+  }, [user, userMembershipStatus]);
+
   return {
     // 상태
     groups,
@@ -375,6 +453,8 @@ export function useGroup() {
     isTogglingLike,
     isDeletingGroup,
     isLeavingGroup,
+    userMembershipStatus,
+    isCheckingMembership,
     
     // API 함수들
     fetchGroups,
@@ -403,5 +483,9 @@ export function useGroup() {
     clearJoinRequests,
     canViewJoinRequests,
     canDeleteGroup,
+    checkUserMembership,
+    canJoinGroup,
+    hasPendingRequest,
+    isGroupMember,
   };
 }
