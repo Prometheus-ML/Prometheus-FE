@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useMember } from '@prometheus-fe/hooks';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { MyProfileResponse } from '@prometheus-fe/types';
@@ -29,12 +30,12 @@ export default function MyPage() {
   const [daysCount, setDaysCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const { myProfile, getMyProfile, isLoadingProfile } = useMember();
+  const router = useRouter();
 
   // 로그아웃 핸들러 추가
   const handleLogout = () => {
     logout();
-    // 로그아웃 후 페이지 새로고침하여 상태 업데이트
-    window.location.reload();
+    router.push('/');
   };
 
   useEffect(() => {

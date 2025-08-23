@@ -135,7 +135,7 @@ export function useGroup() {
     }
   }, [group]);
 
-  // 가입 요청 목록 조회 (관리자 전용)
+  // 가입 요청 목록 조회 (그룹 소유자 전용)
   const fetchJoinRequests = useCallback(async (groupId: number | string) => {
     if (!group) {
       console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
@@ -144,7 +144,7 @@ export function useGroup() {
 
     try {
       setIsLoadingJoinRequests(true);
-      const data = await group.listJoinRequestsAdmin(groupId);
+      const data = await group.listGroupJoinRequests(groupId);
       setJoinRequests(data || []);
     } catch (error) {
       console.error(`그룹 ${groupId} 가입 요청 목록 조회 실패:`, error);
@@ -154,33 +154,39 @@ export function useGroup() {
     }
   }, [group]);
 
-  // 멤버 승인 (관리자 전용)
+  // 멤버 승인 (그룹 소유자 전용)
   const approveMember = useCallback(async (groupId: number | string, memberId: string) => {
     if (!group) {
       console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
       return;
     }
     try {
-      await group.approveMemberAdmin(groupId, memberId);
+      await group.approveGroupMember(groupId, memberId);
+      
       // 가입 요청 목록과 멤버 목록을 다시 불러옴
       await Promise.all([
         fetchJoinRequests(groupId),
         fetchGroupMembers(groupId)
       ]);
+      
+      // 멤버 승인 성공 후 채팅방 초대 상태 확인
+      // 백엔드에서 자동으로 처리되므로 성공 메시지 표시
+      console.log(`멤버 ${memberId} 승인 완료 - 채팅방에 자동 초대됨`);
+      
     } catch (error) {
       console.error(`멤버 ${memberId} 승인 실패:`, error);
       throw error;
     }
   }, [group, fetchJoinRequests, fetchGroupMembers]);
 
-  // 멤버 거절 (관리자 전용)
+  // 멤버 거절 (그룹 소유자 전용)
   const rejectMember = useCallback(async (groupId: number | string, memberId: string) => {
     if (!group) {
       console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
       return;
     }
     try {
-      await group.rejectMemberAdmin(groupId, memberId);
+      await group.rejectGroupMember(groupId, memberId);
       // 가입 요청 목록을 다시 불러옴
       await fetchJoinRequests(groupId);
     } catch (error) {
@@ -189,14 +195,14 @@ export function useGroup() {
     }
   }, [group, fetchJoinRequests]);
 
-  // 그룹에서 멤버 제거 (관리자 전용)
+  // 그룹에서 멤버 제거 (그룹 소유자 전용)
   const removeMember = useCallback(async (groupId: number | string, memberId: string) => {
     if (!group) {
       console.warn('group is not available. Ensure useGroup is used within ApiProvider.');
       return;
     }
     try {
-      await group.removeMemberAdmin(groupId, memberId);
+      await group.removeGroupMember(groupId, memberId);
       // 멤버 목록을 다시 불러옴
       await fetchGroupMembers(groupId);
     } catch (error) {

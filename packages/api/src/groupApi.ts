@@ -102,6 +102,54 @@ export class GroupApi {
     }
   }
 
+  // 그룹 가입 요청 목록 조회 (그룹 소유자용)
+  async listGroupJoinRequests(groupId: number | string, params?: { page?: number; size?: number }): Promise<GroupJoinRequest[]> {
+    try {
+      const sp = new URLSearchParams();
+      if (params?.page) sp.set('page', String(params.page));
+      if (params?.size) sp.set('size', String(params.size));
+      
+      const query = sp.toString() ? `?${sp.toString()}` : '';
+      const response = await this.api.get<GroupJoinRequest[]>(`${this.base}/${groupId}/members/requests${query}`);
+      return response;
+    } catch (error: any) {
+      console.error(`Error fetching join requests for group ${groupId}:`, error);
+      throw new Error(error.message || 'Failed to fetch join requests');
+    }
+  }
+
+  // 그룹 멤버 가입 승인 (그룹 소유자용)
+  async approveGroupMember(groupId: number | string, memberId: string): Promise<GroupMember> {
+    try {
+      const response = await this.api.post<GroupMember>(`${this.base}/${groupId}/members/${memberId}/approve`, {});
+      return response;
+    } catch (error: any) {
+      console.error(`Error approving member ${memberId} for group ${groupId}:`, error);
+      throw new Error(error.message || 'Failed to approve member');
+    }
+  }
+
+  // 그룹 멤버 가입 거절 (그룹 소유자용)
+  async rejectGroupMember(groupId: number | string, memberId: string): Promise<void> {
+    try {
+      await this.api.post(`${this.base}/${groupId}/members/${memberId}/reject`, {});
+    } catch (error: any) {
+      console.error(`Error rejecting member ${memberId} for group ${groupId}:`, error);
+      throw new Error(error.message || 'Failed to reject member');
+    }
+  }
+
+  // 그룹 멤버 제거 (그룹 소유자용)
+  async removeGroupMember(groupId: number | string, memberId: string): Promise<any> {
+    try {
+      const response = await this.api.delete(`${this.base}/${groupId}/members/${memberId}`);
+      return response;
+    } catch (error: any) {
+      console.error(`Error removing member ${memberId} from group ${groupId}:`, error);
+      throw new Error(error.message || 'Failed to remove member');
+    }
+  }
+
   // 그룹 좋아요 토글
   async toggleGroupLike(groupId: number | string): Promise<GroupLikeToggleResponseType> {
     try {

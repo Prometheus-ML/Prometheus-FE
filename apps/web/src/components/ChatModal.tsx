@@ -115,6 +115,11 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
               </div>
             ) : error ? (
               <div className="text-red-400 text-center py-12 font-pretendard">{error}</div>
+            ) : rooms.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-white/60 text-lg font-pretendard mb-2">채팅방이 없습니다</div>
+                <div className="text-white/40 text-sm font-pretendard">아직 참여한 채팅방이 없습니다</div>
+              </div>
             ) : (
               <div className="space-y-4">
                 {rooms.map((room) => (

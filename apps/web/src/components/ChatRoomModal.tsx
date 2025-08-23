@@ -219,15 +219,6 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
               {selectedRoom.name || `채팅방 ${selectedRoom.id}`}
             </h2>
           </div>
-          <button
-            onClick={handleClose}
-            className="text-white/70 hover:text-white transition-colors p-2 rounded-full hover:bg-white/10"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
         </div>
 
         {/* 채팅 메시지 영역 */}
