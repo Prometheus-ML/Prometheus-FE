@@ -156,6 +156,46 @@ export function useImage(options: UseImageOptions = {}) {
     return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRTVFN0VCIi8+CjxwYXRoIGQ9Ik0xMDAgODBDMTE2LjU2OSA4MCAxMzAgOTMuNDMxNSAxMzAgMTEwQzEzMCAxMjYuNTY5IDExNi41NjkgMTQwIDEwMCAxNDBDODMuNDMxNSA4MCA3MCAxMjYuNTY5IDcwIDExMDBDMzAgOTMuNDMxNSA4My40MzE1IDgwIDEwMCA4MFoiIGZpbGw9IiM2QjcwODAiLz4KPHBhdGggZD0iTTYwIDE3MEM2MCA5OS4yMDUxIDc5LjIwNTEgODAgMTAwIDgwQzEyMC43OTUgODAgMTQwIDk5LjIwNTEgMTQwIDE3MEggNjBaIiBmaWxsPSIjQjcwODAiLz4KPC9zdmc+';
   }, []);
 
+  // Google Drive URL을 썸네일 URL로 변환하는 함수 추가
+  const getGoogleDriveThumbnailUrl = useCallback((url: string, size: number = 200): string => {
+    if (!url || typeof url !== 'string') {
+      return '';
+    }
+    
+    // Google Drive webViewLink 패턴 감지
+    if (url.includes('drive.google.com/file/d/')) {
+      const fileId = url.match(/\/d\/([^\/]+)/)?.[1];
+      if (fileId) {
+        // Google Drive 썸네일 API 사용
+        return `https://drive.google.com/thumbnail?id=${fileId}&sz=w${size}`;
+      }
+    }
+    
+    // Google Drive 직접 링크 패턴
+    if (url.includes('lh3.googleusercontent.com/d/')) {
+      const fileId = url.match(/\/d\/([^\/]+)/)?.[1];
+      if (fileId) {
+        return `https://lh3.googleusercontent.com/d/${fileId}=s${size}-c`;
+      }
+    }
+    
+    // 다른 URL은 그대로 반환
+    return url;
+  }, []);
+
+  // 범용 이미지 URL 처리 함수 (Google Drive 포함)
+  const getImageUrl = useCallback((url: string, size: number = 200): string => {
+    if (!url) return '';
+    
+    // Google Drive URL인 경우 썸네일로 변환
+    if (url.includes('drive.google.com') || url.includes('googleusercontent.com')) {
+      return getGoogleDriveThumbnailUrl(url, size);
+    }
+    
+    // 일반 URL은 기존 로직 사용
+    return resizeImageUrl(url, size);
+  }, [getGoogleDriveThumbnailUrl, resizeImageUrl]);
+
   return {
     // 상태
     isUploading,
@@ -169,6 +209,8 @@ export function useImage(options: UseImageOptions = {}) {
     getThumbnailUrl,
     getBestThumbnailUrl,
     getDefaultImageUrl,
+    getGoogleDriveThumbnailUrl, // 새로 추가
+    getImageUrl, // 새로 추가
     
     // 유틸리티
     clearError: useCallback(() => setUploadError(null), [])

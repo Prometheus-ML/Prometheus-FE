@@ -11,7 +11,7 @@ import {
 } from '@fortawesome/free-brands-svg-icons';
 import { faEnvelope, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import RedButton from '../src/components/RedButton';
-import { useProject, useLanding } from '@prometheus-fe/hooks';
+import { useProject, useLanding, useImage } from '@prometheus-fe/hooks';
 import { Project } from '@prometheus-fe/types';
 
 export default function HomePage() {
@@ -25,6 +25,9 @@ export default function HomePage() {
     getSponsors, 
     isLoadingSponsors
   } = useLanding();
+  
+  // useImage 훅 사용
+  const { getImageUrl } = useImage();
 
   const sections = [
     { id: 'hero', name: 'HOME' },
@@ -399,11 +402,23 @@ export default function HomePage() {
                 <div key={sponsor.id} className="flex items-center justify-center p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors duration-300">
                   {sponsor.logo_url ? (
                     <Image
-                      src={sponsor.logo_url}
+                      src={getImageUrl(sponsor.logo_url, 160)}
                       alt={sponsor.name}
                       width={160}
                       height={80}
                       className="max-w-full max-h-20 object-contain filter brightness-90 hover:brightness-100 transition-all duration-300"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const parent = target.parentElement;
+                        if (parent) {
+                          parent.innerHTML = `
+                            <div class="w-32 h-20 flex items-center justify-center text-gray-400 text-sm font-pretendard">
+                              ${sponsor.name}
+                            </div>
+                          `;
+                        }
+                      }}
                     />
                   ) : (
                     <div className="w-32 h-20 flex items-center justify-center text-gray-400 text-sm font-pretendard">

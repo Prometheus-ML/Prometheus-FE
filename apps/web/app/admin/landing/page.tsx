@@ -42,6 +42,11 @@ function SponsorModal({ isOpen, sponsor, onClose, onSubmit }: SponsorModalProps)
     getThumbnailUrl,
     clearError
   } = useImage({
+    onUploadStart: () => {
+      setImageLoading(true);
+      setImageError(false);
+      clearError();
+    },
     onUploadSuccess: (response) => {
       setForm(prev => ({ ...prev, logo_url: response.publicCdnUrl || response.webViewLink || `https://lh3.googleusercontent.com/d/${response.id}` }));
       setImageLoading(false);
@@ -86,28 +91,29 @@ function SponsorModal({ isOpen, sponsor, onClose, onSubmit }: SponsorModalProps)
     }
   }, [sponsor]);
 
-  const handleImageUpload = async (file: File) => {
-    if (!validateImageFile(file)) {
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e?.target?.files?.[0];
+    if (!file) return;
+    
+    // 이미지 파일 검증
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      alert(validationError);
       return;
     }
 
-    setImageLoading(true);
-    setImageError(false);
+    // 이전 에러 클리어
     clearError();
-
+    
     try {
-      await uploadImage(file, 'sponsor');
+      // useImage 훅을 사용하여 이미지 업로드
+      const imageUrl = await uploadImage(file, 'sponsor');
+      if (imageUrl) {
+        setForm(prev => ({ ...prev, logo_url: imageUrl }));
+      }
     } catch (error) {
-      console.error('이미지 업로드 실패:', error);
-      setImageLoading(false);
-      setImageError(true);
-    }
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      handleImageUpload(file);
+      // 에러는 useImage 훅에서 처리되므로 여기서는 추가 처리만
+      console.error('이미지 업로드 처리 중 오류:', error);
     }
   };
 
@@ -180,50 +186,51 @@ function SponsorModal({ isOpen, sponsor, onClose, onSubmit }: SponsorModalProps)
             <label className="block text-sm font-medium text-white mb-2">
               로고 이미지
             </label>
-            <div className="flex items-center space-x-4">
-              <div className="relative w-24 h-24 bg-white/10 rounded-lg border-2 border-dashed border-white/30 flex items-center justify-center">
-                {form.logo_url ? (
+            <div className="space-y-3">
+              {/* 이미지 미리보기 */}
+              {form.logo_url && (
+                <div className="relative inline-block group">
                   <Image
-                    src={getThumbnailUrl(form.logo_url, 96)}
+                    src={getThumbnailUrl(form.logo_url, 200)}
                     alt="로고"
-                    width={96}
-                    height={96}
-                    className="rounded-lg object-cover"
-                    onError={() => setImageError(true)}
+                    width={200}
+                    height={150}
+                    className="rounded-lg border border-white/20 object-cover transition-all group-hover:border-white/40"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      if (target.src !== form.logo_url) {
+                        target.src = form.logo_url;
+                      }
+                    }}
                   />
-                ) : (
-                  <div className="text-center">
-                    <FontAwesomeIcon icon={faUpload} className="text-white/50 text-xl mb-1" />
-                    <p className="text-xs text-white/50">업로드</p>
-                  </div>
-                )}
-                {imageLoading && (
-                  <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600" />
-                  </div>
-                )}
-              </div>
-              <div className="flex-1">
+                  <button
+                    type="button"
+                    onClick={() => setForm(prev => ({ ...prev, logo_url: '' }))}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 transition-all shadow-lg opacity-0 group-hover:opacity-100"
+                    title="이미지 제거"
+                  >
+                    <FontAwesomeIcon icon={faTimes} className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+              
+              {/* 파일 업로드 */}
+              <div className="relative">
                 <input
-                  ref={fileInputRef}
                   type="file"
                   accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
+                  onChange={handleImageFileChange}
+                  disabled={isUploadingImage}
+                  className="w-full text-sm text-gray-300 file:mr-4 file:py-3 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#c2402a] file:text-white hover:file:bg-[#a03522] disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
                 />
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={imageLoading}
-                  className="inline-flex items-center px-4 py-2 bg-white/10 border border-white/20 rounded-md text-white hover:bg-white/20 transition-colors disabled:opacity-50"
-                >
-                  <FontAwesomeIcon icon={faUpload} className="mr-2" />
-                  {imageLoading ? '업로드 중...' : '이미지 선택'}
-                </button>
-                {uploadError && (
-                  <p className="text-red-400 text-sm mt-1">{uploadError}</p>
-                )}
               </div>
+              
+              {/* 업로드 에러 표시 */}
+              {uploadError && (
+                <div className="text-red-400 text-sm p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
+                  {uploadError}
+                </div>
+              )}
             </div>
           </div>
 
@@ -295,8 +302,8 @@ function SponsorModal({ isOpen, sponsor, onClose, onSubmit }: SponsorModalProps)
             >
               취소
             </button>
-            <RedButton type="submit" disabled={isSubmitting}>
-              {isSubmitting ? '저장 중...' : (sponsor ? '수정' : '추가')}
+            <RedButton type="submit" disabled={isSubmitting || isUploadingImage}>
+              {isSubmitting ? '저장 중...' : isUploadingImage ? '업로드 중...' : (sponsor ? '수정' : '추가')}
             </RedButton>
           </div>
         </form>
@@ -315,6 +322,36 @@ interface HonorHallModalProps {
 
 function HonorHallModal({ isOpen, honorHall, onClose, onSubmit }: HonorHallModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const {
+    isUploading: isUploadingImage,
+    uploadError,
+    uploadImage,
+    validateImageFile,
+    getThumbnailUrl,
+    clearError
+  } = useImage({
+    onUploadStart: () => {
+      setImageLoading(true);
+      setImageError(false);
+      clearError();
+    },
+    onUploadSuccess: (response) => {
+      // 이미지 업로드는 성공했지만 폼에는 저장하지 않음 (타입에 image_url 필드가 없음)
+      setImageLoading(false);
+      alert('이미지가 업로드되었습니다. (명예의전당에는 이미지 필드가 지원되지 않습니다.)');
+    },
+    onUploadError: (error) => {
+      console.error('이미지 업로드 실패:', error);
+      alert(error.message);
+      setImageLoading(false);
+      setImageError(true);
+    }
+  });
+
   const [form, setForm] = useState<LandingHonorHallCreateRequest>({
     name: '',
     purpose: '',
@@ -343,6 +380,33 @@ function HonorHallModal({ isOpen, honorHall, onClose, onSubmit }: HonorHallModal
       });
     }
   }, [honorHall]);
+
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e?.target?.files?.[0];
+    if (!file) return;
+    
+    // 이미지 파일 검증
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      alert(validationError);
+      return;
+    }
+
+    // 이전 에러 클리어
+    clearError();
+    
+    try {
+      // useImage 훅을 사용하여 이미지 업로드 (sponsor 카테고리 사용)
+      const imageUrl = await uploadImage(file, 'sponsor');
+      if (imageUrl) {
+        // 이미지 업로드는 성공했지만 폼에는 저장하지 않음
+        console.log('이미지 업로드 성공:', imageUrl);
+      }
+    } catch (error) {
+      // 에러는 useImage 훅에서 처리되므로 여기서는 추가 처리만
+      console.error('이미지 업로드 처리 중 오류:', error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
