@@ -37,7 +37,7 @@ export default function GoogleCallbackPage() {
         
         if (success) {
           // 성공 시 메인 페이지로 리디렉션
-          window.location.replace('/');
+          router.push('/my');
         }
         // 실패 시 에러는 store의 error 상태에서 처리됨
       } catch (err: any) {

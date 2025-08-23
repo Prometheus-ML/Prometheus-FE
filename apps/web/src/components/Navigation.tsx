@@ -53,7 +53,7 @@ const Navigation = () => {
   const handleLogout = async () => {
     await logout();
     setFold(true);
-    window.location.reload();
+    router.push('/');
   };
 
   const handleAdminClick = () => {
