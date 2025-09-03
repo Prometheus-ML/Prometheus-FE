@@ -41,6 +41,22 @@ export interface CoffeeChatContactInfo {
   recipient_instagram_id: string | null;
 }
 
+export interface ChatRoomInfo {
+  id: number;
+  name: string;
+  room_type: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  coffee_chat_id: number | null;
+}
+
+export interface CoffeeChatRespondResponse {
+  coffee_chat_request: CoffeeChatRequest;
+  chat_room_created: boolean;
+  chat_room: ChatRoomInfo | null;
+}
+
 export type CoffeeChatStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled';
 
 export interface CoffeeChatListParams {

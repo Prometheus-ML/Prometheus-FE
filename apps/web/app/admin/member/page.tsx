@@ -16,8 +16,18 @@ import {
 import MemberModal from '../../../src/components/MemberModal';
 import GlassCard from '../../../src/components/GlassCard';
 import RedButton from '../../../src/components/RedButton';
+import QueryBar from '../../../src/components/QueryBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUndo, faSearch, faUsers, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faUndo, 
+  faSearch, 
+  faUsers, 
+  faPlus, 
+  faUpload,
+  faCircle,
+  faArrowLeft,
+  faDownload
+} from '@fortawesome/free-solid-svg-icons';
 
 export default function AdminMemberPage() {
   const canAccessAdministrator = useAuthStore((s) => s.canAccessAdministrator);
@@ -30,18 +40,6 @@ export default function AdminMemberPage() {
   const [total, setTotal] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
   const [size] = useState<number>(20);
-  const [filters, setFilters] = useState<MemberFilters>({
-    search: '',
-    grant_filter: '',
-    gen_filter: '',
-    status_filter: ''
-  });
-  const [appliedFilters, setAppliedFilters] = useState<MemberFilters>({
-    search: '',
-    grant_filter: '',
-    gen_filter: '',
-    status_filter: ''
-  });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
@@ -71,6 +69,17 @@ export default function AdminMemberPage() {
   const [showDetailModal, setShowDetailModal] = useState<boolean>(false);
   const [selectedMember, setSelectedMember] = useState<MemberResponse | null>(null);
 
+  // 검색 상태 (멤버 페이지 방식)
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [selectedGen, setSelectedGen] = useState<string>('all');
+  const [selectedGrant, setSelectedGrant] = useState<string>('all');
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [isSearchLoading, setIsSearchLoading] = useState<boolean>(false);
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState<string>('');
+  const [appliedGen, setAppliedGen] = useState<string>('all');
+  const [appliedGrant, setAppliedGrant] = useState<string>('all');
+  const [appliedStatus, setAppliedStatus] = useState<string>('all');
+
   // Hydration 완료 감지
   useEffect(() => {
     setIsMounted(true);
@@ -93,25 +102,59 @@ export default function AdminMemberPage() {
     }
   }, [isMounted, isAuthenticated, canAccessAdministrator]);
 
-  // 멤버 목록 로드
-  const loadMembers = useCallback(async (): Promise<void> => {
+  // 멤버 목록 로드 (멤버 페이지 방식)
+  const loadMembers = useCallback(async (isSearch = false) => {
     try {
+      if (isSearch) {
+        setIsSearchLoading(true);
+      } else {
       setIsLoading(true);
+      }
       setError('');
       
-      const params: MemberListParams = { page, size, ...appliedFilters };
+      let params: any = {
+        page,
+        size
+      };
+
+      // 검색어 필터 적용
+      if (appliedSearchTerm.trim()) {
+        params.search = appliedSearchTerm.trim();
+      }
+
+      // 기수 필터 적용 (전체가 아닐 때만)
+      if (appliedGen !== 'all') {
+        params.gen_filter = parseInt(appliedGen);
+      }
+
+      // 권한 필터 적용 (전체가 아닐 때만)
+      if (appliedGrant !== 'all') {
+        params.grant_filter = appliedGrant;
+      }
+
+      // 상태 필터 적용 (전체가 아닐 때만)
+      if (appliedStatus !== 'all') {
+        params.status_filter = appliedStatus;
+      }
       
       const response: MemberListResponse = await getMemberList(params);
       
       setList(response.members || []);
       setTotal(response.total || 0);
+      setImageErrors({});
     } catch (error: any) {
       console.error('Failed to load members:', error);
       setError(error.message || '멤버 목록을 불러오지 못했습니다.');
+      setList([]);
+      setTotal(0);
     } finally {
+      if (isSearch) {
+        setIsSearchLoading(false);
+      } else {
       setIsLoading(false);
     }
-  }, [page, size, appliedFilters, getMemberList]);
+    }
+  }, [page, size, appliedSearchTerm, appliedGen, appliedGrant, appliedStatus, getMemberList]);
 
   // 페이지 변경 시 데이터 로드
   useEffect(() => {
@@ -119,35 +162,40 @@ export default function AdminMemberPage() {
     loadMembers();
   }, [isMounted, loadMembers, isAuthenticated, canAccessAdministrator]);
 
-  // 검색 및 필터 적용
-  const applyFilters = useCallback(() => {
-    setAppliedFilters(filters);
-    setPage(1); // 첫 페이지로 이동
-  }, [filters]);
-
-  // 필터 초기화
-  const clearFilters = useCallback(() => {
-    const emptyFilters: MemberFilters = {
-      search: '',
-      grant_filter: '',
-      gen_filter: '',
-      status_filter: ''
-    };
-    setFilters(emptyFilters);
-    setAppliedFilters(emptyFilters);
+  // 검색 핸들러 (멤버 페이지 방식)
+  const handleSearch = useCallback(() => {
+    setAppliedSearchTerm(searchTerm);
+    setAppliedGen(selectedGen);
+    setAppliedGrant(selectedGrant);
+    setAppliedStatus(selectedStatus);
     setPage(1);
-  }, []);
+    loadMembers(true);
+  }, [searchTerm, selectedGen, selectedGrant, selectedStatus, loadMembers]);
+
+  // 초기화 핸들러 (멤버 페이지 방식)
+  const handleReset = useCallback(() => {
+    setSearchTerm('');
+    setSelectedGen('all');
+    setSelectedGrant('all');
+    setSelectedStatus('all');
+    setAppliedSearchTerm('');
+    setAppliedGen('all');
+    setAppliedGrant('all');
+    setAppliedStatus('all');
+    setPage(1);
+    loadMembers(true);
+  }, [loadMembers]);
 
   // 권한별 색상 반환
   const getGrantColor = (grant: string) => {
     const colors: Record<string, string> = {
-      Root: 'bg-red-500/20 text-red-300 border-red-500/30',
-      Super: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-      Administrator: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
-      Manager: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-      Member: 'bg-green-500/20 text-green-300 border-green-500/30',
+      root: 'bg-red-500/20 text-red-300 border-red-500/30',
+      super: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+      administrator: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
+      manager: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+      member: 'bg-green-500/20 text-green-300 border-green-500/30',
     };
-    return colors[grant] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+    return colors[grant.toLowerCase()] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
   };
 
   // 기수별 색상 반환
@@ -238,18 +286,40 @@ export default function AdminMemberPage() {
         try {
           const csv = e.target?.result as string;
           const lines = csv.split('\n');
-          const headers = lines[0].split(',').map(h => h.trim());
+          const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
           
           const members = [];
           
           for (let i = 1; i < lines.length; i++) {
             if (lines[i].trim() === '') continue;
             
-            const values = lines[i].split(',').map(v => v.trim());
+            // CSV 파싱을 위한 정규식 사용 (쉼표로 분리하되 따옴표 안의 쉼표는 무시)
+            const values: string[] = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let j = 0; j < lines[i].length; j++) {
+              const char = lines[i][j];
+              if (char === '"') {
+                inQuotes = !inQuotes;
+              } else if (char === ',' && !inQuotes) {
+                values.push(current.trim());
+                current = '';
+              } else {
+                current += char;
+              }
+            }
+            values.push(current.trim()); // 마지막 값 추가
+            
             const member: any = {};
             
             headers.forEach((header, index) => {
               let value: any = values[index] || '';
+              
+              // 따옴표 제거
+              if (typeof value === 'string') {
+                value = value.replace(/^"|"$/g, '');
+              }
               
               if (header === 'gen' || header === 'student_id') {
                 value = parseInt(value) || 0;
@@ -340,19 +410,127 @@ export default function AdminMemberPage() {
     }
   };
 
+  // 유틸리티 함수들
+  const getFirstLetter = useCallback((name: string) => {
+    return name && name.length ? name.trim().charAt(0) : 'U';
+  }, []);
+
+  // 페이지 이동
+  const prevPage = useCallback(() => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  }, [page]);
+
+  const nextPage = useCallback(() => {
+    if (page < pages) {
+      setPage(page + 1);
+    }
+  }, [page, pages]);
+
+  // Skeleton UI Component
+  const SkeletonCard = () => (
+    <div className="p-4 flex flex-col items-center animate-pulse">
+      <div className="relative mb-3">
+        <div className="w-16 h-16 bg-gray-600 rounded-full"></div>
+      </div>
+      <div className="w-20 h-5 bg-gray-600 rounded mb-2"></div>
+      <div className="w-32 h-4 bg-gray-600 rounded"></div>
+    </div>
+  );
+
   return (
-    <div className="py-6">
+    <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
       {/* 헤더 */}
-      <div className="flex items-center justify-between mb-6">
+      <header className="mx-4 px-6 py-6 border-b border-white/20">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => window.history.back()}
+              className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
+            >
+              <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
+            </button>
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center">
-            <FontAwesomeIcon icon={faUsers} className="mr-2" />
-            멤버 관리
-          </h1>
-          <p className="text-sm text-gray-300 mt-1">프로메테우스 멤버 정보 관리</p>
+              <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">멤버 관리</h1>
+              <p className="text-sm font-pretendard text-[#e0e0e0]">프로메테우스 멤버 정보 관리</p>
+            </div>
         </div>
         
         <div className="flex items-center space-x-3">
+            {/* CSV 다운로드 */}
+            <RedButton
+              onClick={() => {
+                // CSV 다운로드 로직 - 현재 멤버 목록을 CSV로 다운로드
+                const headers = [
+                  'name', 'email', 'gen', 'school', 'major', 'student_id', 'birthdate', 
+                  'phone', 'gender', 'grant', 'status', 'profile_image_url', 'activity_start_date', 
+                  'github', 'notion', 'figma', 'kakao_id', 'instagram_id', 'mbti', 
+                  'self_introduction', 'additional_career', 'coffee_chat_enabled', 
+                  'active_gens', 'history'
+                ];
+                
+                // 현재 멤버 목록을 CSV 형식으로 변환
+                const csvRows = [headers.join(',')];
+                
+                list.forEach(member => {
+                  const row = [
+                    member.name || '',
+                    member.email || '',
+                    member.gen || 0,
+                    member.school || '',
+                    member.major || '',
+                    (member as any).student_id || 0,
+                    (member as any).birthdate || '',
+                    (member as any).phone || '',
+                    (member as any).gender || '',
+                    member.grant || '',
+                    member.status || '',
+                    member.profile_image_url || '',
+                    (member as any).activity_start_date || '',
+                    (member as any).github || '',
+                    (member as any).notion || '',
+                    (member as any).figma || '',
+                    (member as any).kakao_id || '',
+                    (member as any).instagram_id || '',
+                    (member as any).mbti || '',
+                    (member as any).self_introduction || '',
+                    (member as any).additional_career || '',
+                    (member as any).coffee_chat_enabled || false,
+                    (member as any).active_gens ? (member as any).active_gens.join(';') : '',
+                    (member as any).history ? (member as any).history.join(';') : ''
+                  ];
+                  
+                  // CSV 형식에 맞게 따옴표 처리
+                  const escapedRow = row.map(field => {
+                    const fieldStr = String(field);
+                    // 쉼표, 따옴표, 줄바꿈이 포함된 경우 따옴표로 감싸고 내부 따옴표는 이스케이프
+                    if (fieldStr.includes(',') || fieldStr.includes('"') || fieldStr.includes('\n')) {
+                      return `"${fieldStr.replace(/"/g, '""')}"`;
+                    }
+                    return fieldStr;
+                  });
+                  
+                  csvRows.push(escapedRow.join(','));
+                });
+                
+                const csvContent = csvRows.join('\n');
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `members_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}
+              className="inline-flex items-center"
+            >
+              <FontAwesomeIcon icon={faDownload} className="mr-2 h-4 w-4" />
+              CSV 다운로드
+            </RedButton>
+
           {/* Excel 업로드 */}
           <div className="flex items-center space-x-2">
             <input
@@ -395,82 +573,57 @@ export default function AdminMemberPage() {
           </RedButton>
         </div>
       </div>
+      </header>
 
+      <div className="px-4 py-6">
       {/* 검색 및 필터 */}
-      <GlassCard className="p-6 mb-6">
-        <div className="flex gap-4 items-end">
-          {/* 검색 */}
-          <div className="flex-1">
-            <input
-              id="search"
-              value={filters.search}
-              onChange={(e) => setFilters((prev: MemberFilters) => ({ ...prev, search: e.target.value }))}
-              type="text"
+        <div className="mb-6 space-y-4">
+          <QueryBar
+            searchTerm={searchTerm}
+            onSearchTermChange={setSearchTerm}
+            selects={[
+              {
+                id: 'gen',
+                value: selectedGen,
+                onChange: setSelectedGen,
+                options: [
+                  { value: 'all', label: '전체 기수' },
+                  { value: '0', label: '창립멤버' },
+                  ...Array.from({ length: 15 }, (_, i) => i + 1).map(gen => ({
+                    value: gen.toString(),
+                    label: `${gen}기`
+                  }))
+                ]
+              },
+              {
+                id: 'grant',
+                value: selectedGrant,
+                onChange: setSelectedGrant,
+                options: [
+                  { value: 'all', label: '전체 권한' },
+                  { value: 'root', label: 'Root' },
+                  { value: 'super', label: 'Super' },
+                  { value: 'administrator', label: 'Administrator' },
+                  { value: 'member', label: 'Member' }
+                ]
+              },
+              {
+                id: 'status',
+                value: selectedStatus,
+                onChange: setSelectedStatus,
+                options: [
+                  { value: 'all', label: '전체 상태' },
+                  { value: 'active', label: '활동중' },
+                  { value: 'alumni', label: '알럼나이' }
+                ]
+              }
+            ]}
+            onSearch={handleSearch}
+            onReset={handleReset}
+            isLoading={isSearchLoading}
               placeholder="이름, 학교를 검색해보세요!"
-              className="block w-full px-3 py-2 text-sm text-black placeholder-gray-300 focus:outline-none bg-white/20 border border-white/30 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
             />
           </div>
-
-          {/* 권한 필터 */}
-          <div className="flex-1">
-            <select
-              id="grant"
-              value={filters.grant_filter}
-              onChange={(e) => setFilters((prev: MemberFilters) => ({ ...prev, grant_filter: e.target.value }))}
-              className="block w-full px-3 py-2 text-sm bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            >
-              <option value="" className="bg-gray-800 text-white">권한</option>
-              <option value="Root" className="bg-gray-800 text-white">Root</option>
-              <option value="Super" className="bg-gray-800 text-white">Super</option>
-              <option value="Administrator" className="bg-gray-800 text-white">Administrator</option>
-
-              <option value="Member" className="bg-gray-800 text-white">Member</option>
-            </select>
-          </div>
-
-          {/* 기수 필터 */}
-          <div className="flex-1">
-            <select
-              id="gen"
-              value={filters.gen_filter}
-              onChange={(e) => setFilters((prev: MemberFilters) => ({ ...prev, gen_filter: e.target.value }))}
-              className="block w-full px-3 py-2 text-sm bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            >
-              <option value="" className="bg-gray-800 text-white">기수</option>
-              <option value="0" className="bg-gray-800 text-white">0기</option>
-              {Array.from({ length: 15 }, (_, i) => (
-                <option key={i + 1} value={i + 1} className="bg-gray-800 text-white">{i + 1}기</option>
-              ))}
-            </select>
-          </div>
-
-          {/* 상태 필터 */}
-          <div className="flex-1">
-            <select
-              id="status"
-              value={filters.status_filter}
-              onChange={(e) => setFilters((prev: MemberFilters) => ({ ...prev, status_filter: e.target.value }))}
-              className="block w-full px-3 py-2 text-sm bg-white/20 text-white border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            >
-              <option value="" className="bg-gray-800 text-white">상태</option>
-              <option value="active" className="bg-gray-800 text-white">활동기수</option>
-              <option value="alumni" className="bg-gray-800 text-white">알럼나이</option>
-            </select>
-          </div>
-
-          {/* 필터 초기화 버튼 */}
-          <RedButton onClick={clearFilters} className="inline-flex items-center">
-            <FontAwesomeIcon icon={faUndo} className="mr-2 h-4 w-4" />
-            초기화
-          </RedButton>
-
-          {/* 검색 버튼 */}
-          <RedButton onClick={applyFilters} className="inline-flex items-center">
-            <FontAwesomeIcon icon={faSearch} className="mr-2 h-4 w-4" />
-            검색
-          </RedButton>
-        </div>
-      </GlassCard>
 
       {/* Excel 업로드 에러 메시지 */}
       {uploadError && (
@@ -488,95 +641,110 @@ export default function AdminMemberPage() {
 
       {/* 멤버 목록 */}
         {isLoading ? (
-          <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <GlassCard key={index} className="animate-pulse">
+                <SkeletonCard />
+              </GlassCard>
+            ))}
           </div>
         ) : (
-        <GlassCard className="overflow-hidden">
-          <ul className="divide-y divide-white/10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {list.map((member) => (
-              <li 
+              <GlassCard
                 key={member.id} 
-                className="px-4 py-4 hover:bg-white/10 cursor-pointer border-b border-white/10 last:border-b-0"
+                className="relative p-4 text-center transition-transform duration-200 hover:scale-105 cursor-pointer"
                 onClick={() => handleMemberClick(member.id)}
               >
-                <div className="flex items-center space-x-4">
-                  {/* 프로필 이미지 */}
-                    <div className="flex-shrink-0">
-                    <div className="w-12 h-12 rounded-full overflow-hidden bg-white/10">
+                <div className="flex flex-col items-center">
+                  <div className="relative mb-3">
                       {member.profile_image_url && !imageErrors[member.id] ? (
+                      <div className="relative w-16 h-16">
                           <Image
-                          src={getThumbnailUrl(member.profile_image_url, 48)}
+                          src={getThumbnailUrl(member.profile_image_url, 128)}
                             alt={member.name}
-                          width={48}
-                          height={48}
-                          className="w-full h-full object-cover"
+                          fill
+                          className="rounded-full object-cover"
                             onError={() => handleImageError(member.id)}
+                          unoptimized
                           />
+                      </div>
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-white/10">
-                          <FontAwesomeIcon icon={faUsers} className="text-white/50 text-lg" />
+                      <div className="w-16 h-16 rounded-full bg-[#404040] flex items-center justify-center text-[#e0e0e0] font-medium">
+                        {getFirstLetter(member.name)}
                         </div>
                       )}
                     </div>
-                  </div>
-
-                  {/* 멤버 정보 */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <h3 className="text-lg font-semibold text-white truncate">
-                        {member.name}
-                      </h3>
-                      <span className={`px-2 py-1 text-xs rounded-full border ${getGrantColor(member.grant)}`}>
+                  
+                  {/* 이름 */}
+                  <h3 className="text-lg font-semibold text-[#FFFFFF] mb-2">{member.name}</h3>
+                  
+                  {/* 권한과 기수 */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`px-1.5 py-0.5 text-xs rounded-full font-medium flex items-center gap-1 ${getGrantColor(member.grant)}`}>
                           {member.grant}
                         </span>
-                      <span className={`px-2 py-1 text-xs rounded-full border ${getGenColor(member.gen)}`}>
-                        {member.gen}기
+                    <span className={`px-1.5 py-0.5 text-xs rounded-full font-medium flex items-center gap-1 ${getGenColor(member.gen)}`}>
+                      {member.gen === 0 ? '창립멤버' : `${member.gen}기`}
                       </span>
                       </div>
-                    <div className="text-sm text-gray-300 space-y-1">
-                      <p className="truncate">{member.email}</p>
-                      <p className="truncate">{member.school} {member.major}</p>
-                    </div>
+                  
+                  {/* 학력사항 */}
+                  <div className="flex flex-wrap gap-0.5 justify-center">
+                    {member.school && (
+                      <span className="px-0.5 py-0.5 text-[#e0e0e0] text-xs rounded-full">
+                        {member.school}
+                      </span>
+                    )}
+                    {member.major && (
+                      <span className="py-0.5 text-[#e0e0e0] text-xs rounded-full">
+                        {member.major}
+                      </span>
+                    )}
                   </div>
 
-                  {/* 액션 버튼 */}
-                  <div className="flex items-center space-x-2">
+                  {/* 삭제 버튼 */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDeleteMember(member.id);
                       }}
-                      className="text-red-400 hover:text-red-300 text-sm px-2 py-1 rounded hover:bg-red-500/20 transition-colors"
+                    className="mt-2 text-red-400 hover:text-red-300 text-sm px-2 py-1 rounded hover:bg-red-500/20 transition-colors"
                     >
                       삭제
                     </button>
+                </div>
+              </GlassCard>
+            ))}
+          </div>
+        )}
+
+        {!isLoading && !isSearchLoading && list.length === 0 && (
+          <div className="px-4 py-5 sm:p-6">
+            <div className="text-center">
+              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <h3 className="mt-2 text-sm font-medium text-white">멤버가 없습니다.</h3>
                   </div>
                 </div>
-              </li>
-            ))}
-          </ul>
-        </GlassCard>
         )}
 
         {/* 페이지네이션 */}
         {pages > 1 && (
-        <div className="flex justify-center space-x-2 mt-6">
-          {Array.from({ length: pages }, (_, i) => i + 1).map((pageNum) => (
-            <button
-                      key={pageNum}
-                      onClick={() => setPage(pageNum)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                        pageNum === page
-                  ? 'bg-red-500 text-white'
-                  : 'bg-white/10 text-white hover:bg-white/20'
-                      }`}
-                    >
-                      {pageNum}
-            </button>
-          ))}
+          <div className="mt-6 flex items-center justify-center space-x-2">
+            <RedButton onClick={prevPage} disabled={page === 1} className="px-3 py-1 text-sm disabled:opacity-50">
+              이전
+            </RedButton>
+            <span className="text-sm text-[#FFFFFF]">
+              {page} / {pages}
+            </span>
+            <RedButton onClick={nextPage} disabled={page === pages} className="px-3 py-1 text-sm disabled:opacity-50">
+              다음
+            </RedButton>
           </div>
         )}
+      </div>
 
       {/* 모달들 */}
       <MemberModal

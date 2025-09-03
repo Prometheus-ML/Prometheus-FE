@@ -8,20 +8,22 @@ import {
   createMemberApi,
   createCoffeeChatApi,
   createProjectApi,
-  createSponsorshipApi,
+  createLandingApi,
   createStorageApi,
   createCommunityApi,
   createGroupApi,
   createEventApi,
+  createChatApi,
   AuthApi,
   MemberApi,
   CoffeeChatApi,
   ProjectApi,
-  SponsorshipApi,
+  LandingApi,
   StorageApi,
   CommunityApi,
   GroupApi,
-  EventApi
+  EventApi,
+  ChatApi
 } from '@prometheus-fe/api';
 import { useAuthStore } from '@prometheus-fe/stores';
 
@@ -36,11 +38,12 @@ type ApiInstances = {
   member: MemberApi;
   coffeeChat: CoffeeChatApi;
   project: ProjectApi;
-  sponsorship: SponsorshipApi;
+  landing: LandingApi;
   storage: StorageApi;
   community: CommunityApi;
   group: GroupApi;
   event: EventApi;
+  chat: ChatApi;
 };
 
 const ApiContext = createContext<ApiInstances | null>(null);
@@ -108,11 +111,12 @@ export const ApiProvider = ({ children, router }: ApiProviderProps) => {
       member: createMemberApi(client),
       coffeeChat: createCoffeeChatApi(client),
       project: createProjectApi(client),
-      sponsorship: createSponsorshipApi(client),
+      landing: createLandingApi(client),
       storage: createStorageApi(client),
       community: createCommunityApi(client),
       group: createGroupApi(client),
       event: createEventApi(client),
+      chat: createChatApi(client),
     } as const as ApiInstances;
   }, []);
 

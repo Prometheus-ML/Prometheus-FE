@@ -572,7 +572,7 @@ export default function ProjectDetailPage() {
           </div>
           
           {/* 수정 버튼 - team_leader일 때만 오른쪽 위에 고정 */}
-          {canEdit && (
+          {isMember && (
             <Link
               href={`/project/${projectId}/edit`}
               className="inline-flex items-center px-3 py-1.5 rounded bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-colors flex-shrink-0"
@@ -641,54 +641,17 @@ export default function ProjectDetailPage() {
 
         {/* 액션 버튼들 */}
         <div className="mb-8 flex items-center space-x-2">
-          {/* 좋아요 버튼 */}
-          <button
-            onClick={handleLikeToggle}
-            disabled={likeLoading || !isAuthenticated()}
-            className={`inline-flex items-center px-3 py-1.5 rounded transition-colors ${
-              selectedProject.is_liked
-                ? 'bg-red-500/20 border border-red-500/30 text-red-300 hover:bg-red-500/30'
-                : 'bg-white/10 border border-white/20 text-white hover:bg-white/20'
-            } ${likeLoading || !isAuthenticated() ? 'opacity-50 cursor-not-allowed' : ''}`}
-            title={!isAuthenticated() ? '로그인이 필요한 기능입니다' : ''}
-          >
-            <FontAwesomeIcon 
-              icon={faHeart} 
-              className={`mr-1 h-3 w-3 ${likeLoading ? 'animate-pulse' : ''}`}
-            />
-            {likeLoading ? '...' : (selectedProject.like_count || 0)}
-          </button>
-          
-          {canEdit && (
-            <Link
-              href={`/project/${projectId}/edit`}
-              className="inline-flex items-center px-3 py-1.5 rounded bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-colors"
-            >
-              <FontAwesomeIcon icon={faEdit} className="mr-1 h-3 w-3" />
-              수정
-            </Link>
-          )}
           {isMember && !isActiveProject && (
             <div className="inline-flex items-center px-3 py-1.5 rounded bg-gray-500/20 border border-gray-500/30 text-gray-300 cursor-not-allowed" title="완료되거나 중지된 프로젝트는 수정할 수 없습니다">
               <FontAwesomeIcon icon={faEdit} className="mr-1 h-3 w-3" />
               수정 불가
             </div>
           )}
-          {canManage && (
-            <RedButton
-              onClick={() => setConfirmDelete(true)}
-              className="inline-flex items-center px-3 py-1.5"
-            >
-              <FontAwesomeIcon icon={faTrash} className="mr-1 h-3 w-3" />
-              삭제
-            </RedButton>
-          )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-          <GlassCard className="p-6">
+      <div className="w-full">
+        <div className="p-6">
             <h2 className="text-lg font-semibold mb-4 text-white flex items-center">
               <FontAwesomeIcon icon={faUsers} className="mr-2" />
                 구성원
@@ -729,7 +692,6 @@ export default function ProjectDetailPage() {
                 )}
               </div>
             )}
-          </GlassCard>
         </div>
       </div>
 

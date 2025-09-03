@@ -23,7 +23,7 @@
     "app/globals.css",
     "next-env.d.ts",
     ".next/types/**/*.ts"
-  ],
+, "../../layout.tsx"  ],
   "exclude": [
     "node_modules"
   ],

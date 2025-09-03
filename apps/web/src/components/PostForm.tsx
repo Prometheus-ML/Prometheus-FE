@@ -94,76 +94,80 @@ export default function PostForm({ onSubmit, onCancel, isSubmitting = false }: P
   };
 
   return (
-    <div className="mb-6 p-4 border rounded-lg bg-gray-50">
-      <h3 className="text-lg font-semibold mb-4">새 게시글 작성</h3>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+    <div className="p-6">
+      <h3 className="text-xl font-kimm-bold text-white mb-6">새 게시글 작성</h3>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             카테고리
           </label>
           <select
             value={newPost.category}
             onChange={(e) => setNewPost((prev) => ({ ...prev, category: e.target.value }))}
-            className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c2402a] focus:border-transparent transition-all"
           >
             {CATEGORIES.map(category => (
-              <option key={category.value} value={category.value}>
+              <option key={category.value} value={category.value} className="bg-gray-800 text-white">
                 {category.label}
               </option>
             ))}
           </select>
         </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             제목
           </label>
           <input
             type="text"
             value={newPost.title}
             onChange={(e) => setNewPost((prev) => ({ ...prev, title: e.target.value }))}
-            className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c2402a] focus:border-transparent transition-all"
             placeholder="게시글 제목을 입력하세요"
             maxLength={200}
           />
         </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             내용
           </label>
           <textarea
             value={newPost.content}
             onChange={(e) => setNewPost((prev) => ({ ...prev, content: e.target.value }))}
             rows={6}
-            className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c2402a] focus:border-transparent transition-all resize-none"
             placeholder="게시글 내용을 입력하세요"
           />
         </div>
         
         {/* 이미지 업로드 필드 */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             이미지 업로드
           </label>
-          <div className="space-y-2">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageFileChange}
-              disabled={isUploading}
-              className="text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-500 file:text-white hover:file:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            />
+          <div className="space-y-3">
+            <div className="relative">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageFileChange}
+                disabled={isUploading}
+                className="w-full text-sm text-gray-300 file:mr-4 file:py-3 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#c2402a] file:text-white hover:file:bg-[#a03522] disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+              />
+            </div>
             
             {/* 업로드된 이미지 목록 */}
             {newPost.images.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-sm text-gray-600">업로드된 이미지 ({newPost.images.length}개):</p>
+              <div className="space-y-3">
+                <p className="text-sm text-gray-400">업로드된 이미지 ({newPost.images.length}개):</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {newPost.images.map((imageUrl, index) => (
-                    <div key={index} className="relative inline-block">
+                    <div key={index} className="relative inline-block group">
                       <Image
                         src={getThumbnailUrl(imageUrl, 200)}
                         alt={`게시글 이미지 ${index + 1}`}
-                        className="rounded border object-cover"
+                        className="rounded-lg border border-white/20 object-cover transition-all group-hover:border-white/40"
                         width={200}
                         height={150}
                         onError={(e) => {
@@ -176,7 +180,7 @@ export default function PostForm({ onSubmit, onCancel, isSubmitting = false }: P
                       <button
                         type="button"
                         onClick={() => removeImage(index)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 transition-colors"
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 transition-all shadow-lg opacity-0 group-hover:opacity-100"
                         title="이미지 제거"
                       >
                         <FontAwesomeIcon icon={faTimes} className="w-3 h-3" />
@@ -189,25 +193,25 @@ export default function PostForm({ onSubmit, onCancel, isSubmitting = false }: P
             
             {/* 업로드 에러 표시 */}
             {uploadError && (
-              <div className="text-red-500 text-sm p-2 bg-red-50 border border-red-200 rounded">
+              <div className="text-red-400 text-sm p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
                 {uploadError}
               </div>
             )}
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-3 pt-4">
           <button
             type="submit"
             disabled={isSubmitting || isUploading}
-            className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="px-6 py-3 rounded-lg bg-[#c2402a] text-white font-medium hover:bg-[#a03522] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
           >
             {isSubmitting ? '작성 중...' : isUploading ? '업로드 중...' : '게시글 작성'}
           </button>
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+            className="px-6 py-3 rounded-lg border border-white/20 text-gray-300 font-medium hover:bg-white/10 hover:text-white transition-all"
           >
             취소
           </button>

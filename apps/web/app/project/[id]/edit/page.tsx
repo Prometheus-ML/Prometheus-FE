@@ -25,6 +25,7 @@ export default function EditProjectPage() {
     isLoadingProject,
     fetchProject,
     updateProject,
+    updateProjectForAdmin,
     isProjectLeader,
     isProjectMember
   } = useProject();
@@ -55,7 +56,13 @@ export default function EditProjectPage() {
       setError('');
       
       console.log('Updating project:', formData);
-      await updateProject(parseInt(projectId), formData);
+      
+      // Admin 권한이 있으면 admin용 API 호출, 아니면 일반 API 호출
+      if (canManage) {
+        await updateProjectForAdmin(parseInt(projectId), formData);
+      } else {
+        await updateProject(parseInt(projectId), formData);
+      }
       
       alert('프로젝트가 수정되었습니다!');
       router.push(`/project/${projectId}`);

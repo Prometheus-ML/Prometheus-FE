@@ -43,7 +43,25 @@ export class ProjectApi {
         gen: formData.gen || 1 // Default to gen 1 if not provided
       };
       
+      // Admin API 사용 (관리자 전용)
       const response = await this.apiClient.post<CreateProjectDto>('/admin/projects/', data);
+      
+      // 프로젝트 생성 후 팀원 추가 처리
+      if (formData.members && Array.isArray(formData.members) && formData.members.length > 0) {
+        const projectId = response.project.id;
+        for (const member of formData.members) {
+          try {
+            await this.addMember(projectId, {
+              member_id: member.member_id,
+              role: member.role,
+              contribution: member.contribution
+            });
+          } catch (memberError) {
+            console.warn(`Failed to add member ${member.member_id}:`, memberError);
+          }
+        }
+      }
+      
       return response;
     } catch (error: any) {
       console.error('Error creating project:', error);
@@ -172,9 +190,10 @@ export class ProjectApi {
   }
 
   // Admin용: 모든 프로젝트 조회 (관리자 전용)
-  async listForAdmin(params?: { size?: number }): Promise<GetprojectDto> {
+  async listForAdmin(params?: { page?: number; size?: number }): Promise<GetprojectDto> {
     try {
       const sp = new URLSearchParams();
+      if (params?.page) sp.set('page', String(params.page));
       if (params?.size) sp.set('size', String(params.size));
       
       const query = sp.toString() ? `?${sp.toString()}` : '';
@@ -185,6 +204,39 @@ export class ProjectApi {
     } catch (error: any) {
       console.error('Error fetching projects for admin:', error);
       throw new Error(error.message || 'Failed to fetch projects for admin');
+    }
+  }
+
+  // Admin용: 프로젝트 삭제 (관리자 전용)
+  async removeForAdmin(projectId: number | string): Promise<DeleteProjectDto> {
+    try {
+      const response = await this.apiClient.delete<DeleteProjectDto>(`/admin/projects/${projectId}`);
+      return response;
+    } catch (error: any) {
+      console.error(`Error deleting project ${projectId} for admin:`, error);
+      throw new Error(error.message || 'Failed to delete project');
+    }
+  }
+
+  // Admin용: 프로젝트 수정 (관리자 전용)
+  async updateForAdmin(projectId: number | string, data: UpdateProjectRequest): Promise<UpdateProjectDto> {
+    try {
+      const response = await this.apiClient.put<UpdateProjectDto>(`/admin/projects/${projectId}`, data);
+      return response;
+    } catch (error: any) {
+      console.error(`Error updating project ${projectId} for admin:`, error);
+      throw new Error(error.message || 'Failed to update project for admin');
+    }
+  }
+
+  // Admin용: 프로젝트 멤버 수정 (관리자 전용)
+  async updateMemberForAdmin(projectId: number | string, memberId: string, data: UpdateProjectMemberRequest): Promise<UpdateProjectMemberDto> {
+    try {
+      const response = await this.apiClient.put<UpdateProjectMemberDto>(`/admin/projects/${projectId}/members/${memberId}`, data);
+      return response;
+    } catch (error: any) {
+      console.error(`Error updating member ${memberId} in project ${projectId} for admin:`, error);
+      throw new Error(error.message || 'Failed to update project member');
     }
   }
 

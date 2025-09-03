@@ -154,6 +154,9 @@ export interface EventFilter {
   /** 이벤트 타입 필터 */
   eventType?: EventType;
   
+  /** 제외할 이벤트 타입 필터 */
+  excludeEventType?: EventType;
+  
   /** 출석 필수 여부 필터 */
   isAttendanceRequired?: boolean;
   
@@ -215,6 +218,18 @@ export interface MyAttendance {
   
   /** 이벤트 기수 */
   eventGen: number;
+  
+  /** 이벤트 타입 */
+  eventType?: string;
+  
+  /** 이벤트 장소 */
+  eventLocation?: string;
+  
+  /** 이벤트 시작 시간 */
+  eventStartTime?: Date;
+  
+  /** 이벤트 종료 시간 */
+  eventEndTime?: Date;
   
   /** 멤버 ID */
   memberId: string;

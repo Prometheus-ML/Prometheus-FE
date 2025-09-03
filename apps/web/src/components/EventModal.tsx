@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Event, EventFormData, EventType, MyAttendance } from '@prometheus-fe/types';
-import { useMyAttendance } from '@prometheus-fe/hooks';
+import type { Event, EventFormData, EventType } from '@prometheus-fe/types';
 import GlassCard from './GlassCard';
 import RedButton from './RedButton';
 import Portal from './Portal';
@@ -12,10 +11,8 @@ import {
   faCalendarAlt, 
   faMapMarkerAlt, 
   faUserGraduate,
-  faTimes,
-  faKey,
   faCheck,
-  faExclamationTriangle
+  faTimes
 } from '@fortawesome/free-solid-svg-icons';
 
 // EventModal 컴포넌트
@@ -38,7 +35,6 @@ export default function EventModal({
   onSave,
   isEditing = false,
 }: EventModalProps) {
-  const [activeTab, setActiveTab] = useState('detail');
   const [formData, setFormData] = useState<EventFormData>({
     title: '',
     description: '',
@@ -46,7 +42,7 @@ export default function EventModal({
     startTime: new Date(),
     endTime: new Date(),
     location: '',
-    currentGen: 0,
+    currentGen: 0, // 기본값을 5기로 설정
     isAttendanceRequired: false,
     attendanceStartTime: new Date(),
     attendanceEndTime: new Date(),
@@ -55,14 +51,6 @@ export default function EventModal({
   });
 
   const [validationError, setValidationError] = useState<string | null>(null);
-  
-  // 출석 관련 상태
-  const { getMyAttendanceForEvent, checkInAttendance } = useMyAttendance();
-  const [myAttendance, setMyAttendance] = useState<MyAttendance | null>(null);
-  const [isLoadingAttendance, setIsLoadingAttendance] = useState(false);
-  const [isCheckingIn, setIsCheckingIn] = useState(false);
-  const [attendanceCode, setAttendanceCode] = useState('');
-  const [attendanceError, setAttendanceError] = useState<string | null>(null);
 
   // EventForm 데이터 초기화
   useEffect(() => {
@@ -83,18 +71,22 @@ export default function EventModal({
         isAttendanceCodeRequired: event.isAttendanceCodeRequired
       });
     } else if (!event && isEditing) {
-      // 새 이벤트 생성 모드
+      // 새 이벤트 생성 모드 - 기본값을 더 현실적으로 설정
+      const now = new Date();
+      const defaultStartTime = new Date(now.getTime() + 60 * 60 * 1000); // 1시간 후
+      const defaultEndTime = new Date(defaultStartTime.getTime() + 2 * 60 * 60 * 1000); // 시작 후 2시간
+      
       setFormData({
         title: '',
         description: '',
         eventType: '스터디' as EventType,
-        startTime: new Date(),
-        endTime: new Date(),
+        startTime: defaultStartTime,
+        endTime: defaultEndTime,
         location: '',
-        currentGen: 0,
+        currentGen: 5, // 기본값을 5기로 설정
         isAttendanceRequired: false,
-        attendanceStartTime: new Date(),
-        attendanceEndTime: new Date(),
+        attendanceStartTime: defaultStartTime,
+        attendanceEndTime: defaultEndTime,
         lateThresholdMinutes: 15,
         isAttendanceCodeRequired: false
       });
@@ -109,25 +101,10 @@ export default function EventModal({
     }
   }, [formData, isEditing]);
 
-  // 출석 정보 조회
-  useEffect(() => {
-    if (isOpen && event && !isAdmin && !isEditing) {
-      setIsLoadingAttendance(true);
-      getMyAttendanceForEvent(event.id)
-        .then(attendance => {
-          setMyAttendance(attendance);
-        })
-        .catch(error => {
-          console.error('내 출석 정보 조회 실패:', error);
-        })
-        .finally(() => {
-          setIsLoadingAttendance(false);
-        });
-    }
-  }, [isOpen, event, isAdmin, isEditing, getMyAttendanceForEvent]);
+
 
   const formatDateForInput = (date: Date) => {
-    // 로컬 시간대를 고려하여 YYYY-MM-DDTHH:mm 형식으로 변환
+    // 로컬 시간대를 고려하여 YYYY-MM-DDTHH:mm 형식으로 변환 (24시간 형식)
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -135,6 +112,25 @@ export default function EventModal({
     const minutes = String(date.getMinutes()).padStart(2, '0');
     
     return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  // 시간 조건 시각화를 위한 함수
+  const getTimeConstraintVisualization = () => {
+    if (!formData.isAttendanceRequired) return null;
+
+    const startTime = formData.startTime;
+    const endTime = formData.endTime;
+    const attendanceStartTime = formData.attendanceStartTime || startTime;
+    const attendanceEndTime = formData.attendanceEndTime || endTime;
+    const lateThreshold = new Date(attendanceStartTime.getTime() + (formData.lateThresholdMinutes * 60 * 1000));
+
+    return {
+      startTime,
+      endTime,
+      attendanceStartTime,
+      attendanceEndTime,
+      lateThreshold
+    };
   };
 
   // 시간 조건 검증 함수
@@ -192,43 +188,7 @@ export default function EventModal({
     }
   };
 
-  // 출석 가능 여부 확인
-  const canCheckIn = () => {
-    if (!event) return false;
-    
-    // 이미 출석한 경우 출석 체크 불가
-    if (myAttendance && myAttendance.status === 'present') return false;
-    
-    const now = new Date();
-    const attendanceStart = event.attendanceStartTime || event.startTime;
-    const attendanceEnd = event.attendanceEndTime || event.endTime;
-    
-    return attendanceStart <= now && attendanceEnd >= now;
-  };
 
-  // 출석 체크
-  const handleCheckIn = async () => {
-    if (!event) return;
-    
-    try {
-      setIsCheckingIn(true);
-      setAttendanceError(null);
-      
-      const data = event.isAttendanceCodeRequired && attendanceCode ? { attendanceCode } : undefined;
-      await checkInAttendance(event.id, data);
-      
-      // 출석 정보 다시 조회
-      const updatedAttendance = await getMyAttendanceForEvent(event.id);
-      setMyAttendance(updatedAttendance);
-      setAttendanceCode('');
-      
-      alert('출석 체크가 완료되었습니다!');
-    } catch (error: any) {
-      setAttendanceError(error.message || '출석 체크에 실패했습니다.');
-    } finally {
-      setIsCheckingIn(false);
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -254,29 +214,10 @@ export default function EventModal({
                   {isEditing ? (event ? '이벤트 수정' : '새 이벤트 생성') : '이벤트 상세'}
                 </h3>
                 <p className="text-sm text-gray-300">
-                  {isEditing ? '이벤트 정보를 입력해주세요.' : '이벤트 상세 정보를 확인하세요.'}
-                </p>
+                   {isEditing ? (event ? '이벤트 정보를 수정해주세요.' : '새로운 이벤트 정보를 입력해주세요.') : '이벤트 상세 정보를 확인하세요.'}
+                 </p>
                 
-                {/* 탭 네비게이션 */}
-                {!isEditing && (
-                  <div className="mt-4 border-b border-white/20">
-                    <nav className="-mb-px flex space-x-8 justify-center">
-                      {['detail', 'attendance'].map((tab) => (
-                        <button
-                          key={tab}
-                          onClick={() => setActiveTab(tab)}
-                          className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                            activeTab === tab
-                              ? 'border-red-500 text-red-400'
-                              : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
-                          }`}
-                        >
-                          {tab === 'detail' ? '이벤트 정보' : '출석 관리'}
-                        </button>
-                      ))}
-                    </nav>
-                  </div>
-                )}
+
                 
                 {/* 버튼 영역 */}
                 <div className="mt-4 flex justify-end space-x-3">
@@ -385,7 +326,7 @@ export default function EventModal({
                         type="datetime-local"
                         value={formatDateForInput(formData.startTime)}
                         onChange={(e) => setFormData({ ...formData, startTime: new Date(e.target.value) })}
-                          className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
+                          className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
                         required
                       />
                     </div>
@@ -400,7 +341,7 @@ export default function EventModal({
                         type="datetime-local"
                         value={formatDateForInput(formData.endTime)}
                         onChange={(e) => setFormData({ ...formData, endTime: new Date(e.target.value) })}
-                          className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
+                          className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
                         required
                       />
                     </div>
@@ -436,34 +377,146 @@ export default function EventModal({
                     </div>
 
                     {formData.isAttendanceRequired && (
-                      <div className="ml-6 space-y-3">
-                        <div className="grid grid-cols-2 gap-4">
+                      <div className="ml-6 space-y-4">
+                        {/* 시간 조건 시각화 */}
+                        {(() => {
+                          const timeViz = getTimeConstraintVisualization();
+                          if (!timeViz) return null;
+
+                          const formatTime = (date: Date) => {
+                            return date.toLocaleTimeString('ko-KR', { 
+                              hour: '2-digit', 
+                              minute: '2-digit',
+                              hour12: false 
+                            });
+                          };
+
+                          return (
+                              <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                               <h4 className="text-sm font-medium text-white mb-3 flex items-center">
+                                 <FontAwesomeIcon icon={faCalendarAlt} className="mr-2" />
+                                 시간 조건 시각화
+                               </h4>
+                               <p className="text-xs text-gray-400 mb-3">
+                                 시작시간 ≤ 출석시작시간 ≤ 출석시작시간+지각시간 ≤ 출석종료시간 ≤ 종료시간
+                               </p>
+                              {/* 타임라인 시각화 */}
+                              <div className="mb-3">
+                                <div className="relative h-8 bg-white/10 rounded-lg overflow-hidden">
+                                  <div className="absolute inset-0 flex items-center justify-between px-2">
+                                    <div className="flex items-center space-x-1">
+                                      <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                                      <span className="text-xs text-white font-mono">{formatTime(timeViz.startTime)}</span>
+                                    </div>
+                                    <div className="flex items-center space-x-1">
+                                      <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                                      <span className="text-xs text-white font-mono">{formatTime(timeViz.attendanceStartTime)}</span>
+                                    </div>
+                                    <div className="flex items-center space-x-1">
+                                      <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                                      <span className="text-xs text-white font-mono">{formatTime(timeViz.lateThreshold)}</span>
+                                    </div>
+                                    <div className="flex items-center space-x-1">
+                                      <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                                      <span className="text-xs text-white font-mono">{formatTime(timeViz.attendanceEndTime)}</span>
+                                    </div>
+                                    <div className="flex items-center space-x-1">
+                                      <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+                                      <span className="text-xs text-white font-mono">{formatTime(timeViz.endTime)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex justify-between text-xs text-gray-400 mt-1">
+                                  <span>시작</span>
+                                  <span>출석시작</span>
+                                  <span>지각기준</span>
+                                  <span>출석종료</span>
+                                  <span>종료</span>
+                                </div>
+                              </div>
+
+                              {/* 시간 조정 입력 필드들 */}
+                              <div className="grid grid-cols-3 gap-3 mb-3">
+                                <div>
+                                  <label className="block text-xs text-gray-300 mb-1">출석 시작 시간</label>
+                                  <input
+                                    type="time"
+                                    value={formData.attendanceStartTime ? formData.attendanceStartTime.toTimeString().slice(0, 5) : ''}
+                                    onChange={(e) => {
+                                      const [hours, minutes] = e.target.value.split(':');
+                                      const newTime = new Date(formData.startTime); // 이벤트 시작 날짜 사용
+                                      newTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                                      setFormData({ ...formData, attendanceStartTime: newTime });
+                                    }}
+                                    className="w-full px-2 py-1 text-xs bg-white/10 border border-white/20 rounded text-white focus:ring-1 focus:ring-red-500 focus:border-red-500"
+                                  />
+                                </div>
                           <div>
-                              <label htmlFor="attendanceStartTime" className="block text-sm font-medium text-white mb-1">
-                                출석 시작 시간
-                              </label>
+                                  <label className="block text-xs text-gray-300 mb-1">출석 종료 시간</label>
                             <input
-                                id="attendanceStartTime"
-                              type="datetime-local"
-                              value={formData.attendanceStartTime ? formatDateForInput(formData.attendanceStartTime) : ''}
-                              onChange={(e) => setFormData({ ...formData, attendanceStartTime: new Date(e.target.value) })}
-                                className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
+                                    type="time"
+                                    value={formData.attendanceEndTime ? formData.attendanceEndTime.toTimeString().slice(0, 5) : ''}
+                                    onChange={(e) => {
+                                      const [hours, minutes] = e.target.value.split(':');
+                                      const newTime = new Date(formData.endTime); // 이벤트 종료 날짜 사용
+                                      newTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                                      setFormData({ ...formData, attendanceEndTime: newTime });
+                                    }}
+                                    className="w-full px-2 py-1 text-xs bg-white/10 border border-white/20 rounded text-white focus:ring-1 focus:ring-red-500 focus:border-red-500"
                             />
                           </div>
-
                           <div>
-                              <label htmlFor="attendanceEndTime" className="block text-sm font-medium text-white mb-1">
-                                출석 종료 시간
-                              </label>
+                                  <label className="block text-xs text-gray-300 mb-1">지각 허용 시간 (분)</label>
                             <input
-                                id="attendanceEndTime"
-                              type="datetime-local"
-                              value={formData.attendanceEndTime ? formatDateForInput(formData.attendanceEndTime) : ''}
-                              onChange={(e) => setFormData({ ...formData, attendanceEndTime: new Date(e.target.value) })}
-                                className="mt-1 block w-full bg-white/10 border border-white/20 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-white placeholder-gray-400 text-sm"
+                                    type="number"
+                                    min="0"
+                                    max="60"
+                                    value={formData.lateThresholdMinutes}
+                                    onChange={(e) => setFormData({ ...formData, lateThresholdMinutes: parseInt(e.target.value) || 0 })}
+                                    className="w-full px-2 py-1 text-xs bg-white/10 border border-white/20 rounded text-white focus:ring-1 focus:ring-red-500 focus:border-red-500"
                             />
                           </div>
                         </div>
+
+                              {/* 시간 조건 체크리스트 */}
+                              <div className="mt-3 space-y-1">
+                                <div className={`flex items-center text-xs ${timeViz.startTime <= timeViz.attendanceStartTime ? 'text-green-400' : 'text-red-400'}`}>
+                                  <FontAwesomeIcon icon={timeViz.startTime <= timeViz.attendanceStartTime ? faCheck : faTimes} className="mr-1" />
+                                  시작 시간 ≤ 출석 시작 시간
+                                </div>
+                                <div className={`flex items-center text-xs ${timeViz.lateThreshold <= timeViz.attendanceEndTime ? 'text-green-400' : 'text-red-400'}`}>
+                                  <FontAwesomeIcon icon={timeViz.lateThreshold <= timeViz.attendanceEndTime ? faCheck : faTimes} className="mr-1" />
+                                  출석 시작 + 지각시간 ≤ 출석 종료
+                                </div>
+                                <div className={`flex items-center text-xs ${timeViz.attendanceEndTime <= timeViz.endTime ? 'text-green-400' : 'text-red-400'}`}>
+                                  <FontAwesomeIcon icon={timeViz.attendanceEndTime <= timeViz.endTime ? faCheck : faTimes} className="mr-1" />
+                                  출석 종료 ≤ 종료 시간
+                                </div>
+                              </div>
+                              
+                              {/* 기본값 리셋 버튼 */}
+                              <div className="mt-3">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    // 기본값으로 리셋 - 이벤트 시작/종료 시간과 동일하게 설정
+                                    setFormData({
+                                      ...formData,
+                                      attendanceStartTime: new Date(formData.startTime),
+                                      attendanceEndTime: new Date(formData.endTime),
+                                      lateThresholdMinutes: 15
+                                    });
+                                  }}
+                                  className="w-full px-3 py-2 text-xs bg-gray-600 hover:bg-gray-500 text-white rounded transition-colors"
+                                >
+                                  기본값으로 리셋
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+
 
                         <div>
                             <label htmlFor="lateThresholdMinutes" className="block text-sm font-medium text-white mb-1">
@@ -527,7 +580,6 @@ export default function EventModal({
               ) : (
                 // General event detail mode
                 <div className="mt-6">
-                  {activeTab === 'detail' && (
                     <div className="space-y-4">
                   <div>
                     <h4 className="text-lg font-semibold text-white">{event.title}</h4>
@@ -605,215 +657,7 @@ export default function EventModal({
                       </div>
                     </div>
                   )}
-
-
-                    </div>
-                  )}
-
-                  {activeTab === 'attendance' && !isAdmin && event.isAttendanceRequired && (
-                    <div className="space-y-3">
-                      {/* 이벤트 상태 정보 */}
-                  <div className="space-y-2">
-                        <h5 className="text-md font-medium text-white flex items-center">
-                          <FontAwesomeIcon icon={faUserGraduate} className="mr-2" />
-                          이벤트 상태
-                        </h5>
-                    <div className="flex flex-wrap gap-2">
-                          <span className="px-2 py-1 bg-red-500/20 text-red-300 text-xs rounded-full flex items-center">
-                            <FontAwesomeIcon icon={faUserGraduate} className="mr-1" />
-                        {event.eventType}
-                      </span>
-                      {event.isAttendanceRequired && (
-                            <span className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded-full flex items-center">
-                              <FontAwesomeIcon icon={faCheck} className="mr-1" />
-                          출석필수
-                        </span>
-                      )}
-                      {event.isAttendanceCodeRequired && (
-                            <span className="px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full flex items-center">
-                              <FontAwesomeIcon icon={faKey} className="mr-1" />
-                          코드필수
-                        </span>
-                      )}
-                      {event.hasAttendanceCode && (
-                            <span className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded-full flex items-center">
-                              <FontAwesomeIcon icon={faCheck} className="mr-1" />
-                          코드생성됨
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                      <h5 className="text-md font-medium text-white flex items-center">
-                        <FontAwesomeIcon icon={faCheck} className="mr-2" />
-                        출석 체크
-                      </h5>
-                      
-                      {isLoadingAttendance ? (
-                        <div className="flex justify-center items-center py-4">
-                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600" />
-                        </div>
-                      ) : myAttendance ? (
-                        myAttendance.status === 'present' ? (
-                        <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4">
-                          <div className="flex items-center space-x-2">
-                            <FontAwesomeIcon icon={faCheck} className="text-green-300" />
-                            <span className="text-green-300 font-medium">출석 완료</span>
-                          </div>
-                          {myAttendance.checkedInAt && (
-                            <p className="text-sm text-green-200 mt-1">
-                              출석 시간: {new Date(myAttendance.checkedInAt).toLocaleString()}
-                            </p>
-                          )}
-                        </div>
-                        ) : myAttendance.status === 'not_attended' ? (
-                          <div className="bg-gray-500/20 border border-gray-500/30 rounded-lg p-4">
-                            <div className="flex items-center space-x-2 mb-3">
-                              <FontAwesomeIcon icon={faTimes} className="text-gray-300" />
-                              <span className="text-gray-300 font-medium">미출석</span>
-                            </div>
-                            
-                            {canCheckIn() ? (
-                              <div className="space-y-3">
-                                {event.isAttendanceCodeRequired && (
-                                  <div>
-                                    <label className="block text-sm font-medium text-white mb-2">
-                                      <FontAwesomeIcon icon={faKey} className="mr-1" />
-                                      출석 코드
-                                    </label>
-                                    <input
-                                      type="text"
-                                      value={attendanceCode}
-                                      onChange={(e) => setAttendanceCode(e.target.value)}
-                                      placeholder="출석 코드를 입력하세요"
-                                      className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                                    />
-                                  </div>
-                                )}
-                                
-                                {!event.isAttendanceCodeRequired && (
-                                  <div>
-                                    <label className="block text-sm font-medium text-white mb-2">
-                                      <FontAwesomeIcon icon={faKey} className="mr-1" />
-                                      출석 코드
-                                    </label>
-                                    <input
-                                      type="text"
-                                      disabled
-                                      placeholder="코드가 필요하지 않습니다"
-                                      className="w-full px-3 py-2 bg-gray-500/20 text-gray-400 border border-gray-500/30 rounded-lg cursor-not-allowed"
-                                    />
-                                  </div>
-                                )}
-                                
-                                {attendanceError && (
-                                  <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
-                                    <div className="flex items-center space-x-2">
-                                      <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-300" />
-                                      <span className="text-red-300 text-sm">{attendanceError}</span>
-                                    </div>
-                                  </div>
-                                )}
-                                
-                                <button
-                                  onClick={handleCheckIn}
-                                  disabled={isCheckingIn || (event.isAttendanceCodeRequired && !attendanceCode.trim())}
-                                  className="inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 w-full"
-                                >
-                                  {isCheckingIn ? (
-                                    <div className="flex items-center">
-                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                                      출석 체크 중...
-                                    </div>
-                                  ) : (
-                                    <div className="flex items-center">
-                                      <FontAwesomeIcon icon={faCheck} className="mr-2" />
-                                      출석하기
-                                    </div>
-                                  )}
-                                </button>
                               </div>
-                            ) : (
-                              <p className="text-sm text-gray-200">
-                                아직 출석 체크를 하지 않았습니다
-                              </p>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-4">
-                            <div className="flex items-center space-x-2">
-                              <FontAwesomeIcon icon={faExclamationTriangle} className="text-yellow-300" />
-                              <span className="text-yellow-300 font-medium">
-                                {myAttendance.status === 'absent' ? '결석' : 
-                                 myAttendance.status === 'late' ? '지각' : 
-                                 myAttendance.status === 'excused' ? '사유결석' : '미확인'}
-                              </span>
-                            </div>
-                            {myAttendance.reason && (
-                              <p className="text-sm text-yellow-200 mt-1">
-                                사유: {myAttendance.reason}
-                              </p>
-                            )}
-                          </div>
-                        )
-                      ) : canCheckIn() ? (
-                        <div className="space-y-3">
-                          {event.isAttendanceCodeRequired && (
-                            <div>
-                              <label className="block text-sm font-medium text-white mb-2">
-                                <FontAwesomeIcon icon={faKey} className="mr-1" />
-                                출석 코드
-                              </label>
-                              <input
-                                type="text"
-                                value={attendanceCode}
-                                onChange={(e) => setAttendanceCode(e.target.value)}
-                                placeholder="출석 코드를 입력하세요"
-                                className="w-full px-3 py-2 bg-white/20 text-white border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                              />
-                            </div>
-                          )}
-                          
-                          {attendanceError && (
-                            <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
-                              <div className="flex items-center space-x-2">
-                                <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-300" />
-                                <span className="text-red-300 text-sm">{attendanceError}</span>
-                              </div>
-                            </div>
-                          )}
-                          
-                          <button
-                            onClick={handleCheckIn}
-                            disabled={isCheckingIn || (event.isAttendanceCodeRequired && !attendanceCode.trim())}
-                            className="inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 w-full"
-                          >
-                            {isCheckingIn ? (
-                              <div className="flex items-center">
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                                출석 체크 중...
-                              </div>
-                            ) : (
-                              <div className="flex items-center">
-                                <FontAwesomeIcon icon={faCheck} className="mr-2" />
-                                출석 체크
-                              </div>
-                            )}
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-4">
-                          <div className="flex items-center space-x-2">
-                            <FontAwesomeIcon icon={faExclamationTriangle} className="text-yellow-300" />
-                            <span className="text-yellow-300 font-medium">출석 기한이 아닙니다</span>
-                          </div>
-                          <p className="text-sm text-yellow-200 mt-1">
-                            출석 가능 시간: {event.attendanceStartTime?.toLocaleString()} ~ {event.attendanceEndTime?.toLocaleString()}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               )}
             </div>

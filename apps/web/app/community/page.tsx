@@ -348,28 +348,28 @@ export default function CommunityPage() {
     <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
       {/* 헤더 */}
       <header className="mx-4 px-6 py-6 border-b border-white/20">
-                 <div className="flex items-center justify-between">
-                       <div className="flex items-center gap-3">
-              <Link href="/" className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
-                <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
-              </Link>
-              <div>
-                <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">커뮤니티</h1>
-                <p className="text-sm font-pretendard text-[#e0e0e0]">프로메테우스 커뮤니티 게시판</p>
-              </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link href="/my" className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
+              <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
+            </Link>
+            <div>
+              <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">커뮤니티</h1>
+              <p className="text-sm font-pretendard text-[#e0e0e0]">프로메테우스 커뮤니티 게시판</p>
             </div>
-            <div className="text-right flex items-center gap-3">
-              {user && (
-                <button
-                  onClick={() => setShowCreateForm(!showCreateForm)}
-                  className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
-                >
-                  <FontAwesomeIcon icon={faPlus} className="w-5 h-5" />
-                </button>
-              )}
-              <p className="text-sm text-[#e0e0e0]">전체 <span className="text-[#ffa282] font-bold">{totalAll}</span>개</p>
-            </div>
-         </div>
+          </div>
+          <div className="text-right flex items-center gap-3">
+            {user && (
+              <button
+                onClick={() => setShowCreateForm(!showCreateForm)}
+                className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
+              >
+                <FontAwesomeIcon icon={faPlus} className="w-5 h-5" />
+              </button>
+            )}
+            <p className="text-sm text-[#e0e0e0]">전체 <span className="text-[#ffa282] font-bold">{totalAll}</span>개</p>
+          </div>
+        </div>
       </header>
 
       <div className="px-4 py-6">

@@ -53,7 +53,7 @@ export function useProject() {
     updateFilteredProjects();
   }, [updateFilteredProjects]);
 
-  // 프로젝트 목록 조회
+  // 프로젝트 목록 조회 (일반 사용자용)
   const fetchProjects = useCallback(async (params?: any) => {
     if (!project) {
       console.warn('project is not available. Ensure useProject is used within ApiProvider.');
@@ -68,6 +68,29 @@ export function useProject() {
       return data;
     } catch (error) {
       console.error('프로젝트 목록 조회 실패:', error);
+      setAllProjects([]);
+      setFilteredProjects([]);
+      throw error;
+    } finally {
+      setIsLoadingProjects(false);
+    }
+  }, [project]);
+
+  // Admin용: 프로젝트 목록 조회 (관리자 전용)
+  const fetchProjectsForAdmin = useCallback(async (params?: any) => {
+    if (!project) {
+      console.warn('project is not available. Ensure useProject is used within ApiProvider.');
+      setIsLoadingProjects(false);
+      return { projects: [], total: 0, page: 1, size: 20 };
+    }
+    try {
+      setIsLoadingProjects(true);
+      const data = await project.listForAdmin(params);
+      setAllProjects(data.projects || []);
+      setFilteredProjects(data.projects || []);
+      return data;
+    } catch (error) {
+      console.error('Admin 프로젝트 목록 조회 실패:', error);
       setAllProjects([]);
       setFilteredProjects([]);
       throw error;
@@ -103,7 +126,17 @@ export function useProject() {
     }
     try {
       const response = await project.create(formData);
-      await fetchProjects();
+      
+      // 새로운 API 응답 구조에 맞게 처리
+      if (response.success && response.project) {
+        // 프로젝트 목록 업데이트
+        await fetchProjects();
+        
+        console.log('프로젝트 생성 성공:', response.message);
+        return response;
+      } else {
+        throw new Error(response.message || '프로젝트 생성에 실패했습니다.');
+      }
 
     } catch (error) {
       console.error('프로젝트 생성 실패:', error);
@@ -118,10 +151,22 @@ export function useProject() {
     }
     try {
       const response = await project.update(projectId, data);
-      if (selectedProject?.id === projectId) {
-        setSelectedProject(response.project);
+      
+      // 새로운 API 응답 구조에 맞게 처리
+      if (response.success && response.project) {
+        // selectedProject 업데이트
+        if (selectedProject?.id === projectId) {
+          setSelectedProject(response.project);
+        }
+        
+        // 프로젝트 목록 업데이트
+        await fetchProjects();
+        
+        console.log('프로젝트 수정 성공:', response.message);
+        return response;
+      } else {
+        throw new Error(response.message || '프로젝트 수정에 실패했습니다.');
       }
-      await fetchProjects();
 
     } catch (error) {
       console.error(`프로젝트 ${projectId} 수정 실패:`, error);
@@ -129,23 +174,89 @@ export function useProject() {
     }
   }, [project, selectedProject, fetchProjects]);
 
-  // 프로젝트 삭제
+  // 프로젝트 삭제 (일반 사용자용)
   const deleteProject = useCallback(async (projectId: number | string) => {
     if (!project) {
       throw new Error('project is not available');
     }
     try {
       const response = await project.remove(projectId);
-      if (selectedProject?.id === projectId) {
-        setSelectedProject(null);
+      
+      // 새로운 API 응답 구조에 맞게 처리
+      if (response.success) {
+        if (selectedProject?.id === projectId) {
+          setSelectedProject(null);
+        }
+        await fetchProjects();
+        
+        console.log('프로젝트 삭제 성공:', response.message);
+        return response;
+      } else {
+        throw new Error(response.message || '프로젝트 삭제에 실패했습니다.');
       }
-      await fetchProjects();
 
     } catch (error) {
       console.error(`프로젝트 ${projectId} 삭제 실패:`, error);
       throw error;
     }
   }, [project, selectedProject, fetchProjects]);
+
+  // Admin용: 프로젝트 삭제 (관리자 전용)
+  const deleteProjectForAdmin = useCallback(async (projectId: number | string) => {
+    if (!project) {
+      throw new Error('project is not available');
+    }
+    try {
+      const response = await project.removeForAdmin(projectId);
+      
+      // 새로운 API 응답 구조에 맞게 처리
+      if (response.success) {
+        if (selectedProject?.id === projectId) {
+          setSelectedProject(null);
+        }
+        await fetchProjectsForAdmin();
+        
+        console.log('Admin 프로젝트 삭제 성공:', response.message);
+        return response;
+      } else {
+        throw new Error(response.message || 'Admin 프로젝트 삭제에 실패했습니다.');
+      }
+
+    } catch (error) {
+      console.error(`Admin 프로젝트 ${projectId} 삭제 실패:`, error);
+      throw error;
+    }
+  }, [project, selectedProject, fetchProjectsForAdmin]);
+
+  // Admin용: 프로젝트 수정 (관리자 전용)
+  const updateProjectForAdmin = useCallback(async (projectId: number | string, data: any) => {
+    if (!project) {
+      throw new Error('project is not available');
+    }
+    try {
+      const response = await project.updateForAdmin(projectId, data);
+      
+      // 새로운 API 응답 구조에 맞게 처리
+      if (response.success && response.project) {
+        // selectedProject 업데이트
+        if (selectedProject?.id === projectId) {
+          setSelectedProject(response.project);
+        }
+        
+        // 프로젝트 목록 업데이트
+        await fetchProjectsForAdmin();
+        
+        console.log('Admin 프로젝트 수정 성공:', response.message);
+        return response;
+      } else {
+        throw new Error(response.message || '프로젝트 수정에 실패했습니다.');
+      }
+
+    } catch (error) {
+      console.error(`Admin 프로젝트 ${projectId} 수정 실패:`, error);
+      throw error;
+    }
+  }, [project, selectedProject, fetchProjectsForAdmin]);
 
   // 프로젝트 멤버 목록 조회
   const fetchProjectMembers = useCallback(async (projectId: number | string, params?: any) => {
@@ -173,7 +284,16 @@ export function useProject() {
     }
     try {
       const response = await project.addMember(projectId, data);
-      await fetchProjectMembers(projectId);
+      
+      // 새로운 API 응답 구조에 맞게 처리
+      if (response.success && response.member) {
+        await fetchProjectMembers(projectId);
+        
+        console.log('프로젝트 멤버 추가 성공:', response.message);
+        return response;
+      } else {
+        throw new Error(response.message || '프로젝트 멤버 추가에 실패했습니다.');
+      }
 
     } catch (error) {
       console.error(`프로젝트 ${projectId}에 멤버 추가 실패:`, error);
@@ -181,17 +301,50 @@ export function useProject() {
     }
   }, [project, fetchProjectMembers]);
 
-  // 프로젝트 멤버 수정
+  // 프로젝트 멤버 수정 (일반 사용자용)
   const updateProjectMember = useCallback(async (projectId: number | string, memberId: string, data: any) => {
     if (!project) {
       throw new Error('project is not available');
     }
     try {
       const response = await project.updateMember(projectId, memberId, data);
-      await fetchProjectMembers(projectId);
+      
+      // 새로운 API 응답 구조에 맞게 처리
+      if (response.success && response.member) {
+        await fetchProjectMembers(projectId);
+        
+        console.log('프로젝트 멤버 수정 성공:', response.message);
+        return response;
+      } else {
+        throw new Error(response.message || '프로젝트 멤버 수정에 실패했습니다.');
+      }
 
     } catch (error) {
       console.error(`프로젝트 ${projectId} 멤버 ${memberId} 수정 실패:`, error);
+      throw error;
+    }
+  }, [project, fetchProjectMembers]);
+
+  // Admin용: 프로젝트 멤버 수정 (관리자 전용)
+  const updateProjectMemberForAdmin = useCallback(async (projectId: number | string, memberId: string, data: any) => {
+    if (!project) {
+      throw new Error('project is not available');
+    }
+    try {
+      const response = await project.updateMemberForAdmin(projectId, memberId, data);
+      
+      // 새로운 API 응답 구조에 맞게 처리
+      if (response.success && response.member) {
+        await fetchProjectMembers(projectId);
+        
+        console.log('Admin 프로젝트 멤버 수정 성공:', response.message);
+        return response;
+      } else {
+        throw new Error(response.message || 'Admin 프로젝트 멤버 수정에 실패했습니다.');
+      }
+
+    } catch (error) {
+      console.error(`Admin 프로젝트 ${projectId} 멤버 ${memberId} 수정 실패:`, error);
       throw error;
     }
   }, [project, fetchProjectMembers]);
@@ -203,7 +356,16 @@ export function useProject() {
     }
     try {
       const response = await project.removeMember(projectId, memberId);
-      await fetchProjectMembers(projectId);
+      
+      // 새로운 API 응답 구조에 맞게 처리
+      if (response.success) {
+        await fetchProjectMembers(projectId);
+        
+        console.log('프로젝트 멤버 제거 성공:', response.message);
+        return response;
+      } else {
+        throw new Error(response.message || '프로젝트 멤버 제거에 실패했습니다.');
+      }
 
     } catch (error) {
       console.error(`프로젝트 ${projectId}에서 멤버 ${memberId} 제거 실패:`, error);
@@ -219,23 +381,29 @@ export function useProject() {
     try {
       const response = await project.addLike(projectId);
       
-      // 로컬 상태 업데이트 - 응답에서 받은 정확한 값 사용
-      setAllProjects(prev => prev.map(p => 
-        p.id === projectId 
-          ? { ...p, like_count: response.like_count, is_liked: response.is_liked }
-          : p
-      ));
-      
-      // selectedProject 상태도 업데이트 - 응답에서 받은 정확한 값 사용
-      if (selectedProject?.id === projectId) {
-        setSelectedProject(prev => prev ? { 
-          ...prev, 
-          like_count: response.like_count, 
-          is_liked: response.is_liked 
-        } : null);
+      // 새로운 API 응답 구조에 맞게 처리
+      if (response.success) {
+        // 로컬 상태 업데이트 - 응답에서 받은 정확한 값 사용
+        setAllProjects(prev => prev.map(p => 
+          p.id === projectId 
+            ? { ...p, like_count: response.like_count, is_liked: response.is_liked }
+            : p
+        ));
+        
+        // selectedProject 상태도 업데이트 - 응답에서 받은 정확한 값 사용
+        if (selectedProject?.id === projectId) {
+          setSelectedProject(prev => prev ? { 
+            ...prev, 
+            like_count: response.like_count, 
+            is_liked: response.is_liked 
+          } : null);
+        }
+        
+        console.log('프로젝트 좋아요 추가 성공:', response.message);
+        return response;
+      } else {
+        throw new Error(response.message || '프로젝트 좋아요 추가에 실패했습니다.');
       }
-      
-      return response;
     } catch (error) {
       console.error(`프로젝트 ${projectId} 좋아요 추가 실패:`, error);
       throw error;
@@ -250,23 +418,29 @@ export function useProject() {
     try {
       const response = await project.removeLike(projectId);
       
-      // 로컬 상태 업데이트 - 응답에서 받은 정확한 값 사용
-      setAllProjects(prev => prev.map(p => 
-        p.id === projectId 
-          ? { ...p, like_count: response.like_count, is_liked: response.is_liked }
-          : p
-      ));
-      
-      // selectedProject 상태도 업데이트 - 응답에서 받은 정확한 값 사용
-      if (selectedProject?.id === projectId) {
-        setSelectedProject(prev => prev ? { 
-          ...prev, 
-          like_count: response.like_count, 
-          is_liked: response.is_liked 
-        } : null);
+      // 새로운 API 응답 구조에 맞게 처리
+      if (response.success) {
+        // 로컬 상태 업데이트 - 응답에서 받은 정확한 값 사용
+        setAllProjects(prev => prev.map(p => 
+          p.id === projectId 
+            ? { ...p, like_count: response.like_count, is_liked: response.is_liked }
+            : p
+        ));
+        
+        // selectedProject 상태도 업데이트 - 응답에서 받은 정확한 값 사용
+        if (selectedProject?.id === projectId) {
+          setSelectedProject(prev => prev ? { 
+            ...prev, 
+            like_count: response.like_count, 
+            is_liked: response.is_liked 
+          } : null);
+        }
+        
+        console.log('프로젝트 좋아요 제거 성공:', response.message);
+        return response;
+      } else {
+        throw new Error(response.message || '프로젝트 좋아요 제거에 실패했습니다.');
       }
-      
-      return response;
     } catch (error) {
       console.error(`프로젝트 ${projectId} 좋아요 제거 실패:`, error);
       throw error;
@@ -414,8 +588,11 @@ export function useProject() {
     clearFilters,
     highlightSearchTerm,
     
-    // Admin용 함수
-    fetchAllProjectsForAdmin,
+    // Admin용 함수들
+    fetchProjectsForAdmin,
+    deleteProjectForAdmin,
+    updateProjectForAdmin,
+    updateProjectMemberForAdmin,
     
     // 내 프로젝트 히스토리 조회
     fetchMyProjectHistory,

@@ -5,4 +5,5 @@ export * from './useGroup';
 export * from './useMember';
 export * from './useEvent';
 export * from './useCoffeeChat';
-export * from './useSponsorship';
+export * from './useLanding';
+export * from './useChat';

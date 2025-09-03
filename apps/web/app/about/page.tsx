@@ -2,181 +2,144 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useMember, useImage } from '@prometheus-fe/hooks';
-import GlassCard from '../../src/components/GlassCard';
-import { MemberPublicListItem } from '@prometheus-fe/types';
+import { useLanding } from '@prometheus-fe/hooks';
 
 export default function AboutPage() {
-  const { getPublicMembers } = useMember();
-  const { getThumbnailUrl } = useImage();
+  const { histories, getHistories, isLoadingHistories } = useLanding();
 
-  // 상태 관리
-  const [executiveMembers, setExecutiveMembers] = useState<MemberPublicListItem[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
-
-  // 유틸리티 함수들
-  const getFirstLetter = (name: string) => {
-    return name && name.length ? name.trim().charAt(0) : 'U';
-  };
-
-  const handleImageError = (memberId: string) => {
-    setImageErrors(prev => ({ ...prev, [memberId]: true }));
-  };
-
-  // 운영진 목록 조회
-  const fetchExecutiveMembers = async () => {
-    try {
-      setIsLoading(true);
-      
-      const response = await getPublicMembers({
-        page: 1,
-        size: 50,
-        executive: true
-      });
-
-      setExecutiveMembers(response.members || []);
-      setImageErrors({});
-    } catch (err) {
-      console.error('Failed to fetch executive members:', err);
-      setExecutiveMembers([]);
-    } finally {
-      setIsLoading(false);
+  // 히스토리 타임라인 렌더링을 위한 함수
+  const renderHistoryTimeline = () => {
+    // histories가 배열이 아닌 경우 빈 배열로 처리
+    if (!Array.isArray(histories)) {
+      return (
+        <div className="text-center py-16">
+          <p className="text-gray-400">히스토리 데이터를 불러올 수 없습니다.</p>
+        </div>
+      );
     }
+
+    // 히스토리 데이터를 타임라인 형태로 변환
+    const historyItems = histories.map((history) => ({
+      id: `history-${history.id}`,
+      title: history.title,
+      desc: [], // 히스토리는 설명이 없으므로 빈 배열
+      date: new Date(history.date),
+      gen: history.gen
+    }));
+
+    // 날짜순으로 정렬 (최신순)
+    historyItems.sort((a, b) => b.date.getTime() - a.date.getTime());
+
+    return (
+      <div className="space-y-8">
+        {historyItems.map((item) => (
+          <div key={item.id} className="flex items-start space-x-6">
+            <div className="flex-shrink-0 w-24 text-center">
+              <div className="w-3 h-3 bg-[#B91C1C] rounded-full mx-auto mb-2"></div>
+              <p className="text-sm text-gray-400">
+                {item.date.toLocaleDateString('ko-KR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </p>
+            </div>
+            <div className="flex-1 bg-white/10 rounded-lg p-4 border border-white/20">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="font-semibold text-lg text-white">{item.title}</h3>
+                {item.gen && (
+                  <span className="px-2 py-1 text-xs bg-gray-500/20 text-gray-300 rounded">
+                    {item.gen}기
+                  </span>
+                )}
+              </div>
+              {item.desc.map((desc, idx) => (
+                <p key={idx} className="text-sm text-gray-300">{desc}</p>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   // 초기 로드
   useEffect(() => {
-    fetchExecutiveMembers();
-  }, []);
+    getHistories();
+  }, [getHistories]);
 
   return (
-    <div className="min-h-screen">
-      {/* 헤더 */}
-      <div className="px-6 py-4">
-        <div className="flex items-center gap-4">
-          <GlassCard href="/" className="w-10 h-10 flex items-center justify-center text-white">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </GlassCard>
-          <div>
-            <h1 className="text-xl font-semibold text-white">About</h1>
-            <p className="text-sm text-gray-300 mt-1">프로메테우스 소개</p>
-          </div>
+    <div className="text-white bg-black">
+             {/* Think Ahead Section */}
+       <div className="relative w-screen overflow-hidden">
+         <Image
+           src="/images/landing4.png"
+           alt="think ahead"
+           width={1920}
+           height={1080}
+           className="object-cover w-full h-screen"
+         />
+         
+         <div className="absolute w-full transform -translate-x-1/2 -translate-y-1/2 top-[60%] left-[50%] text-center font-semibold">
+           <p className="text-xl font-kimm-bold md:text-4xl lg:text-7xl md:mb-1 lg:mb-3">Think Ahead, </p>
+           <p className="text-xl font-kimm-bold md:text-4xl lg:text-7xl">Challenge<span className="text-[#B91C1C]"> On</span> !</p>
         </div>
       </div>
 
-      <div className="px-6 py-6 space-y-6">
-        {/* 프로메테우스 소개 */}
-        <GlassCard className="p-6">
-          <h2 className="text-2xl font-bold text-white mb-4">프로메테우스 (Prometheus)</h2>
-          <div className="text-gray-300 space-y-4">
-            <p>
-              프로메테우스는 대학생들이 함께 성장하고 혁신적인 프로젝트를 만들어가는 
-              대학 연합 IT 동아리입니다.
-            </p>
-            <p>
-              우리는 기술의 발전과 창의적인 아이디어를 통해 사회에 긍정적인 변화를 
-              만들어가고자 합니다.
-            </p>
-            <p>
-              다양한 전공의 학생들이 모여 서로의 지식을 공유하고, 실제 프로젝트를 
-              통해 실무 경험을 쌓을 수 있는 플랫폼을 제공합니다.
+       {/* Prometheus Description Section */}
+       <div className="relative overflow-hidden w-screen -mt-[20vh] mb-16 md:mb-64">
+         <Image
+           src="/images/landing5.png"
+           alt="prometheus description"
+           width={1920}
+           height={1080}
+           className="object-cover w-full h-screen"
+         />
+         
+         <div className="absolute w-full transform -translate-x-1/2 -translate-y-1/2 top-[50%] left-[50%] text-center">
+           <Image
+             src="/icons/logo.png"
+             alt="logo2"
+             width={200}
+             height={200}
+             className="object-cover mx-auto w-[20%] lg:w-[15%] mb-2 md:mb-6 lg:mb-8"
+           />
+           <p className="text-xl md:text-3xl lg:text-5xl font-kimm-bold mb-6 md:mb-16 lg:mb-24">PROMETHEUS</p>
+           <p className="text-xs md:text-lg lg:text-2xl tracking-wide mb-1 md:mb-2 lg:mb-3">
+             <span className="font-semibold">프로메테우스</span>는 먼저 생각하는 사람, <span className="font-semibold">선구자</span>를 의미합니다.
+           </p>
+           <p className="text-xs md:text-lg lg:text-2xl tracking-wide mb-3 md:mb-3 lg:mb-4">
+             선구자들의 가치 있는 도전을 통해 더 나은 세상을 만들어가고자 합니다.
             </p>
           </div>
-        </GlassCard>
+       </div>
 
-        {/* 현 운영진 */}
-        <GlassCard className="p-6">
-          <h2 className="text-2xl font-bold text-white mb-6">현 운영진</h2>
-          
-          {isLoading ? (
-            <div className="flex justify-center items-center py-16">
-              <div className="animate-spin h-8 w-8 border-4 border-blue-200 border-t-blue-600 rounded-full"></div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {executiveMembers.map((member, index) => (
-                <GlassCard
-                  key={index}
-                  className="p-4 text-center"
-                >
-                  <div className="flex flex-col items-center">
-                    <div className="relative mb-3">
-                      {member.profile_image_url && !imageErrors[index] ? (
-                        <div className="relative w-20 h-20">
+      <div className="mx-auto max-w-6xl flex-row items-center pt-40 pb-24">
+                 {/* Our Vision */}
+         <div className="mb-48">
+           <p className="mx-auto text-center font-semibold font-kimm-bold text-lg md:text-3xl lg:text-5xl mb-10 md:mb-24 lg:mb-32">Our Vision</p>
                           <Image
-                            src={getThumbnailUrl(member.profile_image_url, 160)}
-                            alt={member.name}
-                            fill
-                            className="rounded-full object-cover"
-                            onError={() => handleImageError(index.toString())}
-                            unoptimized
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-20 h-20 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-medium text-lg">
-                          {getFirstLetter(member.name)}
-                        </div>
-                      )}
+             src="/images/vision.png"
+             alt="vision"
+             width={1200}
+             height={600}
+             className="object-cover w-[90%] mx-auto mb-2 md:mb-6 lg:mb-8"
+           />
                     </div>
                     
-                    <h3 className="text-lg font-semibold text-white mb-1">{member.name}</h3>
-                    
-                    <div className="flex flex-wrap gap-1 justify-center mb-2">
-                      {member.gen && (
-                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                          {member.gen}기
-                        </span>
-                      )}
-                      {member.school && (
-                        <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-                          {member.school}
-                        </span>
-                      )}
-                      {member.major && (
-                        <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-                          {member.major}
-                        </span>
-                      )}
+        {/* Our History */}
+        <div className="mb-48">
+          <p className="mx-auto text-center font-semibold font-kimm-bold text-lg md:text-3xl lg:text-5xl mb-10 md:mb-24 lg:mb-32">Our History</p>
+          <div className="w-[90%] mx-auto">
+            {isLoadingHistories ? (
+              <div className="flex justify-center items-center py-16">
+                <div className="animate-spin h-8 w-8 border-4 border-red-200 border-t-red-600 rounded-full"></div>
                     </div>
-
-                    {member.history && member.history.length > 0 && (
-                      <div className="text-xs text-gray-300 bg-gray-800/50 p-2 rounded">
-                        <div className="font-medium mb-1">주요 이력:</div>
-                        <div className="space-y-0.5">
-                          {member.history.slice(0, 2).map((h: string, idx: number) => (
-                            <div key={idx}>• {h}</div>
-                          ))}
-                          {member.history.length > 2 && (
-                            <div className="text-gray-400">+{member.history.length - 2}개 더...</div>
+                         ) : (
+               renderHistoryTimeline()
                           )}
                         </div>
                       </div>
-                    )}
-                  </div>
-                </GlassCard>
-              ))}
-            </div>
-          )}
-
-          {!isLoading && executiveMembers.length === 0 && (
-            <div className="text-center py-16">
-              <p className="text-gray-300">운영진 정보를 불러올 수 없습니다.</p>
-            </div>
-          )}
-        </GlassCard>
-
-        {/* 연락처 및 링크 */}
-        <GlassCard className="p-6">
-          <h2 className="text-2xl font-bold text-white mb-4">연락처</h2>
-          <div className="text-gray-300 space-y-2">
-            <p>📧 Email: contact@prometheus.com</p>
-            <p>📱 Instagram: @prometheus_official</p>
-            <p>🌐 Website: https://prometheus.com</p>
-          </div>
-        </GlassCard>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useProject } from '@prometheus-fe/hooks';
 import { useImage } from '@prometheus-fe/hooks';
+import { useAuthStore } from '@prometheus-fe/stores';
 import { Project } from '@prometheus-fe/types';
 import GlassCard from '../../src/components/GlassCard';
 import RedButton from '../../src/components/RedButton';
@@ -16,7 +17,6 @@ import {
   faTags, 
   faUsers, 
   faArrowLeft, 
-  faHeart, 
   faCircle
 } from '@fortawesome/free-solid-svg-icons';
 import Image from 'next/image';
@@ -27,22 +27,20 @@ interface ProjectFilters {
 }
 
 export default function ProjectPage() {
+  const { isAuthenticated } = useAuthStore();
   const {
+    allProjects,
     fetchProjects,
-    addProjectLike,
-    removeProjectLike,
   } = useProject();
 
   const { getThumbnailUrl, getDefaultImageUrl } = useImage();
 
   // 상태 관리
-  const [projects, setProjects] = useState<Project[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
   const [size] = useState<number>(15);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
-  const [likeLoading, setLikeLoading] = useState<Record<string, boolean>>({});
 
   // 검색 상태
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -53,6 +51,36 @@ export default function ProjectPage() {
 
   // 계산된 값들
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / size)), [total, size]);
+
+  // 필터링된 프로젝트 목록
+  const filteredProjects = useMemo(() => {
+    let filtered = [...allProjects];
+
+    // 검색어 필터 적용
+    if (appliedSearchTerm.trim()) {
+      const searchLower = appliedSearchTerm.toLowerCase().trim();
+      filtered = filtered.filter(project => {
+        const titleMatch = project.title?.toLowerCase().includes(searchLower);
+        const descriptionMatch = project.description?.toLowerCase().includes(searchLower);
+        const keywordMatch = project.keywords?.some(keyword => 
+          keyword.toLowerCase().includes(searchLower)
+        );
+        return titleMatch || descriptionMatch || keywordMatch;
+      });
+    }
+
+    // 기수 필터 적용 (전체가 아닐 때만)
+    if (appliedGen !== 'all') {
+      if (appliedGen === 'previous') {
+        filtered = filtered.filter(project => project.gen <= 4);
+      } else {
+        const genNum = parseInt(appliedGen);
+        filtered = filtered.filter(project => project.gen === genNum);
+      }
+    }
+
+    return filtered;
+  }, [allProjects, appliedSearchTerm, appliedGen]);
 
   // 프로젝트 목록 조회
   const fetchProjectList = useCallback(async (isSearch = false) => {
@@ -76,16 +104,19 @@ export default function ProjectPage() {
 
       // 기수 필터 적용 (전체가 아닐 때만)
       if (appliedGen !== 'all') {
-        params.gen = parseInt(appliedGen);
+        if (appliedGen === 'previous') {
+          // 이전기수는 4기 이하
+          params.gen = '4';
+        } else {
+          params.gen = parseInt(appliedGen);
+        }
       }
 
       const response = await fetchProjects(params);
-      setProjects(response.projects || []);
       setTotal(response.total || 0);
       setImageErrors({});
     } catch (err) {
       console.error('Failed to fetch projects:', err);
-      setProjects([]);
       setTotal(0);
     } finally {
       if (isSearch) {
@@ -118,29 +149,6 @@ export default function ProjectPage() {
     setPage(1);
     fetchProjectList(true);
   }, [fetchProjectList]);
-
-  // 좋아요 토글 처리
-  const handleLikeToggle = async (project: Project) => {
-    if (likeLoading[project.id]) return;
-    
-    try {
-      setLikeLoading(prev => ({ ...prev, [project.id]: true }));
-      
-      if (project.is_liked) {
-        await removeProjectLike(project.id);
-      } else {
-        await addProjectLike(project.id);
-      }
-      
-      // 좋아요 상태 변경 후 프로젝트 목록을 다시 로드하여 상태 동기화
-      await fetchProjectList();
-    } catch (error: any) {
-      console.error('좋아요 처리 실패:', error);
-      alert('좋아요 처리에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
-    } finally {
-      setLikeLoading(prev => ({ ...prev, [project.id]: false }));
-    }
-  };
 
   // 기수별 색상 반환 (멤버 페이지와 동일한 스타일)
   const getGenColor = (gen: number) => {
@@ -214,9 +222,12 @@ export default function ProjectPage() {
         <header className="mx-4 px-6 py-6 border-b border-white/20">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Link href="/" className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
+              <button 
+                onClick={() => window.history.back()}
+                className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
+              >
                 <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
-              </Link>
+              </button>
               <div>
                 <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">프로젝트</h1>
                 <p className="text-sm font-pretendard text-[#e0e0e0]">프로메테우스 프로젝트 목록</p>
@@ -226,25 +237,27 @@ export default function ProjectPage() {
         </header>
 
         <div className="px-4 py-6">
-          {/* 검색 및 필터 */}
-          <div className="mb-6 space-y-4">
-            <QueryBar
-              searchTerm={searchTerm}
-              onSearchTermChange={setSearchTerm}
-              selects={[
-                {
-                  id: 'gen',
-                  value: selectedGen,
-                  onChange: setSelectedGen,
-                  options: genOptions
-                }
-              ]}
-              onSearch={handleSearch}
-              onReset={handleReset}
-              isLoading={isSearchLoading}
-              placeholder="프로젝트명, 키워드를 검색해보세요!"
-            />
-          </div>
+          {/* 검색 및 필터 - 로그인 상태에서만 표시 */}
+          {isAuthenticated() && (
+            <div className="mb-6 space-y-4">
+              <QueryBar
+                searchTerm={searchTerm}
+                onSearchTermChange={setSearchTerm}
+                selects={[
+                  {
+                    id: 'gen',
+                    value: selectedGen,
+                    onChange: setSelectedGen,
+                    options: genOptions
+                  }
+                ]}
+                onSearch={handleSearch}
+                onReset={handleReset}
+                isLoading={isSearchLoading}
+                placeholder="프로젝트명, 키워드를 검색해보세요!"
+              />
+            </div>
+          )}
 
           {/* Project Cards Skeleton */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -265,9 +278,12 @@ export default function ProjectPage() {
       <header className="mx-4 px-6 py-6 border-b border-white/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/" className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
+            <button 
+              onClick={() => window.history.back()}
+              className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
+            >
               <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
-            </Link>
+            </button>
             <div>
               <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">프로젝트</h1>
               <p className="text-sm font-pretendard text-[#e0e0e0]">프로메테우스 프로젝트 목록</p>
@@ -280,30 +296,32 @@ export default function ProjectPage() {
       </header>
 
       <div className="px-4 py-6">
-        {/* 검색 및 필터 */}
-        <div className="mb-6 space-y-4">
-          <QueryBar
-            searchTerm={searchTerm}
-            onSearchTermChange={setSearchTerm}
-            selects={[
-              {
-                id: 'gen',
-                value: selectedGen,
-                onChange: setSelectedGen,
-                options: genOptions
-              }
-            ]}
-            onSearch={handleSearch}
-            onReset={handleReset}
-            isLoading={isSearchLoading}
-            placeholder="프로젝트명, 키워드를 검색해보세요!"
-          />
-        </div>
+        {/* 검색 및 필터 - 로그인 상태에서만 표시 */}
+        {isAuthenticated() && (
+          <div className="mb-6 space-y-4">
+            <QueryBar
+              searchTerm={searchTerm}
+              onSearchTermChange={setSearchTerm}
+              selects={[
+                {
+                  id: 'gen',
+                  value: selectedGen,
+                  onChange: setSelectedGen,
+                  options: genOptions
+                }
+              ]}
+              onSearch={handleSearch}
+              onReset={handleReset}
+              isLoading={isSearchLoading}
+              placeholder="프로젝트명, 키워드를 검색해보세요!"
+            />
+          </div>
+        )}
 
         {/* 검색 결과 수 */}
         {(appliedSearchTerm || appliedGen !== 'all') && (
           <div className="mb-4 text-sm text-[#e0e0e0]">
-            검색 결과: {total}개
+            검색 결과: {filteredProjects.length}개
           </div>
         )}
 
@@ -320,7 +338,7 @@ export default function ProjectPage() {
         
         {!isLoading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project: Project) => (
+            {filteredProjects.map((project: Project) => (
               <GlassCard 
                 key={project.id} 
                 className="overflow-hidden hover:bg-white/20 transition-colors border border-white/20 cursor-pointer group"
@@ -370,7 +388,7 @@ export default function ProjectPage() {
                       </div>
                     )}
 
-                    {/* 키워드와 좋아요 버튼 */}
+                    {/* 키워드 */}
                     <div className="flex items-center justify-between">
                       <div className="flex flex-wrap gap-1 flex-1">
                         {project.keywords && project.keywords.length > 0 ? (
@@ -391,32 +409,6 @@ export default function ProjectPage() {
                           </span>
                         )}
                       </div>
-                        <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleLikeToggle(project);
-                        }}
-                        onMouseEnter={(e) => {
-                          e.stopPropagation();
-                          e.currentTarget.closest('.group')?.classList.remove('hover:bg-white/20');
-                        }}
-                        onMouseLeave={(e) => {
-                          e.stopPropagation();
-                          e.currentTarget.closest('.group')?.classList.add('hover:bg-white/20');
-                        }}
-                          disabled={likeLoading[project.id]}
-                        className={`inline-flex items-center px-2 py-1 text-sm transition-colors pointer-events-auto ${
-                            project.is_liked
-                            ? 'text-red-300 hover:text-red-200'
-                            : 'text-white hover:text-gray-300'
-                          } ${likeLoading[project.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                          <FontAwesomeIcon 
-                          icon={faHeart} 
-                          className={`mr-1 h-3 w-3 ${project.is_liked ? 'text-red-300' : 'text-white'}`}
-                          />
-                          {project.like_count || 0}
-                        </button>
                     </div>
                   </div>
                 </div>
@@ -426,7 +418,7 @@ export default function ProjectPage() {
         )}
 
         {/* 빈 상태 */}
-        {!isLoading && !isSearchLoading && projects.length === 0 && (
+        {!isLoading && !isSearchLoading && filteredProjects.length === 0 && (
           <div className="px-4 py-5 sm:p-6">
             <div className="text-center">
               <FontAwesomeIcon icon={faFolder} className="mx-auto h-12 w-12 text-gray-400 mb-4" />
@@ -439,7 +431,7 @@ export default function ProjectPage() {
         )}
 
         {/* 페이지네이션 */}
-        {!isLoading && !isSearchLoading && projects.length > 0 && totalPages > 1 && (
+        {!isLoading && !isSearchLoading && filteredProjects.length > 0 && totalPages > 1 && (
           <div className="flex justify-center mt-8">
             <div className="flex items-center space-x-2">
               <button

@@ -37,12 +37,22 @@ export default function GoogleCallbackPage() {
         
         if (success) {
           // 성공 시 메인 페이지로 리디렉션
-          window.location.replace('/');
+          router.push('/my');
         }
         // 실패 시 에러는 store의 error 상태에서 처리됨
       } catch (err: any) {
         console.error('Google OAuth error:', err);
-        setLocalError(err.message || 'Google 로그인 처리 중 오류가 발생했습니다.');
+        
+        // 서버에서 받은 detail 메시지가 있으면 그것을 사용
+        if (err.response?.data?.detail) {
+          setLocalError(err.response.data.detail);
+        } else if (err.detail) {
+          setLocalError(err.detail);
+        } else if (err.message) {
+          setLocalError(err.message);
+        } else {
+          setLocalError('Google 로그인 처리 중 오류가 발생했습니다.');
+        }
       }
     };
 
