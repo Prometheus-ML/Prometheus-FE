@@ -12,7 +12,7 @@ import {
   Image,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
+//import * as ImagePicker from 'expo-image-picker';
 import { useImage } from '@prometheus-fe/hooks';
 import type { ImageCategory } from '@prometheus-fe/types';
 
@@ -91,60 +91,60 @@ export default function GroupForm({ visible, onSubmit, onCancel, isSubmitting = 
     }));
   };
 
-  const handleImagePicker = async () => {
-    try {
-      // 권한 요청
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  // const handleImagePicker = async () => {
+  //   try {
+  //     // 권한 요청
+  //     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
       
-      if (permissionResult.granted === false) {
-        Alert.alert('권한 필요', '사진 라이브러리에 접근하려면 권한이 필요합니다.');
-        return;
-      }
+  //     if (permissionResult.granted === false) {
+  //       Alert.alert('권한 필요', '사진 라이브러리에 접근하려면 권한이 필요합니다.');
+  //       return;
+  //     }
 
-      // 이미지 선택
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [16, 9],
-        quality: 0.8,
-      });
+  //     // 이미지 선택
+  //     const result = await ImagePicker.launchImageLibraryAsync({
+  //       mediaTypes: ImagePicker.MediaTypeOptions.Images,
+  //       allowsEditing: true,
+  //       aspect: [16, 9],
+  //       quality: 0.8,
+  //     });
 
-      if (!result.canceled && result.assets[0]) {
-        const asset = result.assets[0];
+  //     if (!result.canceled && result.assets[0]) {
+  //       const asset = result.assets[0];
         
-        // File 객체 생성 (React Native에서는 다른 방식으로 처리)
-        const file = {
-          uri: asset.uri,
-          type: asset.type || 'image/jpeg',
-          name: asset.fileName || 'image.jpg',
-          size: asset.fileSize || 0,
-        } as any;
+  //       // File 객체 생성 (React Native에서는 다른 방식으로 처리)
+  //       const file = {
+  //         uri: asset.uri,
+  //         type: asset.type || 'image/jpeg',
+  //         name: asset.fileName || 'image.jpg',
+  //         size: asset.fileSize || 0,
+  //       } as any;
 
-        // 이미지 파일 검증
-        const validationError = validateImageFile(file);
-        if (validationError) {
-          Alert.alert('오류', validationError);
-          return;
-        }
+  //       // 이미지 파일 검증
+  //       const validationError = validateImageFile(file);
+  //       if (validationError) {
+  //         Alert.alert('오류', validationError);
+  //         return;
+  //       }
 
-        // 이전 에러 클리어
-        clearImageError();
+  //       // 이전 에러 클리어
+  //       clearImageError();
         
-        try {
-          // useImage 훅을 사용하여 이미지 업로드
-          const imageUrl = await uploadImage(file, 'group' as ImageCategory);
-          if (imageUrl) {
-            setFormData(prev => ({ ...prev, thumbnail_url: imageUrl }));
-          }
-        } catch (error) {
-          console.error('썸네일 업로드 처리 중 오류:', error);
-        }
-      }
-    } catch (error) {
-      console.error('이미지 선택 오류:', error);
-      Alert.alert('오류', '이미지 선택 중 오류가 발생했습니다.');
-    }
-  };
+  //       try {
+  //         // useImage 훅을 사용하여 이미지 업로드
+  //         const imageUrl = await uploadImage(file, 'group' as ImageCategory);
+  //         if (imageUrl) {
+  //           setFormData(prev => ({ ...prev, thumbnail_url: imageUrl }));
+  //         }
+  //       } catch (error) {
+  //         console.error('썸네일 업로드 처리 중 오류:', error);
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('이미지 선택 오류:', error);
+  //     Alert.alert('오류', '이미지 선택 중 오류가 발생했습니다.');
+  //   }
+  // };
 
   const removeThumbnail = () => {
     setFormData(prev => ({ ...prev, thumbnail_url: undefined }));
@@ -211,7 +211,8 @@ export default function GroupForm({ visible, onSubmit, onCancel, isSubmitting = 
           <View style={styles.section}>
             <Text style={styles.label}>그룹 썸네일</Text>
             <TouchableOpacity
-              onPress={handleImagePicker}
+              //onPress={handleImagePicker}
+              onPress={() => {}}
               disabled={isImageUploading}
               style={styles.imageUploadButton}
             >

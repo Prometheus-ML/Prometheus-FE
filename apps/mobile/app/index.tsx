@@ -7,19 +7,6 @@ import { useAuthStore } from '@prometheus-fe/stores';
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuthStore();
 
-  useEffect(() => {
-    // 인증 상태에 따라 적절한 화면으로 리디렉션
-    // 인증된 사용자는 인덱스 화면에서 메인 콘텐츠를 볼 수 있음
-    // if (isAuthenticated()) {
-    //   router.replace('/main');
-    // }
-  }, [isAuthenticated]);
-
-  const handleLogin = () => {
-    // 로그인 화면으로 네비게이션
-    router.push('/(auth)/login');
-  };
-
   const handleLogout = async () => {
     Alert.alert(
       '로그아웃',
@@ -70,7 +57,10 @@ export default function Home() {
             <TouchableOpacity style={styles.iconButton}>
               <FontAwesome name="bell" size={20} color="#FFFFFF" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity 
+              style={styles.iconButton} 
+              onPress={() => router.push('/profile')}
+            >
               <FontAwesome name="user" size={20} color="#FFFFFF" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconButton} onPress={handleLogout}>
