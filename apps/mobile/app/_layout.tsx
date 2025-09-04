@@ -12,6 +12,8 @@ export default function RootLayout() {
         <Stack.Screen name="community" options={{ headerShown: false }} />
         <Stack.Screen name="group" options={{ headerShown: false }} />
         <Stack.Screen name="member" options={{ headerShown: false }} />
+        <Stack.Screen name="project" options={{ headerShown: false }} />
+        <Stack.Screen name="event" options={{ headerShown: false }} />
         <Stack.Screen name="(admin)/member" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>

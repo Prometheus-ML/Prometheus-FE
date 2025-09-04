@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useEvent, useMyAttendance } from '@prometheus-fe/hooks';
-import { useApi } from '@prometheus-fe/context';
 import { Event, EventFilter, AttendanceStatus, MyAttendance } from '@prometheus-fe/types';
 import { useAuthStore } from '@prometheus-fe/stores';
 import GlassCard from '../../src/components/GlassCard';
