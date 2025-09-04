@@ -15,15 +15,15 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
+    "@prometheus-fe/api": "workspace:*",
+    "@prometheus-fe/context": "workspace:*",
+    "@prometheus-fe/hooks": "workspace:*",
+    "@prometheus-fe/stores": "workspace:*",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-google-signin/google-signin": "^15.0.0",
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
-    "@prometheus-fe/api": "workspace:*",
-    "@prometheus-fe/context": "workspace:*",
-    "@prometheus-fe/hooks": "workspace:*",
-    "@prometheus-fe/stores": "workspace:*",
     "expo": "~53.0.7",
     "expo-audio": "^0.4.8",
     "expo-av": "^15.1.7",
@@ -32,6 +32,7 @@
     "expo-dev-client": "~5.2.4",
     "expo-font": "~13.3.1",
     "expo-image": "~2.3.2",
+    "expo-image-picker": "^16.1.4",
     "expo-linking": "~7.1.4",
     "expo-localization": "^16.1.6",
     "expo-router": "~5.1.3",
@@ -54,9 +55,9 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@expo/cli": "^0.24.0",
-    "@types/react": "~19.0.10",
-    "@prometheus-fe/typescript-config": "workspace:*",
     "@prometheus-fe/types": "workspace:*",
+    "@prometheus-fe/typescript-config": "workspace:*",
+    "@types/react": "~19.0.10",
     "autoprefixer": "^10.4.21",
     "eas-cli": "^16.0.0",
     "eslint": "^9.25.0",
@@ -70,4 +71,3 @@
   },
   "private": true
 }
-

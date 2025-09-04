@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuthStore } from '@prometheus-fe/stores';
-import { useImage, useMember, useCoffeeChat } from '@prometheus-fe/hooks';
+import { useImage, useMember } from '@prometheus-fe/hooks';
 import GlassCard from '../../src/components/GlassCard';
 import RedButton from '../../src/components/RedButton';
 import ProfileModal from '../../src/components/ProfileModal';
