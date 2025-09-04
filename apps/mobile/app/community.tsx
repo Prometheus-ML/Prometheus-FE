@@ -184,7 +184,7 @@ export default function CommunityPage() {
         borderBottomColor: 'rgba(255, 255, 255, 0.2)',
       }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => router.push('/')}>
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
           <View>

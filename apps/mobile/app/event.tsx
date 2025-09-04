@@ -142,7 +142,7 @@ export default function EventPage() {
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center">
             <TouchableOpacity 
-              onPress={() => router.back()}
+              onPress={() => router.push('/')}
               className="w-10 h-10 items-center justify-center mr-3"
             >
               <Ionicons name="arrow-back" size={24} color="#FFFFFF" />

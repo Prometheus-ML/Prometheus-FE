@@ -347,7 +347,7 @@ export default function ProjectPage() {
         <View style={styles.headerLeft}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => router.back()}
+            onPress={() => router.push('/')}
           >
             <FontAwesome name="arrow-left" size={20} color="#FFFFFF" />
           </TouchableOpacity>

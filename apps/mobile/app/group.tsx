@@ -17,7 +17,8 @@ import { router } from 'expo-router';
 import { useGroup } from '@prometheus-fe/hooks';
 import { useImage } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
-import { GroupModal, GroupForm } from '../components';
+import GroupModal from '../components/groups/GroupModal';
+import GroupForm from '../components/groups/GroupForm';
 
 const CATEGORIES = [
   { value: 'STUDY', label: '스터디 그룹' },
@@ -242,7 +243,7 @@ export default function GroupPage() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity onPress={() => router.push('/')} style={styles.backButton}>
             <FontAwesome name="arrow-left" size={20} color="#FFFFFF" />
           </TouchableOpacity>
           <View style={styles.headerInfo}>

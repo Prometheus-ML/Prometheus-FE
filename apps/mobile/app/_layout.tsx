@@ -15,7 +15,6 @@ export default function RootLayout() {
         <Stack.Screen name="project" options={{ headerShown: false }} />
         <Stack.Screen name="event" options={{ headerShown: false }} />
         <Stack.Screen name="landing" options={{ headerShown: false }} />
-        <Stack.Screen name="(admin)/member" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
