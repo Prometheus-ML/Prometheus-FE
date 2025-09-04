@@ -1,11 +1,15 @@
-import React, { useEffect } from 'react';
-import { Text, View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Text, View, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '@prometheus-fe/stores';
+import { useMember } from '@prometheus-fe/hooks';
 
 export default function Home() {
-  const { isAuthenticated, user, logout } = useAuthStore();
+  const { isAuthenticated, user, logout, canAccessAdministrator } = useAuthStore();
+  const { myProfile, getMyProfile, isLoadingProfile } = useMember();
+  const [daysCount, setDaysCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleLogout = async () => {
     Alert.alert(
@@ -29,192 +33,263 @@ export default function Home() {
     );
   };
 
-  const getDaysCount = () => {
-    if (!user?.activity_start_date) return 0;
-    const startDate = new Date(user.activity_start_date);
-    const today = new Date();
-    const diffTime = Math.abs(today.getTime() - startDate.getTime());
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  };
+  // Add loading effect similar to web version
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
 
-  const daysCount = getDaysCount();
+    return () => clearTimeout(timer);
+  }, []);
 
-  //if (isAuthenticated() && user) {
+  // Fetch user profile and calculate days count
+  useEffect(() => {
+    if (!isAuthenticated()) return;
+    
+    getMyProfile()
+      .then((userData) => {
+        if (userData.activity_start_date) {
+          const startDate = new Date(userData.activity_start_date);
+          const today = new Date();
+          const diffTime = Math.abs(today.getTime() - startDate.getTime());
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          setDaysCount(diffDays);
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to fetch user profile:', error);
+      });
+  }, [isAuthenticated, getMyProfile]);
+
+  // Loading state
+  if (isLoading) {
     return (
       <View style={styles.container}>
-        {/* Header */}
+        {/* Header Skeleton */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <View style={styles.logo} />
+            <View style={[styles.logo, styles.skeleton]} />
             <View style={styles.titleContainer}>
-              <Text style={styles.title}>Prometheus</Text>
-              <Text style={styles.subtitle}>대학생 인공지능 단체</Text>
+              <View style={[styles.skeletonText, { width: 120, height: 20, marginBottom: 4 }]} />
+              <View style={[styles.skeletonText, { width: 140, height: 16 }]} />
             </View>
           </View>
-          
-          {/* Right: Icons */}
           <View style={styles.headerIcons}>
-            <TouchableOpacity style={styles.iconButton}>
-              <FontAwesome name="bell" size={20} color="#FFFFFF" />
-            </TouchableOpacity>
+            <View style={[styles.iconButton, styles.skeleton]} />
+            <View style={[styles.iconButton, styles.skeleton]} />
+            <View style={[styles.iconButton, styles.skeleton]} />
+          </View>
+        </View>
+
+        {/* Content Skeleton */}
+        <ScrollView style={styles.content}>
+          <View style={[styles.greetingCard, styles.skeleton]}>
+            <View style={[styles.skeletonText, { width: 200, height: 20, marginBottom: 8 }]} />
+            <View style={[styles.skeletonText, { width: 150, height: 16 }]} />
+          </View>
+          
+          <View style={styles.cardsGrid}>
+            {[...Array(6)].map((_, index) => (
+              <View key={index} style={[styles.card, styles.skeleton]}>
+                <View style={[styles.iconContainer, styles.skeleton]} />
+                <View style={[styles.skeletonText, { width: 80, height: 16, marginTop: 8 }]} />
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <View style={styles.logo} />
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>Prometheus</Text>
+            <Text style={styles.subtitle}>대학생 인공지능 단체</Text>
+          </View>
+        </View>
+        
+        {/* Right: Icons */}
+        <View style={styles.headerIcons}>
+          {canAccessAdministrator() && (
             <TouchableOpacity 
-              style={styles.iconButton} 
-              onPress={() => router.push('/profile')}
+              style={styles.adminButton}
+              onPress={() => router.push('/admin')}
             >
-              <FontAwesome name="user" size={20} color="#FFFFFF" />
+              <Text style={styles.adminButtonText}>Admin</Text>
             </TouchableOpacity>
+          )}
+          <TouchableOpacity style={styles.iconButton}>
+            <FontAwesome name="bell" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.iconButton} 
+            onPress={() => router.push('/profile')}
+          >
+            <FontAwesome name="user" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+          {isAuthenticated() && (
             <TouchableOpacity style={styles.iconButton} onPress={handleLogout}>
               <FontAwesome name="sign-out" size={20} color="#FFFFFF" />
             </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Main Content */}
-        <View style={styles.content}>
-          {/* Personalized Greeting */}
-          <View style={styles.greetingCard}>
-            <Text style={styles.greetingTitle}>
-              <Text style={styles.userName}>{user?.name}</Text> 님은{'\n'}
-              <Text style={styles.highlight}>PROMETHEUS</Text>와{' '}
-              <Text style={styles.userName}>{daysCount}</Text>일째
-            </Text>
-            <View style={styles.genBadge}>
-              <Text style={styles.genText}>{user?.gen}기</Text>
-            </View>
-          </View>
-
-          {/* Feature Cards Grid */}
-          <View style={styles.cardsGrid}>
-            {/* 출석하기 - 2x2 크기 */}
-            <TouchableOpacity 
-              style={[styles.card, styles.attendanceCard]} 
-              onPress={() => router.push('/event')}
-            >
-              <View style={styles.iconContainer}>
-                <FontAwesome name="check" size={28} color="#ffa282" />
-              </View>
-              <Text style={styles.cardTitle}>출석하기</Text>
-              <Text style={styles.cardSubtitle}>정기 출석 체크</Text>
-            </TouchableOpacity>
-
-            {/* 모임/스터디 */}
-            <TouchableOpacity 
-              style={styles.card} 
-              onPress={() => router.push('/group')}
-            >
-              <View style={styles.iconContainer}>
-                <FontAwesome name="users" size={20} color="#ffa282" />
-              </View>
-              <Text style={styles.cardTitle}>모임/스터디</Text>
-              <Text style={styles.cardSubtitle}>팀 활동 관리</Text>
-            </TouchableOpacity>
-
-            {/* 커뮤니티 */}
-            <TouchableOpacity 
-              style={styles.card} 
-              onPress={() => router.push('/community')}
-            >
-              <View style={styles.iconContainer}>
-                <FontAwesome name="comments" size={20} color="#ffa282" />
-              </View>
-              <Text style={styles.cardTitle}>커뮤니티</Text>
-              <Text style={styles.cardSubtitle}>소통과 공유</Text>
-            </TouchableOpacity>
-
-            {/* 멤버 */}
-            <TouchableOpacity 
-              style={styles.card}
-              onPress={() => router.push('/member')}
-            >
-              <View style={styles.iconContainer}>
-                <FontAwesome name="users" size={20} color="#ffa282" />
-              </View>
-              <Text style={styles.cardTitle}>멤버</Text>
-              <Text style={styles.cardSubtitle}>멤버 정보</Text>
-            </TouchableOpacity>
-
-            {/* 프로젝트 */}
-            <TouchableOpacity 
-              style={styles.card} 
-              onPress={() => router.push('/project')}
-            >
-              <View style={styles.iconContainer}>
-                <FontAwesome name="code" size={20} color="#ffa282" />
-              </View>
-              <Text style={styles.cardTitle}>프로젝트</Text>
-              <Text style={styles.cardSubtitle}>프로젝트 관리</Text>
-            </TouchableOpacity>
-          </View>
+          )}
         </View>
       </View>
-    );
-  //}
 
-  // Non-authenticated view
-  // return (
-  //   <View style={styles.container}>
-  //     {/* Header */}
-  //     <View style={styles.header}>
-  //       <View style={styles.logoContainer}>
-  //         <View style={styles.logo} />
-  //         <View style={styles.titleContainer}>
-  //           <Text style={styles.title}>Prometheus</Text>
-  //           <Text style={styles.subtitle}>대학생 인공지능 단체</Text>
-  //         </View>
-  //       </View>
-  //     </View>
+      {/* Main Content */}
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {isAuthenticated() && myProfile ? (
+          <>
+            {/* Personalized Greeting */}
+            <View style={styles.greetingCard}>
+              <Text style={styles.greetingTitle}>
+                <Text style={styles.userName}>{myProfile.name}</Text> 님은{'\n'}
+                <Text style={styles.highlight}>PROMETHEUS</Text>와{' '}
+                <Text style={styles.userName}>{daysCount}</Text>일째
+              </Text>
+              <View style={styles.genBadge}>
+                <Text style={styles.genText}>{myProfile.gen || 0}기</Text>
+              </View>
+            </View>
 
-  //     {/* Main Content */}
-  //     <View style={styles.content}>
-  //       {/* Welcome Message */}
-  //       <View style={styles.welcomeCard}>
-  //         <Text style={styles.welcomeTitle}>프로메테우스에 오신 것을 환영합니다</Text>
-  //         <Text style={styles.welcomeText}>
-  //           인공지능을 통해 미래를 만들어가는 대학생들의 커뮤니티입니다
-  //         </Text>
-  //       </View>
+            {/* Feature Cards Grid - Mobile optimized 2x3 layout */}
+            <View style={styles.cardsGrid}>
+              {/* Row 1 */}
+              <View style={styles.cardRow}>
+                {/* 출석하기 - Larger card */}
+                <TouchableOpacity 
+                  style={[styles.card, styles.attendanceCard]} 
+                  onPress={() => router.push('/event')}
+                >
+                  <View style={styles.iconContainer}>
+                    <FontAwesome name="check" size={24} color="#ffa282" />
+                  </View>
+                  <Text style={styles.cardTitle}>출석하기</Text>
+                  <Text style={styles.cardSubtitle}>정기 출석 체크</Text>
+                </TouchableOpacity>
 
-  //       {/* Login Section */}
-  //       <View style={styles.loginCard}>
-  //         <Text style={styles.loginTitle}>로그인하세요</Text>
-  //         <Text style={styles.loginText}>프로메테우스의 모든 기능을 이용해보세요</Text>
-  //         <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-  //           <Text style={styles.loginButtonText}>로그인하기</Text>
-  //         </TouchableOpacity>
-  //       </View>
+                {/* 모임/스터디 */}
+                <TouchableOpacity 
+                  style={styles.card} 
+                  onPress={() => router.push('/group')}
+                >
+                  <View style={styles.iconContainer}>
+                    <FontAwesome name="users" size={20} color="#ffa282" />
+                  </View>
+                  <Text style={styles.cardTitle}>모임/스터디</Text>
+                  <Text style={styles.cardSubtitle}>팀 활동 관리</Text>
+                </TouchableOpacity>
+              </View>
 
-  //       {/* Feature Cards */}
-  //       <View style={styles.cardsContainer}>
-  //         {/* About Card */}
-  //         <TouchableOpacity style={styles.card} onPress={() => handleCardPress('/landing')}>
-  //           <View style={styles.iconContainer}>
-  //             <FontAwesome name="lightbulb-o" size={20} color="#ffa282" />
-  //           </View>
-  //           <Text style={styles.cardTitle}>프로메테우스</Text>
-  //           <Text style={styles.cardSubtitle}>동아리 소개</Text>
-  //         </TouchableOpacity>
+              {/* Row 2 */}
+              <View style={styles.cardRow}>
+                {/* 커뮤니티 */}
+                <TouchableOpacity 
+                  style={styles.card} 
+                  onPress={() => router.push('/community')}
+                >
+                  <View style={styles.iconContainer}>
+                    <FontAwesome name="comments" size={20} color="#ffa282" />
+                  </View>
+                  <Text style={styles.cardTitle}>커뮤니티</Text>
+                  <Text style={styles.cardSubtitle}>소통과 공유</Text>
+                </TouchableOpacity>
 
-  //         {/* Members Card */}
-  //         <TouchableOpacity style={styles.card} onPress={() => handleCardPress('/member')}>
-  //           <View style={styles.iconContainer}>
-  //             <FontAwesome name="users" size={20} color="#ffa282" />
-  //           </View>
-  //           <Text style={styles.cardTitle}>멤버</Text>
-  //           <Text style={styles.cardSubtitle}>멤버 소개</Text>
-  //         </TouchableOpacity>
+                {/* 멤버 */}
+                <TouchableOpacity 
+                  style={styles.card}
+                  onPress={() => router.push('/member')}
+                >
+                  <View style={styles.iconContainer}>
+                    <FontAwesome name="users" size={20} color="#ffa282" />
+                  </View>
+                  <Text style={styles.cardTitle}>멤버</Text>
+                  <Text style={styles.cardSubtitle}>멤버 정보</Text>
+                </TouchableOpacity>
+              </View>
 
-  //         {/* Projects Card */}
-  //         <TouchableOpacity style={styles.card} onPress={() => handleCardPress('/project')}>
-  //           <View style={styles.iconContainer}>
-  //             <FontAwesome name="code" size={20} color="#ffa282" />
-  //           </View>
-  //           <Text style={styles.cardTitle}>프로젝트</Text>
-  //           <Text style={styles.cardSubtitle}>프로젝트 소개</Text>
-  //         </TouchableOpacity>
-  //       </View>
-  //     </View>
-  //   </View>
-  // );
+              {/* Row 3 */}
+              <View style={styles.cardRow}>
+                {/* 프로젝트 */}
+                <TouchableOpacity 
+                  style={[styles.card, styles.fullWidthCard]} 
+                  onPress={() => router.push('/project')}
+                >
+                  <View style={styles.iconContainer}>
+                    <FontAwesome name="code" size={20} color="#ffa282" />
+                  </View>
+                  <Text style={styles.cardTitle}>프로젝트</Text>
+                  <Text style={styles.cardSubtitle}>프로젝트 관리</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </>
+        ) : (
+          <>
+            {/* Non-authenticated view */}
+            <View style={styles.loginCard}>
+              <Text style={styles.loginTitle}>로그인하세요</Text>
+              <Text style={styles.loginText}>프로메테우스의 모든 기능을 이용해보세요</Text>
+              <TouchableOpacity 
+                style={styles.loginButton} 
+                onPress={() => router.push('/(auth)/login')}
+              >
+                <Text style={styles.loginButtonText}>로그인하기</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Non-authenticated cards */}
+            <View style={styles.cardsGrid}>
+              <View style={styles.cardRow}>
+                {/* 프로메테우스 소개 */}
+                <TouchableOpacity 
+                  style={styles.card} 
+                  onPress={() => router.push('/landing')}
+                >
+                  <View style={styles.iconContainer}>
+                    <FontAwesome name="lightbulb-o" size={20} color="#ffa282" />
+                  </View>
+                  <Text style={styles.cardTitle}>프로메테우스</Text>
+                  <Text style={styles.cardSubtitle}>동아리 소개</Text>
+                </TouchableOpacity>
+
+                {/* 멤버 소개 */}
+                <TouchableOpacity 
+                  style={styles.card} 
+                  onPress={() => router.push('/member')}
+                >
+                  <View style={styles.iconContainer}>
+                    <FontAwesome name="users" size={20} color="#ffa282" />
+                  </View>
+                  <Text style={styles.cardTitle}>멤버</Text>
+                  <Text style={styles.cardSubtitle}>멤버 소개</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.cardRow}>
+                {/* 프로젝트 소개 */}
+                <TouchableOpacity 
+                  style={[styles.card, styles.fullWidthCard]} 
+                  onPress={() => router.push('/project')}
+                >
+                  <View style={styles.iconContainer}>
+                    <FontAwesome name="code" size={20} color="#ffa282" />
+                  </View>
+                  <Text style={styles.cardTitle}>프로젝트</Text>
+                  <Text style={styles.cardSubtitle}>프로젝트 소개</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </>
+        )}
+      </ScrollView>
+    </View>
+  );
+
 }
 
 const styles = StyleSheet.create({
@@ -273,10 +348,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  adminButton: {
+    backgroundColor: '#8B0000',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#c2402a',
+  },
+  adminButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  // Skeleton loading styles
+  skeleton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  skeletonText: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 4,
+  },
   content: {
     flex: 1,
     padding: 20,
-    justifyContent: 'space-between',
   },
   welcomeCard: {
     backgroundColor: 'rgba(139, 0, 0, 0.1)',
@@ -376,19 +471,31 @@ const styles = StyleSheet.create({
   },
   cardsGrid: {
     gap: 12,
+    marginTop: 20,
+  },
+  cardRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 12,
   },
   card: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 16,
-    padding: 20,
+    padding: 16,
     alignItems: 'center',
     minHeight: 100,
     justifyContent: 'center',
+    flex: 1,
   },
   attendanceCard: {
     minHeight: 120,
+    flex: 1.2, // Make attendance card slightly larger
+  },
+  fullWidthCard: {
+    flex: 1,
+    minHeight: 100,
   },
   iconContainer: {
     width: 40,
