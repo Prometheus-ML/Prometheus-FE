@@ -15,9 +15,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useEvent, useMyAttendance } from '@prometheus-fe/hooks';
 import { Event, EventFilter, AttendanceStatus, MyAttendance } from '@prometheus-fe/types';
 import { useAuthStore } from '@prometheus-fe/stores';
-import EventCard from '../components/EventCard';
-import EventModal from '../components/EventModal';
-import EventListModal from '../components/EventListModal';
+import EventCard from '../components/events/EventCard';
+import EventModal from '../components/events/EventModal';
+import EventListModal from '../components/events/EventListModal';
 
 export default function EventPage() {
   const router = useRouter();
