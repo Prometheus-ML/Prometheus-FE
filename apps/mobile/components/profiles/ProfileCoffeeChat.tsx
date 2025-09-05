@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   Image,
   TextInput,
@@ -332,35 +331,33 @@ export default function ProfileCoffeeChat() {
     }
   }, [activeTab, isAuthenticated, fetchAvailableUsers, fetchSent, fetchReceived]);
 
+  // 탭 데이터
+  const tabData = [
+    { key: 'available', label: '가능 사용자' },
+    { key: 'sent', label: '보낸 요청' },
+    { key: 'received', label: '받은 요청' }
+  ];
+
   // 탭 렌더링
   const renderTabs = () => (
     <View style={styles.tabContainer}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'available' && styles.activeTab]}
-          onPress={() => setActiveTab('available')}
-        >
-          <Text style={[styles.tabText, activeTab === 'available' && styles.activeTabText]}>
-            가능 사용자
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'sent' && styles.activeTab]}
-          onPress={() => setActiveTab('sent')}
-        >
-          <Text style={[styles.tabText, activeTab === 'sent' && styles.activeTabText]}>
-            보낸 요청
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'received' && styles.activeTab]}
-          onPress={() => setActiveTab('received')}
-        >
-          <Text style={[styles.tabText, activeTab === 'received' && styles.activeTabText]}>
-            받은 요청
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
+      <FlatList
+        data={tabData}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={[styles.tab, activeTab === item.key && styles.activeTab]}
+            onPress={() => setActiveTab(item.key as TabType)}
+          >
+            <Text style={[styles.tabText, activeTab === item.key && styles.activeTabText]}>
+              {item.label}
+            </Text>
+          </TouchableOpacity>
+        )}
+        keyExtractor={(item) => item.key}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.tabScrollContent}
+      />
     </View>
   );
 
@@ -478,27 +475,23 @@ export default function ProfileCoffeeChat() {
         
         <View style={styles.filterContainer}>
           <Text style={styles.filterLabel}>기수:</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <TouchableOpacity
-              onPress={() => setSelectedGen(null)}
-              style={[styles.filterChip, selectedGen === null && styles.activeFilterChip]}
-            >
-              <Text style={[styles.filterChipText, selectedGen === null && styles.activeFilterChipText]}>
-                전체
-              </Text>
-            </TouchableOpacity>
-            {Array.from({ length: 20 }, (_, i) => i + 1).map((gen) => (
+          <FlatList
+            data={[{ gen: null, label: '전체' }, ...Array.from({ length: 20 }, (_, i) => ({ gen: i + 1, label: `${i + 1}기` }))]}
+            renderItem={({ item }) => (
               <TouchableOpacity
-                key={gen}
-                onPress={() => setSelectedGen(gen)}
-                style={[styles.filterChip, selectedGen === gen && styles.activeFilterChip]}
+                onPress={() => setSelectedGen(item.gen)}
+                style={[styles.filterChip, selectedGen === item.gen && styles.activeFilterChip]}
               >
-                <Text style={[styles.filterChipText, selectedGen === gen && styles.activeFilterChipText]}>
-                  {gen}기
+                <Text style={[styles.filterChipText, selectedGen === item.gen && styles.activeFilterChipText]}>
+                  {item.label}
                 </Text>
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            )}
+            keyExtractor={(item) => item.gen?.toString() || 'all'}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterScrollContent}
+          />
         </View>
       </View>
 
@@ -549,40 +542,28 @@ export default function ProfileCoffeeChat() {
         {/* 상태 필터 */}
         <View style={styles.statusFilterContainer}>
           <Text style={styles.filterLabel}>상태:</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <TouchableOpacity
-              onPress={() => setStatus('')}
-              style={[styles.filterChip, status === '' && styles.activeFilterChip]}
-            >
-              <Text style={[styles.filterChipText, status === '' && styles.activeFilterChipText]}>
-                전체
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setStatus('pending')}
-              style={[styles.filterChip, status === 'pending' && styles.activeFilterChip]}
-            >
-              <Text style={[styles.filterChipText, status === 'pending' && styles.activeFilterChipText]}>
-                대기
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setStatus('accepted')}
-              style={[styles.filterChip, status === 'accepted' && styles.activeFilterChip]}
-            >
-              <Text style={[styles.filterChipText, status === 'accepted' && styles.activeFilterChipText]}>
-                수락
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setStatus('rejected')}
-              style={[styles.filterChip, status === 'rejected' && styles.activeFilterChip]}
-            >
-              <Text style={[styles.filterChipText, status === 'rejected' && styles.activeFilterChipText]}>
-                거절
-              </Text>
-            </TouchableOpacity>
-          </ScrollView>
+          <FlatList
+            data={[
+              { status: '', label: '전체' },
+              { status: 'pending', label: '대기' },
+              { status: 'accepted', label: '수락' },
+              { status: 'rejected', label: '거절' }
+            ]}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => setStatus(item.status as CoffeeChatStatus | '')}
+                style={[styles.filterChip, status === item.status && styles.activeFilterChip]}
+              >
+                <Text style={[styles.filterChipText, status === item.status && styles.activeFilterChipText]}>
+                  {item.label}
+                </Text>
+              </TouchableOpacity>
+            )}
+            keyExtractor={(item) => item.status || 'all'}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterScrollContent}
+          />
           <TouchableOpacity onPress={fetchData} style={styles.refreshButton}>
             <Ionicons name="refresh" size={20} color="#FFFFFF" />
           </TouchableOpacity>
@@ -652,6 +633,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
+  tabScrollContent: {
+    paddingHorizontal: 0,
+  },
   tab: {
     paddingHorizontal: 20,
     paddingVertical: 12,
@@ -705,6 +689,9 @@ const styles = StyleSheet.create({
   filterContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  filterScrollContent: {
+    paddingHorizontal: 0,
   },
   statusFilterContainer: {
     flexDirection: 'row',

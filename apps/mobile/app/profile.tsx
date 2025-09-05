@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   Image,
   TextInput,
@@ -11,9 +10,9 @@ import {
   StatusBar,
   ActivityIndicator,
   StyleSheet,
+  FlatList,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useImage, useMember } from '@prometheus-fe/hooks';
 import { MyProfileUpdateRequest } from '@prometheus-fe/types';
@@ -214,7 +213,7 @@ export default function ProfileScreen() {
         <Text style={styles.infoValue}>{myProfile?.activity_start_date || '-'}</Text>
       </View>
       
-      {myProfile?.active_gens?.length && (
+      {myProfile?.active_gens?.length > 0 && (
         <View style={styles.infoItem}>
           <Text style={styles.infoLabel}>활동 기수</Text>
           <View style={styles.badgeContainer}>
@@ -227,7 +226,7 @@ export default function ProfileScreen() {
         </View>
       )}
       
-      {myProfile?.history?.length && (
+      {myProfile?.history?.length > 0 && (
         <View style={styles.infoItem}>
           <Text style={styles.infoLabel}>이력</Text>
           <View style={styles.badgeContainer}>
@@ -404,14 +403,14 @@ export default function ProfileScreen() {
     </View>
   );
 
-  // 플레이스홀더 탭 렌더링
-  const renderPlaceholderTab = (title: string) => (
-    <View style={styles.placeholderContainer}>
-      <Ionicons name="construct" size={48} color="#666" />
-      <Text style={styles.placeholderTitle}>{title}</Text>
-      <Text style={styles.placeholderText}>구현 예정입니다</Text>
-    </View>
-  );
+  // 탭 데이터 정의
+  const tabData = [
+    { key: 'basic', component: renderBasicInfo },
+    { key: 'optional', component: renderOptionalInfo },
+    { key: 'coffee_chat', component: () => <ProfileCoffeeChat /> },
+    { key: 'post', component: () => <ProfilePost /> },
+    { key: 'project', component: () => <ProfileProject /> },
+  ];
 
   if (isLoadingProfile || !myProfile) {
     return (
@@ -449,13 +448,17 @@ export default function ProfileScreen() {
       />
 
       {/* 콘텐츠 */}
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {activeTab === 'basic' && renderBasicInfo()}
-        {activeTab === 'optional' && renderOptionalInfo()}
-        {activeTab === 'coffee_chat' && <ProfileCoffeeChat />}
-        {activeTab === 'post' && <ProfilePost />}
-        {activeTab === 'project' && <ProfileProject />}
-      </ScrollView>
+      <FlatList
+        data={tabData.filter(tab => tab.key === activeTab)}
+        renderItem={({ item }) => (
+          <View style={styles.content}>
+            {item.component()}
+          </View>
+        )}
+        keyExtractor={(item) => item.key}
+        showsVerticalScrollIndicator={false}
+        style={styles.content}
+      />
     </SafeAreaView>
   );
 }

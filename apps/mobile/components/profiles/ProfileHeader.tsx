@@ -4,7 +4,7 @@ import {
   Text,
   TouchableOpacity,
   Image,
-  ScrollView,
+  FlatList,
   StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -46,50 +46,34 @@ export default function ProfileHeader({
   getThumbnailUrl,
   getFirstLetter,
 }: ProfileHeaderProps) {
+  // 탭 데이터
+  const tabData = [
+    { key: 'basic', label: '기본 정보' },
+    { key: 'optional', label: '선택 정보' },
+    { key: 'coffee_chat', label: '커피챗' },
+    { key: 'post', label: '게시글' },
+    { key: 'project', label: '프로젝트' }
+  ];
+
   const renderTabs = () => (
     <View style={styles.tabContainer}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabScroll}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'basic' && styles.activeTab]}
-          onPress={() => onTabChange('basic')}
-        >
-          <Text style={[styles.tabText, activeTab === 'basic' && styles.activeTabText]}>
-            기본 정보
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'optional' && styles.activeTab]}
-          onPress={() => onTabChange('optional')}
-        >
-          <Text style={[styles.tabText, activeTab === 'optional' && styles.activeTabText]}>
-            선택 정보
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'coffee_chat' && styles.activeTab]}
-          onPress={() => onTabChange('coffee_chat')}
-        >
-          <Text style={[styles.tabText, activeTab === 'coffee_chat' && styles.activeTabText]}>
-            커피챗
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'post' && styles.activeTab]}
-          onPress={() => onTabChange('post')}
-        >
-          <Text style={[styles.tabText, activeTab === 'post' && styles.activeTabText]}>
-            게시글
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'project' && styles.activeTab]}
-          onPress={() => onTabChange('project')}
-        >
-          <Text style={[styles.tabText, activeTab === 'project' && styles.activeTabText]}>
-            프로젝트
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
+      <FlatList
+        data={tabData}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={[styles.tab, activeTab === item.key && styles.activeTab]}
+            onPress={() => onTabChange(item.key as TabType)}
+          >
+            <Text style={[styles.tabText, activeTab === item.key && styles.activeTabText]}>
+              {item.label}
+            </Text>
+          </TouchableOpacity>
+        )}
+        keyExtractor={(item) => item.key}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.tabScrollContent}
+      />
     </View>
   );
 
@@ -102,7 +86,7 @@ export default function ProfileHeader({
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
         )}
-        <Text style={styles.headerTitle}>{title}</Text>
+        <Text style={styles.headerTitle}>{title || ''}</Text>
       </View>
 
       {/* 프로필 헤더 */}
@@ -117,7 +101,7 @@ export default function ProfileHeader({
           ) : (
             <View style={styles.profileImagePlaceholder}>
               <Text style={styles.profileImageText}>
-                {getFirstLetter(name || '')}
+                {getFirstLetter(name || '') || 'U'}
               </Text>
             </View>
           )}
@@ -132,8 +116,8 @@ export default function ProfileHeader({
           )}
         </View>
         <View style={styles.profileInfo}>
-          <Text style={styles.profileName}>{name}</Text>
-          {gen && (
+          <Text style={styles.profileName}>{name || ''}</Text>
+          {typeof gen === 'number' && gen > 0 && (
             <View style={[
               styles.genBadge,
               { backgroundColor: gen <= 4 ? 'rgba(156, 163, 175, 0.2)' : '#8B0000' }
@@ -146,7 +130,7 @@ export default function ProfileHeader({
               </Text>
             </View>
           )}
-          <Text style={styles.profileEmail}>{email}</Text>
+          <Text style={styles.profileEmail}>{email || ''}</Text>
         </View>
       </View>
 
@@ -248,8 +232,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
-  tabScroll: {
-    flexGrow: 0,
+  tabScrollContent: {
+    paddingHorizontal: 0,
   },
   tab: {
     paddingHorizontal: 16,
