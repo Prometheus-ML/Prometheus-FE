@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, Alert, ScrollView, Image } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '@prometheus-fe/stores';
@@ -106,7 +106,11 @@ export default function Home() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
-          <View style={styles.logo} />
+          <Image 
+            source={require('../assets/images/icon.png')} 
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Prometheus</Text>
             <Text style={styles.subtitle}>대학생 인공지능 단체</Text>
@@ -147,12 +151,12 @@ export default function Home() {
             {/* Personalized Greeting */}
             <View style={styles.greetingCard}>
               <Text style={styles.greetingTitle}>
-                <Text style={styles.userName}>{myProfile.name}</Text> 님은{'\n'}
+                <Text style={styles.userName}>{myProfile?.name}</Text> 님은{'\n'}
                 <Text style={styles.highlight}>PROMETHEUS</Text>와{' '}
                 <Text style={styles.userName}>{daysCount}</Text>일째
               </Text>
               <View style={styles.genBadge}>
-                <Text style={styles.genText}>{myProfile.gen || 0}기</Text>
+                <Text style={styles.genText}>{myProfile?.gen || 0}기</Text>
               </View>
             </View>
 
@@ -289,7 +293,6 @@ export default function Home() {
       </ScrollView>
     </View>
   );
-
 }
 
 const styles = StyleSheet.create({

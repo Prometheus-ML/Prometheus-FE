@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, StyleSheet, TouchableOpacity, Dimensions, Alert } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, Dimensions, Alert, Image } from 'react-native';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { GoogleLoginButton } from '../../components';
 import { useAuthStore } from '@prometheus-fe/stores';
@@ -69,7 +69,11 @@ export default function Login() {
         {/* Logo and branding */}
         <View style={styles.brandingSection}>
           <View style={styles.logo}>
-            <View style={styles.logoInner} />
+            <Image 
+              source={require('../../assets/images/icon.png')} 
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </View>
           <Text style={styles.tagline}>대학생 인공지능 단체</Text>
           <Text style={styles.appName}>Prometheus</Text>
@@ -142,16 +146,9 @@ const styles = StyleSheet.create({
   logo: {
     width: 80,
     height: 80,
-    backgroundColor: '#8B0000',
-    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
-    shadowColor: '#FF4500',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
   },
   logoInner: {
     width: 60,
@@ -159,6 +156,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF4500',
     borderRadius: 15,
     transform: [{ rotate: '45deg' }],
+  },
+  logoImage: {
+    width: 60,
+    height: 60,
   },
   tagline: {
     fontSize: 16,
