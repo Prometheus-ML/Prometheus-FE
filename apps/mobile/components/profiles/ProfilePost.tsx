@@ -1,7 +1,17 @@
 import React, { useEffect } from 'react';
 import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useCommunity } from '@prometheus-fe/hooks';
+
+const CATEGORIES = [
+  { value: 'all', label: '전체' },
+  { value: 'free', label: '자유게시판' },
+  { value: 'activity', label: '활동' },
+  { value: 'career', label: '진로' },
+  { value: 'promotion', label: '홍보' },
+  { value: 'announcement', label: '공지사항' },
+] as const;
 
 export default function ProfilePost() {
   const { isAuthenticated, user } = useAuthStore();
@@ -11,6 +21,11 @@ export default function ProfilePost() {
     isLoadingMemberPosts, 
     fetchMemberPostsHistory 
   } = useCommunity();
+
+  // 카테고리 라벨
+  const getCategoryLabel = (category: string) => {
+    return CATEGORIES.find(c => c.value === category)?.label || category;
+  };
 
   useEffect(() => {
     if (isAuthenticated() && user?.id) {
@@ -63,7 +78,7 @@ export default function ProfilePost() {
                   </Text>
                   <View className="flex-row flex-wrap gap-4">
                     <Text className="text-sm text-gray-400">
-                      카테고리: {post.category}
+                      카테고리: {getCategoryLabel(post.category)}
                     </Text>
                     <Text className="text-sm text-gray-400">
                       작성일: {new Date(post.created_at).toLocaleDateString()}
@@ -77,13 +92,19 @@ export default function ProfilePost() {
                       {post.content}
                     </Text>
                   </View>
-                  <View className="flex-row gap-3">
-                    <Text className="text-sm text-gray-400">
-                      ❤️ {post.like_count || 0}
-                    </Text>
-                    <Text className="text-sm text-gray-400">
-                      💬 {post.comment_count || 0}
-                    </Text>
+                  <View className="flex-row gap-4">
+                    <View className="flex-row items-center gap-1">
+                      <Ionicons name="heart" size={12} color="#FFFFFF" />
+                      <Text className="text-sm text-white">
+                        {post.like_count || 0}
+                      </Text>
+                    </View>
+                    <View className="flex-row items-center gap-1">
+                      <Ionicons name="chatbubble" size={12} color="#888" />
+                      <Text className="text-sm text-gray-400">
+                        {post.comment_count || 0}
+                      </Text>
+                    </View>
                   </View>
                 </View>
               </View>

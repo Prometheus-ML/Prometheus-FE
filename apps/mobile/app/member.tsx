@@ -22,7 +22,7 @@ import {
   MemberPrivateListItem
 } from '@prometheus-fe/types';
 import { Ionicons } from '@expo/vector-icons';
-import { ProfileModal } from '../components';
+import MemberModal from '../components/members/MemberModal';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 60) / 3; // 양쪽 패딩 24씩, 카드 간격 6씩 2개 = 60
@@ -38,7 +38,7 @@ export default function MemberScreen() {
   const [total, setTotal] = useState<number>(0);
   const [totalAll, setTotalAll] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
-  const [size] = useState<number>(20);
+  const [size] = useState<number>(21);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
@@ -457,7 +457,7 @@ export default function MemberScreen() {
           <View style={{ 
             flexDirection: 'row', 
             flexWrap: 'wrap', 
-            justifyContent: 'space-between',
+
             gap: 6
           }}>
             {Array.from({ length: 9 }).map((_, index) => (
@@ -671,7 +671,7 @@ export default function MemberScreen() {
         <View style={{ 
           flexDirection: 'row', 
           flexWrap: 'wrap', 
-          justifyContent: 'space-between',
+
           gap: 6
         }}>
           {members.map((member, index) => (
@@ -746,7 +746,7 @@ export default function MemberScreen() {
       </ScrollView>
 
       {/* 프로필 모달 */}
-      <ProfileModal
+      <MemberModal
         isOpen={showDetail}
         onClose={closeDetail}
         member={selectedMember}
