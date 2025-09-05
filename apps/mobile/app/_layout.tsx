@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { router, Stack } from 'expo-router';
 import { ApiProvider } from '@prometheus-fe/context';
+import ChatToggleWrapper from '../components/chats/ChatToggleWrapper';
 import './global.css';
 
 export default function RootLayout() {
@@ -18,6 +19,10 @@ export default function RootLayout() {
         <Stack.Screen name="profile" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
+      
+      {/* Chat Toggle */}
+      <ChatToggleWrapper />
+      
       <StatusBar style="auto" />
     </ApiProvider>
   );
