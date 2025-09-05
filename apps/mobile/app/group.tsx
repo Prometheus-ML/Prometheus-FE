@@ -475,17 +475,6 @@ export default function GroupPage() {
                       </Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity
-                      onPress={(e) => {
-                        e.stopPropagation();
-                        handleGroupClick(group.id);
-                      }}
-                      style={styles.detailButton}
-                    >
-                      <FontAwesome name="eye" size={12} color="#2196F3" />
-                      <Text style={styles.detailButtonText}>상세보기</Text>
-                    </TouchableOpacity>
-
                     {/* 가입 관련 버튼 */}
                     {user && user.id !== group.owner_id && (
                       <>

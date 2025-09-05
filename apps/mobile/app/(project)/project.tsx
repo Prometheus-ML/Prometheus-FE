@@ -9,11 +9,6 @@ import { useAuthStore } from '@prometheus-fe/stores';
 import { Project } from '@prometheus-fe/types';
 import { Ionicons } from '@expo/vector-icons';
 
-interface ProjectFilters {
-  search: string;
-  gen_filter: string;
-}
-
 export default function ProjectPage() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
@@ -147,8 +142,22 @@ export default function ProjectPage() {
 
   // 기수별 색상 반환
   const getGenColor = (gen: number) => {
-    if (gen <= 4) return '#6B7280'; // 4기 이하는 이전기수로 회색
-    return '#8B0000';
+    if (gen <= 4) return '#9CA3AF'; // 4기 이하는 이전기수로 밝은 회색 (gray-400)
+    
+    const colors = [
+      '#DC2626', // 5기 - 빨간색 (red-600)
+      '#2563EB', // 6기 - 파란색 (blue-600)
+      '#059669', // 7기 - 초록색 (emerald-600)
+      '#7C3AED', // 8기 - 보라색 (violet-600)
+      '#EA580C', // 9기 - 주황색 (orange-600)
+      '#0891B2', // 10기 - 청록색 (cyan-600)
+      '#BE185D', // 11기 - 분홍색 (pink-600)
+      '#65A30D', // 12기 - 라임색 (lime-600)
+      '#CA8A04', // 13기 - 노란색 (yellow-600)
+      '#9333EA', // 14기 - 자주색 (purple-600)
+    ];
+    
+    return colors[(gen - 5) % colors.length] || '#DC2626';
   };
 
   // 현재 기수 계산 (2022년 3월부터 6개월 단위)
@@ -208,7 +217,7 @@ export default function ProjectPage() {
               {project.title}
             </Text>
             <View 
-              className="px-2 py-1 rounded-full self-start"
+              className="px-2 py-1 mb-1 rounded-full self-start"
               style={{ backgroundColor: getGenColor(project.gen) + '20' }}
             >
               <Text 
@@ -223,7 +232,7 @@ export default function ProjectPage() {
 
         {/* 설명 */}
         {project.description && (
-          <Text className="text-gray-300 text-sm" numberOfLines={2}>
+          <Text className="text-gray-300 text-sm mb-2" numberOfLines={2}>
             {project.description}
           </Text>
         )}
@@ -234,7 +243,7 @@ export default function ProjectPage() {
             project.keywords.slice(0, 3).map((keyword, index) => (
               <View
                 key={index}
-                className="bg-white/20 rounded-full px-2 py-1 mr-1 mb-1"
+                className="bg-white/20 rounded-lg px-2 py-1 mr-1 mb-1"
               >
                 <Text className="text-white text-xs">#{keyword}</Text>
               </View>
@@ -276,15 +285,15 @@ export default function ProjectPage() {
       <View className="mb-4">
         <Text className="text-white text-sm mb-2">기수</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View className="flex-row space-x-2">
-            {genOptions.map((option) => (
+          <View className="flex-row">
+            {genOptions.map((option, index) => (
               <TouchableOpacity
                 key={option.value}
-                className={`px-3 py-2 rounded-full border ${
+                className={`px-3 py-2 rounded-xl border ${
                   selectedGen === option.value
                     ? 'bg-red-600 border-red-600'
                     : 'bg-white/10 border-white/20'
-                }`}
+                } ${index > 0 ? 'ml-1' : ''}`}
                 onPress={() => setSelectedGen(option.value)}
               >
                 <Text className={`text-sm ${
@@ -301,7 +310,7 @@ export default function ProjectPage() {
       {/* 버튼들 */}
       <View className="flex-row space-x-2">
         <TouchableOpacity
-          className="flex-1 bg-red-600 rounded-lg py-3"
+          className="flex-1 bg-red-600 rounded-lg py-3 mr-2"
           onPress={handleSearch}
           disabled={isSearchLoading}
         >
