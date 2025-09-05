@@ -12,15 +12,21 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useImage, useMember } from '@prometheus-fe/hooks';
 import { MyProfileUpdateRequest } from '@prometheus-fe/types';
+import ProfileHeader from '../components/profiles/ProfileHeader';
+import ProfilePost from '../components/profiles/ProfilePost';
+import ProfileProject from '../components/profiles/ProfileProject';
+import ProfileCoffeeChat from '../components/profiles/ProfileCoffeeChat';
 //import * as ImagePicker from 'expo-image-picker';
 
 type TabType = 'basic' | 'optional' | 'coffee_chat' | 'post' | 'project';
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const { isAuthenticated } = useAuthStore();
   const { getMyProfile, updateMyProfile, myProfile, isLoadingProfile } = useMember();
   const { getThumbnailUrl, uploadImage } = useImage();
@@ -147,6 +153,11 @@ export default function ProfileScreen() {
     loadMyProfile();
   }, [loadMyProfile]);
 
+  // 뒤로가기 핸들러
+  const handleBackPress = useCallback(() => {
+    router.back();
+  }, [router]);
+
   // 초기 로드
   useEffect(() => {
     if (isAuthenticated()) {
@@ -154,101 +165,7 @@ export default function ProfileScreen() {
     }
   }, [isAuthenticated, loadMyProfile]);
 
-  // 탭 렌더링
-  const renderTabs = () => (
-    <View style={styles.tabContainer}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabScroll}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'basic' && styles.activeTab]}
-          onPress={() => setActiveTab('basic')}
-        >
-          <Text style={[styles.tabText, activeTab === 'basic' && styles.activeTabText]}>
-            기본 정보
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'optional' && styles.activeTab]}
-          onPress={() => setActiveTab('optional')}
-        >
-          <Text style={[styles.tabText, activeTab === 'optional' && styles.activeTabText]}>
-            선택 정보
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'coffee_chat' && styles.activeTab]}
-          onPress={() => setActiveTab('coffee_chat')}
-        >
-          <Text style={[styles.tabText, activeTab === 'coffee_chat' && styles.activeTabText]}>
-            커피챗
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'post' && styles.activeTab]}
-          onPress={() => setActiveTab('post')}
-        >
-          <Text style={[styles.tabText, activeTab === 'post' && styles.activeTabText]}>
-            게시글
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'project' && styles.activeTab]}
-          onPress={() => setActiveTab('project')}
-        >
-          <Text style={[styles.tabText, activeTab === 'project' && styles.activeTabText]}>
-            프로젝트
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </View>
-  );
 
-  // 프로필 헤더 렌더링
-  const renderProfileHeader = () => (
-    <View style={styles.profileHeader}>
-      <View style={styles.profileImageContainer}>
-        {myProfile?.profile_image_url && !imageError ? (
-          <Image
-            source={{ uri: getThumbnailUrl(myProfile.profile_image_url, 200) }}
-            style={styles.profileImage}
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <View style={styles.profileImagePlaceholder}>
-            <Text style={styles.profileImageText}>
-              {getFirstLetter(myProfile?.name || '')}
-            </Text>
-          </View>
-        )}
-        {activeTab === 'optional' && editMode && (
-          <TouchableOpacity
-            style={styles.imageEditButton}
-            onPress={() => {}}
-            //onPress={handleImageSelect}
-            disabled={submitting}
-          >
-            <Ionicons name="camera" size={16} color="#FFFFFF" />
-          </TouchableOpacity>
-        )}
-      </View>
-      <View style={styles.profileInfo}>
-        <Text style={styles.profileName}>{myProfile?.name}</Text>
-        {myProfile?.gen && (
-          <View style={[
-            styles.genBadge,
-            { backgroundColor: myProfile.gen <= 4 ? 'rgba(156, 163, 175, 0.2)' : '#8B0000' }
-          ]}>
-            <Text style={[
-              styles.genText,
-              { color: myProfile.gen <= 4 ? '#d1d5db' : '#ffa282' }
-            ]}>
-              {myProfile.gen <= 4 ? '이전기수' : `${myProfile.gen}기`}
-            </Text>
-          </View>
-        )}
-        <Text style={styles.profileEmail}>{myProfile?.email}</Text>
-      </View>
-    </View>
-  );
 
   // 기본 정보 탭 렌더링
   const renderBasicInfo = () => (
@@ -512,24 +429,32 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
       
-      {/* 헤더 */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>내 프로필</Text>
-      </View>
-
       {/* 프로필 헤더 */}
-      {renderProfileHeader()}
-
-      {/* 탭 */}
-      {renderTabs()}
+      <ProfileHeader
+        title="내 프로필"
+        profileImageUrl={myProfile?.profile_image_url}
+        name={myProfile?.name}
+        gen={myProfile?.gen}
+        email={myProfile?.email}
+        imageError={imageError}
+        editMode={editMode}
+        activeTab={activeTab}
+        submitting={submitting}
+        onImageError={() => setImageError(true)}
+        onImageSelect={() => {}}
+        onTabChange={setActiveTab}
+        onBackPress={handleBackPress}
+        getThumbnailUrl={getThumbnailUrl}
+        getFirstLetter={getFirstLetter}
+      />
 
       {/* 콘텐츠 */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {activeTab === 'basic' && renderBasicInfo()}
         {activeTab === 'optional' && renderOptionalInfo()}
-        {activeTab === 'coffee_chat' && renderPlaceholderTab('커피챗')}
-        {activeTab === 'post' && renderPlaceholderTab('게시글')}
-        {activeTab === 'project' && renderPlaceholderTab('프로젝트')}
+        {activeTab === 'coffee_chat' && <ProfileCoffeeChat />}
+        {activeTab === 'post' && <ProfilePost />}
+        {activeTab === 'project' && <ProfileProject />}
       </ScrollView>
     </SafeAreaView>
   );
@@ -539,109 +464,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.8)',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  profileHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.8)',
-  },
-  profileImageContainer: {
-    position: 'relative',
-    marginRight: 16,
-  },
-  profileImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-  },
-  profileImagePlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#404040',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  profileImageText: {
-    color: '#e0e0e0',
-    fontSize: 24,
-    fontWeight: '500',
-  },
-  imageEditButton: {
-    position: 'absolute',
-    right: 0,
-    bottom: 0,
-    backgroundColor: '#8B0000',
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#000',
-  },
-  profileInfo: {
-    flex: 1,
-  },
-  profileName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 4,
-  },
-  genBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginBottom: 4,
-  },
-  genText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  profileEmail: {
-    fontSize: 14,
-    color: '#e0e0e0',
-  },
-  tabContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  tabScroll: {
-    flexGrow: 0,
-  },
-  tab: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-    marginRight: 8,
-  },
-  activeTab: {
-    borderBottomColor: '#8B0000',
-  },
-  tabText: {
-    fontSize: 14,
-    color: '#888',
-    fontWeight: '500',
-  },
-  activeTabText: {
-    color: '#8B0000',
-    fontWeight: '600',
   },
   content: {
     flex: 1,

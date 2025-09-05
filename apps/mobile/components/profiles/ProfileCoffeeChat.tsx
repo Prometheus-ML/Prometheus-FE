@@ -7,8 +7,6 @@ import {
   Image,
   TextInput,
   Alert,
-  SafeAreaView,
-  StatusBar,
   ActivityIndicator,
   StyleSheet,
   Modal,
@@ -103,7 +101,7 @@ function CoffeeChatRequestModal({
 // 탭 타입 정의
 type TabType = 'available' | 'sent' | 'received';
 
-export default function CoffeeChatScreen() {
+export default function ProfileCoffeeChat() {
   const { isAuthenticated, user } = useAuthStore();
   const { 
     getAvailableMembers, 
@@ -619,24 +617,14 @@ export default function CoffeeChatScreen() {
 
   if (!isAuthenticated()) {
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#000" />
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>로그인이 필요합니다</Text>
-        </View>
-      </SafeAreaView>
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>로그인이 필요합니다</Text>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#000" />
-      
-      {/* 헤더 */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>커피챗</Text>
-      </View>
-
+    <View style={styles.container}>
       {/* 탭 */}
       {renderTabs()}
 
@@ -652,25 +640,13 @@ export default function CoffeeChatScreen() {
         onSendRequest={handleCreateRequest}
         isRequesting={isRequesting}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
   },
   tabContainer: {
     borderBottomWidth: 1,
