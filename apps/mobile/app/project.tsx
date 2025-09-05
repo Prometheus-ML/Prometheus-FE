@@ -11,7 +11,6 @@ import {
   RefreshControl,
   ActivityIndicator,
   Modal,
-  Dimensions,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -19,8 +18,6 @@ import { useProject } from '@prometheus-fe/hooks';
 import { useImage } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { Project } from '@prometheus-fe/types';
-
-const { width: screenWidth } = Dimensions.get('window');
 
 export default function ProjectPage() {
   const { isAuthenticated } = useAuthStore();

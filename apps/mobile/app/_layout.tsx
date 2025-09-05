@@ -23,7 +23,7 @@ export default function RootLayout() {
       {/* Chat Toggle */}
       <ChatToggleWrapper />
       
-      <StatusBar style="auto" />
+      <StatusBar style="light" />
     </ApiProvider>
   );
 }

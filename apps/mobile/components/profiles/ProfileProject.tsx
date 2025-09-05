@@ -106,7 +106,7 @@ export default function ProfileProject() {
                 <TouchableOpacity
                   key={project.id}
                   onPress={() => handleProjectPress(project.id)}
-                  className="bg-white/10 rounded-lg p-4 active:bg-white/20"
+                  className="bg-white/10 rounded-lg p-4 active:bg-white/20 m-2"
                   activeOpacity={0.8}
                 >
                   <View className="mb-3">

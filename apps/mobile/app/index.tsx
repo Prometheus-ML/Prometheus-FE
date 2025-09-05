@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, StyleSheet, TouchableOpacity, Alert, ScrollView, Image } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, Alert, Image, SafeAreaView } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '@prometheus-fe/stores';
@@ -64,7 +64,7 @@ export default function Home() {
   // Loading state
   if (isLoading) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         {/* Header Skeleton */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
@@ -82,27 +82,52 @@ export default function Home() {
         </View>
 
         {/* Content Skeleton */}
-        <ScrollView style={styles.content}>
+        <View style={styles.content}>
           <View style={[styles.greetingCard, styles.skeleton]}>
             <View style={[styles.skeletonText, { width: 200, height: 20, marginBottom: 8 }]} />
             <View style={[styles.skeletonText, { width: 150, height: 16 }]} />
           </View>
           
           <View style={styles.cardsGrid}>
-            {[...Array(6)].map((_, index) => (
-              <View key={index} style={[styles.card, styles.skeleton]}>
+            {/* Row 1 - 출석하기 (full width) */}
+            <View style={styles.cardRow}>
+              <View style={[styles.card, styles.fullWidthCard, styles.skeleton]}>
                 <View style={[styles.iconContainer, styles.skeleton]} />
                 <View style={[styles.skeletonText, { width: 80, height: 16, marginTop: 8 }]} />
               </View>
-            ))}
+            </View>
+
+            {/* Row 2 - 프로젝트, 모임/스터디 */}
+            <View style={styles.cardRow}>
+              <View style={[styles.card, styles.skeleton]}>
+                <View style={[styles.iconContainer, styles.skeleton]} />
+                <View style={[styles.skeletonText, { width: 60, height: 16, marginTop: 8 }]} />
+              </View>
+              <View style={[styles.card, styles.skeleton]}>
+                <View style={[styles.iconContainer, styles.skeleton]} />
+                <View style={[styles.skeletonText, { width: 70, height: 16, marginTop: 8 }]} />
+              </View>
+            </View>
+
+            {/* Row 3 - 커뮤니티, 멤버 */}
+            <View style={styles.cardRow}>
+              <View style={[styles.card, styles.skeleton]}>
+                <View style={[styles.iconContainer, styles.skeleton]} />
+                <View style={[styles.skeletonText, { width: 60, height: 16, marginTop: 8 }]} />
+              </View>
+              <View style={[styles.card, styles.skeleton]}>
+                <View style={[styles.iconContainer, styles.skeleton]} />
+                <View style={[styles.skeletonText, { width: 50, height: 16, marginTop: 8 }]} />
+              </View>
+            </View>
           </View>
-        </ScrollView>
-      </View>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
@@ -145,7 +170,7 @@ export default function Home() {
       </View>
 
       {/* Main Content */}
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <View style={styles.content}>
         {isAuthenticated() && myProfile ? (
           <>
             {/* Personalized Greeting */}
@@ -164,16 +189,31 @@ export default function Home() {
             <View style={styles.cardsGrid}>
               {/* Row 1 */}
               <View style={styles.cardRow}>
-                {/* 출석하기 - Larger card */}
+                {/* 출석하기 */}
                 <TouchableOpacity 
-                  style={[styles.card, styles.attendanceCard]} 
+                  style={[styles.card, styles.fullWidthCard]} 
                   onPress={() => router.push('/event')}
                 >
                   <View style={styles.iconContainer}>
-                    <FontAwesome name="check" size={24} color="#ffa282" />
+                    <FontAwesome name="check" size={20} color="#ffa282" />
                   </View>
                   <Text style={styles.cardTitle}>출석하기</Text>
                   <Text style={styles.cardSubtitle}>정기 출석 체크</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Row 2 */}
+              <View style={styles.cardRow}>
+                {/* 프로젝트 - Larger card */}
+                <TouchableOpacity 
+                  style={[styles.card]} 
+                  onPress={() => router.push('/project')}
+                >
+                  <View style={styles.iconContainer}>
+                    <FontAwesome name="code" size={20} color="#ffa282" />
+                  </View>
+                  <Text style={styles.cardTitle}>프로젝트</Text>
+                  <Text style={styles.cardSubtitle}>프로젝트 관리</Text>
                 </TouchableOpacity>
 
                 {/* 모임/스터디 */}
@@ -189,7 +229,7 @@ export default function Home() {
                 </TouchableOpacity>
               </View>
 
-              {/* Row 2 */}
+              {/* Row 3 */}
               <View style={styles.cardRow}>
                 {/* 커뮤니티 */}
                 <TouchableOpacity 
@@ -213,21 +253,6 @@ export default function Home() {
                   </View>
                   <Text style={styles.cardTitle}>멤버</Text>
                   <Text style={styles.cardSubtitle}>멤버 정보</Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Row 3 */}
-              <View style={styles.cardRow}>
-                {/* 프로젝트 */}
-                <TouchableOpacity 
-                  style={[styles.card, styles.fullWidthCard]} 
-                  onPress={() => router.push('/project')}
-                >
-                  <View style={styles.iconContainer}>
-                    <FontAwesome name="code" size={20} color="#ffa282" />
-                  </View>
-                  <Text style={styles.cardTitle}>프로젝트</Text>
-                  <Text style={styles.cardSubtitle}>프로젝트 관리</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -290,8 +315,8 @@ export default function Home() {
             </View>
           </>
         )}
-      </ScrollView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -301,7 +326,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
   header: {
-    paddingTop: 50,
+    paddingTop: 16,
     paddingBottom: 16,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
@@ -309,7 +334,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    minHeight: 80,
+    minHeight: 60,
   },
   logoContainer: {
     flexDirection: 'row',
