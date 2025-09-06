@@ -24,9 +24,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 export default function MyPage() {
-  const isAuthenticated = useAuthStore((s: any) => s.isAuthenticated);
-  const canAccessAdministrator = useAuthStore((s: any) => s.canAccessAdministrator);
-  const logout = useAuthStore((s: any) => s.logout);
+  const { isAuthenticated, canAccessAdministrator, logout } = useAuthStore();
   const [daysCount, setDaysCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const { myProfile, getMyProfile, isLoadingProfile } = useMember();
