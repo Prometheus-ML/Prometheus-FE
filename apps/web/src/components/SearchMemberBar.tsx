@@ -57,7 +57,7 @@ export const MemberSelector: React.FC<MemberSelectorProps> = ({
 
   // 컴포넌트 마운트 시 멤버 목록 로드
   useEffect(() => {
-    getMemberList();
+    getMemberList({ size: 1000 });
   }, [getMemberList]);
 
   // 멤버 선택 핸들러
@@ -301,7 +301,7 @@ export const SearchMemberBar: React.FC<SearchMemberBarProps> = ({
 
   // 컴포넌트 마운트 시 멤버 목록 로드
   useEffect(() => {
-    getMemberList();
+    getMemberList({ size: 1000 });
   }, [getMemberList]);
 
   // 멤버 선택 핸들러
