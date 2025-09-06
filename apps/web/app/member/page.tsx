@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useImage, useMember } from '@prometheus-fe/hooks';
 import GlassCard from '../../src/components/GlassCard';
@@ -13,10 +12,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faArrowLeft, 
   faCoffee, 
-  faUsers,
-  faRotateLeft,
   faCircle,
-  faSearch
 } from '@fortawesome/free-solid-svg-icons';
 
 import { 

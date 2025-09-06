@@ -2,21 +2,24 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useImage, useCoffeeChat } from '@prometheus-fe/hooks';
+import Link from 'next/link';
+import { useImage, useCoffeeChat, useProject } from '@prometheus-fe/hooks';
 import RedButton from './RedButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faCoffee,
   faTimes,
   faPaperPlane,
-  faCircle
+  faCircle,
+  faFolder,
+  faExternalLinkAlt
 } from '@fortawesome/free-solid-svg-icons';
 import { 
   faGithub,
   faNotion,
   faFigma
 } from '@fortawesome/free-brands-svg-icons';
-import { MemberDetailResponse } from '@prometheus-fe/types';
+import { MemberDetailResponse, Project } from '@prometheus-fe/types';
 import Portal from './Portal';
 import { useAuthStore } from '@prometheus-fe/stores';
 
@@ -35,8 +38,11 @@ export default function ProfileModal({
   const [showCoffeeChat, setShowCoffeeChat] = useState(false);
   const [coffeeChatMessage, setCoffeeChatMessage] = useState('');
   const [isRequesting, setIsRequesting] = useState(false);
+  const [userProjects, setUserProjects] = useState<Array<Project & { role?: string }>>([]);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(false);
   const { getThumbnailUrl } = useImage();
   const { createRequest } = useCoffeeChat();
+  const { fetchMemberProjectHistory } = useProject();
   const { user } = useAuthStore();
 
   useEffect(() => {
@@ -44,8 +50,35 @@ export default function ProfileModal({
       setModalImageError(false);
       setShowCoffeeChat(false);
       setCoffeeChatMessage('');
+      if (member?.id) {
+        loadUserProjects();
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, member?.id]);
+
+  const loadUserProjects = async () => {
+    if (!member?.id) return;
+    
+    try {
+      setIsLoadingProjects(true);
+      const data = await fetchMemberProjectHistory(member.id, { 
+        size: 10,
+        status: 'completed' // 완료된 프로젝트만 조회 (page.tsx와 동일)
+      });
+      console.log('사용자 프로젝트 데이터:', data); // 디버깅용
+      // items는 ProjectWithMembers[] 타입이므로 project 정보만 추출
+      const projects = (data.items || []).map(item => ({
+        ...item.project,
+        role: item.members.find(m => m.member_id === member.id)?.role || 'team_member'
+      }));
+      setUserProjects(projects);
+    } catch (error) {
+      console.error('사용자 프로젝트 로드 실패:', error);
+      setUserProjects([]);
+    } finally {
+      setIsLoadingProjects(false);
+    }
+  };
 
   const handleCoffeeChatToggle = () => {
     setShowCoffeeChat(!showCoffeeChat);
@@ -90,6 +123,32 @@ export default function ProfileModal({
         return '활동 중';
       default:
         return status;
+    }
+  };
+
+  const getProjectStatusText = (status: string) => {
+    switch (status) {
+      case 'active':
+        return '진행중';
+      case 'completed':
+        return '완료';
+      case 'paused':
+        return '중지';
+      default:
+        return status;
+    }
+  };
+
+  const getProjectStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-500/20 text-green-300 border-green-500/30';
+      case 'completed':
+        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+      case 'paused':
+        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
+      default:
+        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
     }
   };
 
@@ -314,6 +373,84 @@ export default function ProfileModal({
                         <div className="px-3 py-2 bg-white/5 rounded-lg text-sm flex items-center gap-2 opacity-50 cursor-not-allowed">
                           <FontAwesomeIcon icon={faFigma as any} className="w-4 h-4" />
                           Figma
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* 프로젝트 목록 */}
+                  <div>
+                    <span className="font-medium text-gray-300">참여 프로젝트</span>
+                    <div className="mt-2">
+                      {isLoadingProjects ? (
+                        <div className="flex items-center justify-center py-4">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600" />
+                        </div>
+                      ) : userProjects.length > 0 ? (
+                        <div className="grid grid-cols-1 gap-3">
+                          {userProjects.map((project) => (
+                            <Link
+                              key={project.id}
+                              href={`/project/${project.id}`}
+                              className="block p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors border border-white/20 group"
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h4 className="text-sm font-medium text-white truncate">
+                                      {project.title}
+                                    </h4>
+                                    <span className={`px-1.5 py-0.5 text-xs rounded-full font-medium flex items-center gap-1 flex-shrink-0 ${
+                                      project.gen <= 4 ? 'bg-gray-500/20 text-gray-300' : 'bg-[#8B0000] text-[#ffa282]'
+                                    }`}>
+                                      {project.gen <= 4 ? '이전기수' : `${project.gen}기`}
+                                    </span>
+                                  </div>
+                                  {project.description && (
+                                    <p className="text-xs text-gray-400 line-clamp-2 mb-2">
+                                      {project.description}
+                                    </p>
+                                  )}
+                                  {/* 키워드 표시 */}
+                                  {project.keywords && project.keywords.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mb-2">
+                                      {project.keywords.slice(0, 3).map((keyword, index) => (
+                                        <span
+                                          key={index}
+                                          className="px-2 py-1 text-xs bg-white/20 text-white rounded-full"
+                                        >
+                                          #{keyword}
+                                        </span>
+                                      ))}
+                                      {project.keywords.length > 3 && (
+                                        <span className="px-2 py-1 text-xs bg-white/20 text-white rounded-full">
+                                          +{project.keywords.length - 3}
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs text-gray-500">
+                                      {project.role === 'team_leader' ? '팀장' : '팀원'}
+                                    </span>
+                                    <span className="text-xs text-gray-500">•</span>
+                                    <span className="text-xs text-gray-500">
+                                      {getProjectStatusText(project.status)}
+                                    </span>
+                                  </div>
+                                </div>
+                                <FontAwesomeIcon 
+                                  icon={faExternalLinkAlt} 
+                                  className="w-3 h-3 text-gray-400 ml-2 flex-shrink-0 group-hover:text-white transition-colors" 
+                                />
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-4 text-gray-400 text-sm">
+                          <FontAwesomeIcon icon={faFolder} className="w-8 h-8 mb-2 opacity-50" />
+                          <p>참여한 프로젝트가 없습니다.</p>
                         </div>
                       )}
                     </div>

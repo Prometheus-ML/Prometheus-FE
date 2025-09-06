@@ -303,9 +303,12 @@ export default function ProjectDetailPage() {
         <header className="mx-4 px-6 py-6 border-b border-white/20">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Link href="/project" className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
+              <button 
+                onClick={() => router.back()} 
+                className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
+              >
                 <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
-              </Link>
+              </button>
               <div>
                 <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">프로젝트 상세</h1>
                 <p className="text-sm font-pretendard text-[#e0e0e0]">프로젝트 정보 및 팀원</p>
@@ -403,9 +406,12 @@ export default function ProjectDetailPage() {
         <header className="mx-4 px-6 py-6 border-b border-white/20">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Link href="/project" className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
+              <button 
+                onClick={() => router.back()} 
+                className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
+              >
                 <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
-              </Link>
+              </button>
               <div>
                 <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">프로젝트 상세</h1>
                 <p className="text-sm font-pretendard text-[#e0e0e0]">프로젝트 정보 및 팀원</p>
@@ -492,9 +498,12 @@ export default function ProjectDetailPage() {
       <header className="mx-4 px-6 py-6 border-b border-white/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/project" className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
+            <button 
+              onClick={() => router.back()} 
+              className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
+            >
               <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
-            </Link>
+            </button>
             <div>
               <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">프로젝트 상세</h1>
               <p className="text-sm font-pretendard text-[#e0e0e0]">프로젝트 정보 및 팀원</p>

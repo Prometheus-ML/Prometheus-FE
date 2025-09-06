@@ -525,6 +525,22 @@ export function useProject() {
     }
   }, [project]);
 
+  // 특정 사용자의 프로젝트 히스토리 조회
+  const fetchMemberProjectHistory = useCallback(async (memberId: string, params?: any) => {
+    if (!project) {
+      console.warn('project is not available. Ensure useProject is used within ApiProvider.');
+      return { items: [], total_project: 0, active_project: 0, completed_project: 0 };
+    }
+    
+    try {
+      const data = await project.memberHistory(memberId, params);
+      return data;
+    } catch (error) {
+      console.error(`사용자 ${memberId}의 프로젝트 히스토리 조회 실패:`, error);
+      throw error;
+    }
+  }, [project]);
+
       // 현재 사용자가 프로젝트 리더인지 확인하는 함수
     const isProjectLeader = useCallback((projectId: number | string) => {
       if (!selectedProject || !projectMembers.length) return false;
@@ -596,6 +612,9 @@ export function useProject() {
     
     // 내 프로젝트 히스토리 조회
     fetchMyProjectHistory,
+    
+    // 특정 사용자의 프로젝트 히스토리 조회
+    fetchMemberProjectHistory,
     
     // 프로젝트 리더 확인 함수
     isProjectLeader,
