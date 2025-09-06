@@ -161,49 +161,49 @@ export default function AdminEventPage() {
     const status = getEventStatus(event);
 
     return (
-      <GlassCard className="p-4 hover:bg-white/20 transition-colors cursor-pointer border border-white/20">
-        <div className="flex items-center justify-between mb-3">
+      <GlassCard className="p-3 hover:bg-white/20 transition-colors cursor-pointer border border-white/20 min-h-[200px]">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-2">
-            <span className={`px-2 py-1 text-xs rounded-full border ${status.color}`}>
+            <span className={`px-2 py-1 text-xs rounded-full border ${status.color} whitespace-nowrap`}>
               {status.text}
             </span>
-            <span className="text-xs text-gray-300">
+            <span className="text-xs text-gray-300 whitespace-nowrap">
               {event.eventType === '회의' ? '정기모임' : '특별이벤트'}
             </span>
           </div>
-          <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded">
+          <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded whitespace-nowrap">
             {event.currentGen}기
           </span>
         </div>
         
-        <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2">
+        <h3 className="text-base font-semibold text-white mb-2 line-clamp-2 break-words">
           {event.title}
         </h3>
         
-        <p className="text-gray-300 text-sm mb-3 line-clamp-2">
+        <p className="text-gray-300 text-sm mb-2 line-clamp-2 break-words">
           {event.description}
         </p>
         
-        <div className="flex items-center justify-between">
+        <div className="space-y-2">
           <div className="flex items-center space-x-4 text-sm text-gray-300">
-            <span className="flex items-center">
+            <span className="flex items-center whitespace-nowrap">
               <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" />
               {new Date(event.startTime).toLocaleDateString('ko-KR')}
             </span>
-            <span className="flex items-center">
+            <span className="flex items-center whitespace-nowrap">
               <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1" />
-              {event.location || '장소 미정'}
+              <span className="truncate max-w-[120px]">{event.location || '장소 미정'}</span>
             </span>
           </div>
           
           {isAdmin && (
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap gap-1">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onEdit?.(event);
                 }}
-                className="text-blue-400 hover:text-blue-300 text-sm px-2 py-1 rounded hover:bg-blue-500/20 transition-colors"
+                className="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 rounded hover:bg-blue-500/20 transition-colors whitespace-nowrap"
               >
                 <FontAwesomeIcon icon={faEdit} className="mr-1" />
                 수정
@@ -213,7 +213,7 @@ export default function AdminEventPage() {
                   e.stopPropagation();
                   onAttendanceManage?.(event);
                 }}
-                className="text-green-400 hover:text-green-300 text-sm px-2 py-1 rounded hover:bg-green-500/20 transition-colors"
+                className="text-green-400 hover:text-green-300 text-xs px-2 py-1 rounded hover:bg-green-500/20 transition-colors whitespace-nowrap"
               >
                 <FontAwesomeIcon icon={faUsers} className="mr-1" />
                 출석관리
@@ -223,7 +223,7 @@ export default function AdminEventPage() {
                   e.stopPropagation();
                   onDelete?.(event.id);
                 }}
-                className="text-red-400 hover:text-red-300 text-sm px-2 py-1 rounded hover:bg-red-500/20 transition-colors"
+                className="text-red-400 hover:text-red-300 text-xs px-2 py-1 rounded hover:bg-red-500/20 transition-colors whitespace-nowrap"
               >
                 <FontAwesomeIcon icon={faTrash} className="mr-1" />
                 삭제
