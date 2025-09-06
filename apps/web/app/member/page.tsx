@@ -35,7 +35,7 @@ export default function MemberPage() {
   const [total, setTotal] = useState<number>(0);
   const [totalAll, setTotalAll] = useState<number>(0); // 전체 멤버 수 (필터링과 무관)
   const [page, setPage] = useState<number>(1);
-  const [size] = useState<number>(20);
+  const [size] = useState<number>(21);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 

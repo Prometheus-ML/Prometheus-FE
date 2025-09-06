@@ -1,10 +1,25 @@
 'use client';
 
-import Link from 'next/link';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useCommunity } from '@prometheus-fe/hooks';
 import GlassCard from '../../../src/components/GlassCard';
-import { useEffect } from 'react';
+import PostModal from '../../../src/components/PostModal';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart, faComments } from '@fortawesome/free-solid-svg-icons';
+
+import { useEffect, useState } from 'react';
+
+const CATEGORIES = [
+  { value: 'free', label: '자유게시판' },
+  { value: 'activity', label: '활동' },
+  { value: 'career', label: '진로' },
+  { value: 'promotion', label: '홍보' },
+  { value: 'announcement', label: '공지사항' },
+] as const;
+
+const getCategoryLabel = (category: string) => {
+  return CATEGORIES.find(c => c.value === category)?.label || category;
+};
 
 export default function PostPage() {
   const { isAuthenticated, user } = useAuthStore();
@@ -15,11 +30,24 @@ export default function PostPage() {
     fetchMemberPostsHistory 
   } = useCommunity();
 
+  const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   useEffect(() => {
     if (isAuthenticated() && user?.id) {
       fetchMemberPostsHistory(user.id);
     }
   }, [user?.id]);
+
+  const handlePostClick = (postId: number) => {
+    setSelectedPostId(postId);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedPostId(null);
+  };
 
   if (!isAuthenticated()) {
     return (
@@ -52,7 +80,8 @@ export default function PostPage() {
             {memberPosts.map((post) => (
               <div 
                 key={post.id} 
-                className="p-4 rounded-lg border bg-white/5 border-white/20"
+                className="p-4 rounded-lg border bg-white/5 border-white/20 cursor-pointer hover:bg-white/10 transition-colors"
+                onClick={() => handlePostClick(post.id)}
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1">
@@ -60,13 +89,19 @@ export default function PostPage() {
                       {post.title}
                     </h3>
                     <div className="flex items-center gap-4 text-sm text-gray-400 mt-1">
-                      <span>카테고리: {post.category}</span>
+                      <span>카테고리: {getCategoryLabel(post.category)}</span>
                       <span>작성일: {new Date(post.created_at).toLocaleDateString()}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-gray-400">
-                    <span>❤️ {post.like_count || 0}</span>
-                    <span>💬 {post.comment_count || 0}</span>
+                    <span className="flex items-center gap-1">
+                      <FontAwesomeIcon icon={faHeart} className="w-3 h-3" />
+                      {post.like_count || 0}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <FontAwesomeIcon icon={faComments} className="w-3 h-3" />
+                      {post.comment_count || 0}
+                    </span>
                   </div>
                 </div>
                 
@@ -78,6 +113,13 @@ export default function PostPage() {
           </div>
         )}
       </GlassCard>
+
+      {/* 게시글 상세 모달 */}
+      <PostModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        postId={selectedPostId}
+      />
     </div>
   );
 }
