@@ -3,7 +3,7 @@ import { Text, View, StyleSheet, TouchableOpacity, Dimensions, Alert, Image } fr
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { GoogleLoginButton } from '../../components';
 import { useAuthStore } from '@prometheus-fe/stores';
-
+import { router } from 'expo-router';
 const { width, height } = Dimensions.get('window');
 
 export default function Login() {
@@ -89,7 +89,9 @@ export default function Login() {
             </View>
           )}
           
-          <Text style={styles.infoText}>프로메테우스 멤버가 아니에요</Text>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Text style={styles.infoText}>프로메테우스 멤버가 아니에요</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>

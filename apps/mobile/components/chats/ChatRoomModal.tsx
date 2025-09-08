@@ -195,53 +195,68 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
         styles.messageContainer,
         isMyMessage ? styles.myMessageContainer : styles.otherMessageContainer
       ]}>
-        {/* 상대방 이름 표시 */}
-        {!isMyMessage && (
-          <Text style={styles.senderName}>
-            {message.sender_name || message.sender_id}
-          </Text>
-        )}
-        
-        <View style={[
-          styles.messageBubble,
-          isMyMessage ? styles.myMessageBubble : styles.otherMessageBubble
-        ]}>
-          {/* 프로필 이미지 (상대방 메시지만) */}
+        <View style={styles.messageWrapper}>
+          {/* 상대방 이름 표시 (내 메시지가 아닐 때만) */}
           {!isMyMessage && (
-            <View style={styles.profileImageContainer}>
-              {message.sender_profile_image ? (
-                <Image
-                  source={{ uri: getThumbnailUrl(message.sender_profile_image, 80) }}
-                  style={styles.profileImage}
-                  onError={() => {
-                    console.warn('프로필 이미지 로드 실패:', message.sender_profile_image);
-                  }}
-                />
-              ) : (
-                <View style={styles.defaultProfileImage}>
-                  <Ionicons name="person" size={20} color="rgba(255, 255, 255, 0.6)" />
-                </View>
-              )}
-            </View>
+            <Text style={styles.senderName}>
+              {message.sender_name || message.sender_id}
+            </Text>
           )}
           
-          <View style={styles.messageContent}>
-            <Text style={[
-              styles.messageText,
-              isMyMessage ? styles.myMessageText : styles.otherMessageText
+          <View style={styles.messageRow}>
+            {/* 내 메시지 시간 (왼쪽) */}
+            {isMyMessage && (
+              <Text style={styles.myMessageTime}>
+                {new Date(message.created_at).toLocaleTimeString('ko-KR', { 
+                  hour: '2-digit', 
+                  minute: '2-digit',
+                  hour12: false 
+                })}
+              </Text>
+            )}
+            
+            {/* 프로필 이미지 (상대방 메시지만) */}
+            {!isMyMessage && (
+              <View style={styles.profileImageContainer}>
+                {message.sender_profile_image ? (
+                  <Image
+                    source={{ uri: getThumbnailUrl(message.sender_profile_image, 80) }}
+                    style={styles.profileImage}
+                    onError={() => {
+                      console.warn('프로필 이미지 로드 실패:', message.sender_profile_image);
+                    }}
+                  />
+                ) : (
+                  <View style={styles.defaultProfileImage}>
+                    <Ionicons name="person" size={20} color="rgba(255, 255, 255, 0.6)" />
+                  </View>
+                )}
+              </View>
+            )}
+            
+            {/* 메시지 말풍선 */}
+            <View style={[
+              styles.messageBubble,
+              isMyMessage ? styles.myMessageBubble : styles.otherMessageBubble
             ]}>
-              {message.content}
-            </Text>
-            <Text style={[
-              styles.messageTime,
-              isMyMessage ? styles.myMessageTime : styles.otherMessageTime
-            ]}>
-              {new Date(message.created_at).toLocaleTimeString('ko-KR', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                hour12: false 
-              })}
-            </Text>
+              <Text style={[
+                styles.messageText,
+                isMyMessage ? styles.myMessageText : styles.otherMessageText
+              ]}>
+                {message.content}
+              </Text>
+            </View>
+            
+            {/* 상대방 메시지 시간 (오른쪽) */}
+            {!isMyMessage && (
+              <Text style={styles.otherMessageTime}>
+                {new Date(message.created_at).toLocaleTimeString('ko-KR', { 
+                  hour: '2-digit', 
+                  minute: '2-digit',
+                  hour12: false 
+                })}
+              </Text>
+            )}
           </View>
         </View>
       </View>
@@ -430,45 +445,57 @@ const styles = StyleSheet.create({
   otherMessageContainer: {
     alignItems: 'flex-start',
   },
+  messageWrapper: {
+    flex: 1,
+  },
   senderName: {
     fontSize: 12,
     color: 'rgba(255, 255, 255, 0.8)',
     marginBottom: 4,
     marginLeft: 4,
+    fontWeight: '500',
   },
-  messageBubble: {
+  messageRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    maxWidth: '80%',
+    gap: 8,
+  },
+  messageBubble: {
+    maxWidth: '70%',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
   },
   myMessageBubble: {
-    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   otherMessageBubble: {
-    justifyContent: 'flex-start',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   profileImageContainer: {
-    marginRight: 8,
+    marginBottom: 8,
   },
   profileImage: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   defaultProfileImage: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  messageContent: {
-    flex: 1,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   messageText: {
-    fontSize: 16,
-    lineHeight: 20,
+    fontSize: 14,
+    lineHeight: 18,
   },
   myMessageText: {
     color: '#ffffff',
@@ -476,16 +503,15 @@ const styles = StyleSheet.create({
   otherMessageText: {
     color: '#ffffff',
   },
-  messageTime: {
-    fontSize: 12,
-    marginTop: 4,
-  },
   myMessageTime: {
+    fontSize: 12,
     color: 'rgba(255, 255, 255, 0.5)',
-    textAlign: 'right',
+    marginBottom: 8,
   },
   otherMessageTime: {
+    fontSize: 12,
     color: 'rgba(255, 255, 255, 0.5)',
+    marginBottom: 8,
   },
   emptyContainer: {
     flex: 1,
