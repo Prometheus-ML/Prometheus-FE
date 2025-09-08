@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.prometheus.app",
+      "bundleIdentifier": "com.prometheusai.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "CFBundleURLTypes": [
@@ -24,7 +24,7 @@
       }
     },
     "android": {
-      "package": "com.prometheus.app"
+      "package": "com.prometheusai.app"
     },
     "web": {
       "bundler": "metro"
