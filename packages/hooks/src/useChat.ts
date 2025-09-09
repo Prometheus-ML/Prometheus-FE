@@ -131,9 +131,9 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
           clearTimeout(reconnectTimeoutRef.current);
           reconnectTimeoutRef.current = null;
         }
-        // 기존 연결 해제
+        // 기존 연결 해제 (비동기적으로 처리)
         wsRef.current.close(1000, 'Switching to new room');
-        wsRef.current = null;
+        // wsRef.current는 onclose 이벤트에서 null로 설정
       }
 
       // 연결 시도 중 상태로 설정
@@ -183,6 +183,11 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
       ws.onclose = (event) => {
         clearTimeout(connectionTimeout);
         console.log('WebSocket closed:', event.code, event.reason);
+        
+        // 현재 WebSocket 인스턴스인 경우에만 null로 설정
+        if (wsRef.current === ws) {
+          wsRef.current = null;
+        }
         
         setState(prev => ({ 
           ...prev, 
@@ -240,7 +245,7 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
     if (wsRef.current) {
       // 정상 종료 코드로 연결 해제
       wsRef.current.close(1000, 'Manual disconnect');
-      wsRef.current = null;
+      // wsRef.current는 onclose 이벤트에서 null로 설정
     }
     
     // 상태 초기화
