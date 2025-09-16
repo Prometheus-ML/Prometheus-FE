@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Dimensions,
   RefreshControl,
+  SafeAreaView,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -239,7 +240,7 @@ export default function GroupPage() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
@@ -547,7 +548,7 @@ export default function GroupPage() {
         onCancel={() => setShowCreateForm(false)}
         isSubmitting={isCreatingGroup}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
