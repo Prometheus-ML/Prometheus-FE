@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, ScrollView, TouchableOpacity, Alert, SafeAreaView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useProject } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
 import ProjectForm from '../../../components/projects/ProjectForm';
@@ -90,7 +91,7 @@ export default function EditProjectPage() {
   // Check permissions
   if (!canEdit) {
     return (
-      <SafeAreaView className="flex-1 bg-black">
+      <SafeAreaView className="flex-1 bg-black" edges={['top']}>
         <View className="px-4 py-6 border-b border-white/20">
           <View className="flex-row items-center">
             <TouchableOpacity
@@ -131,7 +132,7 @@ export default function EditProjectPage() {
 
   if (isLoadingProject) {
     return (
-      <SafeAreaView className="flex-1 bg-black">
+      <SafeAreaView className="flex-1 bg-black" edges={['top']}>
         <View className="px-4 py-6 border-b border-white/20">
           <View className="flex-row items-center">
             <TouchableOpacity
@@ -156,7 +157,7 @@ export default function EditProjectPage() {
 
   if (error && !selectedProject) {
     return (
-      <SafeAreaView className="flex-1 bg-black">
+      <SafeAreaView className="flex-1 bg-black" edges={['top']}>
         <View className="px-4 py-6 border-b border-white/20">
           <View className="flex-row items-center">
             <TouchableOpacity
@@ -199,7 +200,7 @@ export default function EditProjectPage() {
 
   if (!selectedProject) {
     return (
-      <SafeAreaView className="flex-1 bg-black">
+      <SafeAreaView className="flex-1 bg-black" edges={['top']}>
         <View className="px-4 py-6 border-b border-white/20">
           <View className="flex-row items-center">
             <TouchableOpacity
@@ -231,7 +232,7 @@ export default function EditProjectPage() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black" edges={['top']}>
       {/* 헤더 */}
       <View className="px-4 py-6 border-b border-white/20">
         <View className="flex-row items-center">

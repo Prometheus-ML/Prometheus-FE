@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, StyleSheet, TouchableOpacity, Alert, Image, SafeAreaView } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '@prometheus-fe/stores';
@@ -64,7 +65,7 @@ export default function Home() {
   // Loading state
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top']}>
         {/* Header Skeleton */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
@@ -127,7 +128,7 @@ export default function Home() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>

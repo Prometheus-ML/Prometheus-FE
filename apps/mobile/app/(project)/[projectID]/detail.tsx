@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, SafeAreaView, Text, ScrollView, TouchableOpacity, Image, Alert, Modal } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, Alert, Modal } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useProject, useImage, useMember } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
 import AddMemberModal from '../../../components/AddMemberModal';
@@ -322,7 +323,7 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black" edges={['top']}>
       {/* 헤더 */}
       <View className="px-4 py-6 border-b border-white/20">
         <View className="flex-row items-center justify-between">

@@ -9,12 +9,11 @@ import {
   Image,
   ActivityIndicator,
   StyleSheet,
-  SafeAreaView,
-  StatusBar,
   KeyboardAvoidingView,
   Platform,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useChat } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
@@ -299,8 +298,7 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
       presentationStyle="pageSheet"
       onRequestClose={handleClose}
     >
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#1f2937" />
+      <SafeAreaView style={styles.container} edges={['top']}>
         
         {/* 헤더 */}
         <View style={styles.header}>

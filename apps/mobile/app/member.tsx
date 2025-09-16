@@ -10,9 +10,8 @@ import {
   RefreshControl,
   Dimensions,
   ActivityIndicator,
-  SafeAreaView,
-  StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useMember, useImage } from '@prometheus-fe/hooks';
@@ -426,8 +425,7 @@ export default function MemberScreen() {
   // 로딩 상태
   if (isLoading && !appliedSearchTerm && appliedGen === 'all' && appliedStatus === 'all') {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
-        <StatusBar barStyle="light-content" backgroundColor="#000" />
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }} edges={['top']}>
         
         {/* 헤더 */}
         <View style={{ 
@@ -470,8 +468,7 @@ export default function MemberScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
-      <StatusBar barStyle="light-content" backgroundColor="#000" />
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }} edges={['top']}>
       
       {/* 헤더 */}
       <View style={{ 
