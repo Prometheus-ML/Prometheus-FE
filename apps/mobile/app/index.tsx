@@ -7,7 +7,7 @@ import { useAuthStore } from '@prometheus-fe/stores';
 import { useMember } from '@prometheus-fe/hooks';
 
 export default function Home() {
-  const { isAuthenticated, user, logout, canAccessAdministrator } = useAuthStore();
+  const { user, logout, canAccessAdministrator } = useAuthStore();
   const { myProfile, getMyProfile, isLoadingProfile } = useMember();
   const [daysCount, setDaysCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,7 +45,7 @@ export default function Home() {
 
   // Fetch user profile and calculate days count
   useEffect(() => {
-    if (!isAuthenticated()) return;
+    if (!user) return;
     
     getMyProfile()
       .then((userData) => {
@@ -60,7 +60,7 @@ export default function Home() {
       .catch((error) => {
         console.error('Failed to fetch user profile:', error);
       });
-  }, [isAuthenticated, getMyProfile]);
+  }, [user, getMyProfile]);
 
   // Loading state
   if (isLoading) {
@@ -158,11 +158,17 @@ export default function Home() {
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.iconButton} 
-            onPress={() => router.push('/profile')}
+            onPress={() => {
+              if (user) {
+                router.push('/profile');
+              } else {
+                router.push('/(auth)/login');
+              }
+            }}
           >
             <FontAwesome name="user" size={20} color="#FFFFFF" />
           </TouchableOpacity>
-          {isAuthenticated() && (
+          {user && (
             <TouchableOpacity style={styles.iconButton} onPress={handleLogout}>
               <FontAwesome name="sign-out" size={20} color="#FFFFFF" />
             </TouchableOpacity>
@@ -172,7 +178,7 @@ export default function Home() {
 
       {/* Main Content */}
       <View style={styles.content}>
-        {isAuthenticated() && myProfile ? (
+        {user && myProfile ? (
           <>
             {/* Personalized Greeting */}
             <View style={styles.greetingCard}>

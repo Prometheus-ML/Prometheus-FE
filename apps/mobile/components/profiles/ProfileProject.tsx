@@ -6,7 +6,7 @@ import { useProject } from '@prometheus-fe/hooks';
 
 export default function ProfileProject() {
   const router = useRouter();
-  const { isAuthenticated, user } = useAuthStore();
+  const { user } = useAuthStore();
   const { fetchMyProjectHistory } = useProject();
   const [myProjects, setMyProjects] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,10 +24,10 @@ export default function ProfileProject() {
   }, [fetchMyProjectHistory]);
 
   useEffect(() => {
-    if (isAuthenticated() && user) {
+    if (user) {
       loadMyProjects();
     }
-  }, [isAuthenticated, user, loadMyProjects]);
+  }, [user, loadMyProjects]);
 
   const handleProjectPress = (projectId: number) => {
     router.push(`/project/${projectId}`);
@@ -68,7 +68,7 @@ export default function ProfileProject() {
     }
   };
 
-  if (!isAuthenticated()) {
+  if (!user) {
     return (
       <View className="flex-1 justify-center items-center px-6">
         <View className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 w-full">

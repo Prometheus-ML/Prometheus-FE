@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function ProjectPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { user } = useAuthStore();
   const {
     allProjects,
     fetchProjects,
@@ -361,7 +361,7 @@ export default function ProjectPage() {
         }
       >
         {/* 검색 및 필터 - 로그인 상태에서만 표시 */}
-        {isAuthenticated() && renderSearchModal()}
+        {user && renderSearchModal()}
 
         {/* 검색 결과 수 */}
         {(appliedSearchTerm || appliedGen !== 'all') && (

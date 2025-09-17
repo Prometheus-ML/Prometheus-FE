@@ -24,7 +24,16 @@
       }
     },
     "android": {
-      "package": "com.prometheusai.app"
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#000000"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.prometheusai.app",
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.INTERNET"
+      ]
     },
     "web": {
       "bundler": "metro"

@@ -22,7 +22,7 @@ import {
 } from '@prometheus-fe/types';
 
 export default function MemberPage() {
-  const { isAuthenticated } = useAuthStore();
+  const { user } = useAuthStore();
   const { getPublicMembers, getPrivateMembers, getMemberDetail, isLoadingMembers, isLoadingMember } = useMember();
   const { getThumbnailUrl } = useImage();
 
@@ -50,7 +50,7 @@ export default function MemberPage() {
 
   // 계산된 값들
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / size)), [total, size]);
-  const isPrivate = useMemo(() => isAuthenticated(), [isAuthenticated]);
+  const isPrivate = useMemo(() => !!user, [user]);
   
   // 현재 기수 계산 (2022년 3월부터 6개월 단위)
   const getCurrentGen = useCallback(() => {

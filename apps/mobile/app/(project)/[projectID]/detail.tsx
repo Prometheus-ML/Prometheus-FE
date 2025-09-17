@@ -90,7 +90,7 @@ export default function ProjectDetailPage() {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
   // 실제 인증 상태 사용
-  const { canAccessAdministrator, isAuthenticated } = useAuthStore();
+  const { canAccessAdministrator, user } = useAuthStore();
   const canManage = canAccessAdministrator(); // Administrator 이상
   const isLeader = isProjectLeader(parseInt(projectId)); // 현재 사용자가 프로젝트 팀장인지
   const isMember = isProjectMember(parseInt(projectId)); // 현재 사용자가 프로젝트 멤버인지
@@ -150,7 +150,7 @@ export default function ProjectDetailPage() {
     if (!selectedProject || likeLoading || isLikeUpdating) return;
     
     // 로그인하지 않은 사용자는 좋아요 기능 사용 불가
-    if (!isAuthenticated()) {
+    if (!user) {
       Alert.alert('알림', '로그인이 필요한 기능입니다.');
       return;
     }
@@ -361,9 +361,9 @@ export default function ProjectDetailPage() {
             {/* 좋아요 버튼 */}
             <TouchableOpacity
               onPress={handleLikeToggle}
-              disabled={likeLoading || !isAuthenticated()}
+              disabled={likeLoading || !user}
               className={`ml-2 p-2 ${
-                likeLoading || !isAuthenticated() ? 'opacity-50' : ''
+                likeLoading || !user ? 'opacity-50' : ''
               }`}
             >
                               <Ionicons 

@@ -23,12 +23,21 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import MemberModal from '../components/members/MemberModal';
 
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 60) / 3; // 양쪽 패딩 24씩, 카드 간격 6씩 2개 = 60
+// 화면 크기 변화에 대응하는 동적 계산
+const [screenData, setScreenData] = useState(() => {
+  const { width } = Dimensions.get('window');
+  const horizontalPadding = 24 * 2; // 양쪽 패딩
+  const cardGap = 6; // 카드 간 간격
+  const columns = 3; // 항상 3열
+  const availableWidth = width - horizontalPadding - (cardGap * (columns - 1));
+  const cardWidth = Math.floor(availableWidth / columns);
+  
+  return { width, cardWidth, columns };
+});
 
 export default function MemberScreen() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { user } = useAuthStore();
   const { getPublicMembers, getPrivateMembers, getMemberDetail, isLoadingMembers, isLoadingMember } = useMember();
   const { getThumbnailUrl } = useImage();
 
@@ -58,7 +67,7 @@ export default function MemberScreen() {
 
   // 계산된 값들
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / size)), [total, size]);
-  const isPrivate = useMemo(() => isAuthenticated(), [isAuthenticated]);
+  const isPrivate = useMemo(() => !!user, [user]);
   
   // 현재 기수 계산 (2022년 3월부터 6개월 단위)
   const getCurrentGen = useCallback(() => {
@@ -242,6 +251,21 @@ export default function MemberScreen() {
     fetchTotalCount();
   }, [fetchMembers, fetchTotalCount]);
 
+  // 화면 크기 변화 감지
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      const horizontalPadding = 24 * 2; // 양쪽 패딩
+      const cardGap = 6; // 카드 간 간격
+      const columns = 3; // 항상 3열
+      const availableWidth = window.width - horizontalPadding - (cardGap * (columns - 1));
+      const cardWidth = Math.floor(availableWidth / columns);
+      
+      setScreenData({ width: window.width, cardWidth, columns });
+    });
+
+    return () => subscription?.remove();
+  }, []);
+
   // 초기 로딩 시 전체 멤버 수 조회
   useEffect(() => {
     fetchTotalCount();
@@ -259,7 +283,7 @@ export default function MemberScreen() {
     return (
       <TouchableOpacity
         style={{
-          width: CARD_WIDTH,
+          width: screenData.cardWidth,
           backgroundColor: 'rgba(255, 255, 255, 0.1)',
           borderRadius: 16,
           padding: 16,
@@ -383,7 +407,7 @@ export default function MemberScreen() {
   const SkeletonCard = () => (
     <View
       style={{
-        width: CARD_WIDTH,
+        width: screenData.cardWidth,
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
         borderRadius: 16,
         padding: 16,

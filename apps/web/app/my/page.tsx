@@ -24,7 +24,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 export default function MyPage() {
-  const { isAuthenticated, canAccessAdministrator, logout } = useAuthStore();
+  const { user, canAccessAdministrator, logout } = useAuthStore();
   const [daysCount, setDaysCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const { myProfile, getMyProfile, isLoadingProfile } = useMember();
@@ -46,7 +46,7 @@ export default function MyPage() {
   }, []);
 
   useEffect(() => {
-    if (!isAuthenticated()) return;
+    if (!user) return;
     
     getMyProfile()
       .then((userData: MyProfileResponse) => {
@@ -62,7 +62,7 @@ export default function MyPage() {
       .catch((error: Error) => {
         console.error('Failed to fetch user profile:', error);
       });
-  }, [isAuthenticated, getMyProfile]);
+  }, [user, getMyProfile]);
 
   // Skeleton UI Component
   const SkeletonCard = () => (
@@ -161,7 +161,7 @@ export default function MyPage() {
             <Link href="/profile" className="text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
               <FontAwesomeIcon icon={faUser} className="w-5 h-5" />
             </Link>
-            {isAuthenticated() && (
+            {user && (
               <button 
                 onClick={handleLogout}
                 className="text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
@@ -176,7 +176,7 @@ export default function MyPage() {
 
       {/* Main Content */}
       <main className="px-4 pb-8 flex-1">
-        {isAuthenticated() && myProfile ? (
+        {user && myProfile ? (
           <>
             {/* Personalized Greeting */}
             <div className="mb-8 pt-6">

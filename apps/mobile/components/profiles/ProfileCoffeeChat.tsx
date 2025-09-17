@@ -101,7 +101,7 @@ function CoffeeChatRequestModal({
 type TabType = 'available' | 'sent' | 'received';
 
 export default function ProfileCoffeeChat() {
-  const { isAuthenticated, user } = useAuthStore();
+  const { user } = useAuthStore();
   const { 
     getAvailableMembers, 
     createRequest, 
@@ -313,23 +313,23 @@ export default function ProfileCoffeeChat() {
 
   // 초기 로드
   useEffect(() => {
-    if (isAuthenticated()) {
+    if (user) {
       fetchAvailableUsers(1);
       fetchSent();
       fetchReceived();
     }
-  }, [isAuthenticated, fetchAvailableUsers, fetchSent, fetchReceived]);
+  }, [user, fetchAvailableUsers, fetchSent, fetchReceived]);
 
   // 탭 변경 시 로드
   useEffect(() => {
-    if (activeTab === 'available' && isAuthenticated()) {
+    if (activeTab === 'available' && user) {
       fetchAvailableUsers(1);
-    } else if (activeTab === 'sent' && isAuthenticated()) {
+    } else if (activeTab === 'sent' && user) {
       fetchSent();
-    } else if (activeTab === 'received' && isAuthenticated()) {
+    } else if (activeTab === 'received' && user) {
       fetchReceived();
     }
-  }, [activeTab, isAuthenticated, fetchAvailableUsers, fetchSent, fetchReceived]);
+  }, [activeTab, user, fetchAvailableUsers, fetchSent, fetchReceived]);
 
   // 탭 데이터
   const tabData = [
@@ -596,7 +596,7 @@ export default function ProfileCoffeeChat() {
     );
   };
 
-  if (!isAuthenticated()) {
+  if (!user) {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>로그인이 필요합니다</Text>

@@ -25,7 +25,7 @@ type TabType = 'basic' | 'optional' | 'coffee_chat' | 'post' | 'project';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { user } = useAuthStore();
   const { getMyProfile, updateMyProfile, myProfile, isLoadingProfile } = useMember();
   const { getThumbnailUrl, uploadImage } = useImage();
 
@@ -158,10 +158,10 @@ export default function ProfileScreen() {
 
   // 초기 로드
   useEffect(() => {
-    if (isAuthenticated()) {
+    if (user) {
       loadMyProfile();
     }
-  }, [isAuthenticated, loadMyProfile]);
+  }, [user, loadMyProfile]);
 
 
 
