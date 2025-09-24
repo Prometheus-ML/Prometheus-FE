@@ -44,7 +44,7 @@ export class ProjectApi {
       };
       
       // Admin API 사용 (관리자 전용)
-      const response = await this.apiClient.post<CreateProjectDto>('/admin/projects/', data);
+      const response = await this.apiClient.post<CreateProjectDto>('/admin/projects', data);
       
       // 프로젝트 생성 후 팀원 추가 처리
       if (formData.members && Array.isArray(formData.members) && formData.members.length > 0) {
