@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useProject } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
 import ProjectForm from '../../../components/projects/ProjectForm';
@@ -90,7 +91,7 @@ export default function EditProjectPage() {
   // Check permissions
   if (!canEdit) {
     return (
-      <View className="flex-1 bg-black">
+      <SafeAreaView className="flex-1 bg-black" edges={['top']}>
         <View className="px-4 py-6 border-b border-white/20">
           <View className="flex-row items-center">
             <TouchableOpacity
@@ -125,13 +126,13 @@ export default function EditProjectPage() {
             </View>
           </TouchableOpacity>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (isLoadingProject) {
     return (
-      <View className="flex-1 bg-black">
+      <SafeAreaView className="flex-1 bg-black" edges={['top']}>
         <View className="px-4 py-6 border-b border-white/20">
           <View className="flex-row items-center">
             <TouchableOpacity
@@ -150,13 +151,13 @@ export default function EditProjectPage() {
           <View className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
           <Text className="text-white mt-2">로딩 중...</Text>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (error && !selectedProject) {
     return (
-      <View className="flex-1 bg-black">
+      <SafeAreaView className="flex-1 bg-black" edges={['top']}>
         <View className="px-4 py-6 border-b border-white/20">
           <View className="flex-row items-center">
             <TouchableOpacity
@@ -193,13 +194,13 @@ export default function EditProjectPage() {
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (!selectedProject) {
     return (
-      <View className="flex-1 bg-black">
+      <SafeAreaView className="flex-1 bg-black" edges={['top']}>
         <View className="px-4 py-6 border-b border-white/20">
           <View className="flex-row items-center">
             <TouchableOpacity
@@ -226,12 +227,12 @@ export default function EditProjectPage() {
             </View>
           </TouchableOpacity>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black" edges={['top']}>
       {/* 헤더 */}
       <View className="px-4 py-6 border-b border-white/20">
         <View className="flex-row items-center">
@@ -279,6 +280,6 @@ export default function EditProjectPage() {
           onSubmit={handleSave}
         />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

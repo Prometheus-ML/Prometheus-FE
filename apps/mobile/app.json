@@ -2,15 +2,16 @@
   "expo": {
     "name": "Prometheus",
     "slug": "prometheus",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "prometheus",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "buildNumber": "2",
       "supportsTablet": true,
-      "bundleIdentifier": "com.prometheus.app",
+      "bundleIdentifier": "com.prometheusai.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "CFBundleURLTypes": [
@@ -24,7 +25,16 @@
       }
     },
     "android": {
-      "package": "com.prometheus.app"
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#000000"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.prometheusai.app",
+      "versionCode": 2,
+      "permissions": [
+        "android.permission.INTERNET"
+      ]
     },
     "web": {
       "bundler": "metro"

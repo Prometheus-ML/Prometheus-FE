@@ -35,7 +35,19 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
 
     try {
       console.log('Checking Google Play Services...');
-      await GoogleSignin.hasPlayServices();
+      try {
+        await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      } catch (playServicesError: any) {
+        console.log('Google Play Services check failed:', playServicesError);
+        if (playServicesError.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+          Alert.alert(
+            'Google Play Services 없음',
+            '안드로이드 시뮬레이터에서는 Google Play Services가 없을 수 있습니다.\n\n해결 방법:\n1. Google Play Store가 포함된 시뮬레이터 사용\n2. 실제 안드로이드 기기에서 테스트\n3. 웹 버전 사용'
+          );
+          return;
+        }
+        throw playServicesError;
+      }
       
       console.log('Starting Google Sign-In...');
       const userInfo = await GoogleSignin.signIn();
@@ -64,15 +76,39 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
       }
     } catch (error: any) {
       console.error('Google Auth Error:', error);
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        statusCode: error.statusCode,
+        details: error.details
+      });
+      
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         console.log('Google login cancelled by user');
         // 사용자가 취소한 경우는 알림을 표시하지 않음
       } else if (error.code === statusCodes.IN_PROGRESS) {
         Alert.alert('Google 로그인', 'Google 로그인이 진행 중입니다.');
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        Alert.alert('Google 로그인', 'Google Play 서비스를 사용할 수 없습니다.');
+        Alert.alert(
+          'Google 로그인', 
+          'Google Play 서비스를 사용할 수 없습니다.\n\n해결 방법:\n1. Google Play Store에서 Google Play Services 업데이트\n2. 안드로이드 시뮬레이터의 경우 Google Play Store 앱 설치\n3. 실제 기기에서 테스트'
+        );
+      } else if (error.code === '12501') {
+        Alert.alert('Google 로그인', '로그인이 취소되었습니다.');
+      } else if (error.code === '7') {
+        Alert.alert('Google 로그인', '네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.');
+      } else if (error.code === '10') {
+        Alert.alert('Google 로그인', '개발자 콘솔에서 SHA-1 인증서 지문이 올바르게 설정되었는지 확인해주세요.');
+      } else if (error.code === '12500') {
+        Alert.alert(
+          'Google 로그인 오류',
+          '복구할 수 없는 로그인 오류가 발생했습니다.\n\n해결 방법:\n1. Google Cloud Console에서 OAuth 클라이언트 설정 확인\n2. SHA-1 인증서 지문이 올바르게 등록되었는지 확인\n3. 앱을 완전히 종료하고 다시 시작\n4. Google Play Services 업데이트'
+        );
       } else {
-        Alert.alert('Google 로그인', 'Google 로그인 중 오류가 발생했습니다.');
+        Alert.alert(
+          'Google 로그인 오류', 
+          `오류 코드: ${error.code}\n메시지: ${error.message}\n\n해결 방법:\n1. Google Play Services 업데이트\n2. 앱 재시작\n3. 네트워크 연결 확인`
+        );
       }
     }
   };

@@ -7,12 +7,11 @@ import {
   TouchableOpacity,
   Image,
   Linking,
-  SafeAreaView,
-  StatusBar,
   TextInput,
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MemberDetailResponse } from '@prometheus-fe/types';
 import { useImage, useCoffeeChat } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
@@ -113,8 +112,7 @@ export default function MemberModal({ isOpen, onClose, member }: MemberModalProp
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
-        <StatusBar barStyle="light-content" backgroundColor="#000" />
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }} edges={['top']}>
         
         {/* 헤더 */}
         <View style={{

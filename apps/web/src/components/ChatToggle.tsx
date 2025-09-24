@@ -12,7 +12,7 @@ const ChatToggle: React.FC<ChatToggleProps> = ({ onToggle, isOpen }) => {
   const pathname = usePathname();
   
   // 루트 페이지(/)에서는 ChatToggle을 숨김
-  if (pathname === '/' || pathname === '/auth/login' || pathname === '/auth/google') {
+  if (pathname === '/' || pathname === '/about' || pathname === '/auth/login' || pathname === '/auth/google') {
     return null;
   }
 

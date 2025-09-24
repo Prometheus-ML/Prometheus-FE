@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Text, View, StyleSheet, TouchableOpacity, Dimensions, Alert, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { GoogleLoginButton } from '../../components';
 import { useAuthStore } from '@prometheus-fe/stores';
@@ -56,7 +57,7 @@ export default function Login() {
   }, [error, clearError]);
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* Background with curved shapes */}
       <View style={styles.background}>
         <View style={styles.curvedShape1} />
@@ -94,7 +95,7 @@ export default function Login() {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 

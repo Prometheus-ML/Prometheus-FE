@@ -11,9 +11,9 @@ interface ChatToggleProps {
 
 const ChatToggle: React.FC<ChatToggleProps> = ({ onToggle, isOpen }) => {
   const pathname = usePathname();
-  const { isAuthenticated } = useAuthStore();
+  const { user } = useAuthStore();
   // 루트 페이지(/)에서는 ChatToggle을 숨김
-  if (pathname === '/(auth)/login' || pathname === '/landing' || !isAuthenticated) {
+  if (pathname === '/(auth)/login' || pathname === '/landing' || !user) {
     return null;
   }
 

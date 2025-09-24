@@ -12,6 +12,7 @@ import {
   Dimensions,
   RefreshControl,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useGroup } from '@prometheus-fe/hooks';
@@ -239,7 +240,7 @@ export default function GroupPage() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
@@ -547,7 +548,7 @@ export default function GroupPage() {
         onCancel={() => setShowCreateForm(false)}
         isSubmitting={isCreatingGroup}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 

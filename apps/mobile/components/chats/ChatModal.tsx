@@ -7,9 +7,8 @@ import {
   FlatList, 
   ActivityIndicator,
   StyleSheet,
-  SafeAreaView,
-  StatusBar
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useChat } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
@@ -141,8 +140,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
       presentationStyle="pageSheet"
       onRequestClose={handleClose}
     >
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#1f2937" />
+      <SafeAreaView style={styles.container} edges={['top']}>
         
         {/* 헤더 */}
         <View style={styles.header}>

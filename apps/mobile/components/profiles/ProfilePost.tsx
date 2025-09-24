@@ -14,7 +14,7 @@ const CATEGORIES = [
 ] as const;
 
 export default function ProfilePost() {
-  const { isAuthenticated, user } = useAuthStore();
+  const { user } = useAuthStore();
   const { 
     memberPosts, 
     memberPostsStats, 
@@ -28,12 +28,12 @@ export default function ProfilePost() {
   };
 
   useEffect(() => {
-    if (isAuthenticated() && user?.id) {
+    if (user?.id) {
       fetchMemberPostsHistory(user.id);
     }
   }, [user?.id]);
 
-  if (!isAuthenticated()) {
+  if (!user) {
     return (
       <View className="flex-1 justify-center items-center px-6">
         <View className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 w-full">

@@ -6,12 +6,11 @@ import {
   Image,
   TextInput,
   Alert,
-  SafeAreaView,
-  StatusBar,
   ActivityIndicator,
   StyleSheet,
   FlatList,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useImage, useMember } from '@prometheus-fe/hooks';
@@ -26,7 +25,7 @@ type TabType = 'basic' | 'optional' | 'coffee_chat' | 'post' | 'project';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { user } = useAuthStore();
   const { getMyProfile, updateMyProfile, myProfile, isLoadingProfile } = useMember();
   const { getThumbnailUrl, uploadImage } = useImage();
 
@@ -159,10 +158,10 @@ export default function ProfileScreen() {
 
   // 초기 로드
   useEffect(() => {
-    if (isAuthenticated()) {
+    if (user) {
       loadMyProfile();
     }
-  }, [isAuthenticated, loadMyProfile]);
+  }, [user, loadMyProfile]);
 
 
 
@@ -414,8 +413,7 @@ export default function ProfileScreen() {
 
   if (isLoadingProfile || !myProfile) {
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#000" />
+      <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#8B0000" />
           <Text style={styles.loadingText}>프로필을 불러오는 중...</Text>
@@ -425,8 +423,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#000" />
+    <SafeAreaView style={styles.container} edges={['top']}>
       
       {/* 프로필 헤더 */}
       <ProfileHeader

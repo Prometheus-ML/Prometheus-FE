@@ -132,7 +132,7 @@ export default function HomePage() {
   return (
     <div className="max-w-full mx-auto min-h-screen text-white w-full bg-black">
       {/* Side Navigation */}
-      <div className="fixed right-0 top-1/2 transform -translate-y-1/2 z-50">
+      <div className="hidden md:block fixed right-0 top-1/2 transform -translate-y-1/2 z-50">
         <ul className="space-y-4">
           {sections.map((section) => (
             <div

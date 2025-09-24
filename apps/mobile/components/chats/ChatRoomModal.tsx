@@ -9,12 +9,11 @@ import {
   Image,
   ActivityIndicator,
   StyleSheet,
-  SafeAreaView,
-  StatusBar,
   KeyboardAvoidingView,
   Platform,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useChat } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
@@ -87,8 +86,19 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
           if (isConnected) {
             console.log('Disconnecting from previous room before connecting to new room');
             disconnect();
-            // 연결 해제 완료를 기다림
-            await new Promise(resolve => resolve(undefined));
+            // 실제로 연결 해제 완료를 기다림
+            await new Promise<void>(resolve => {
+              const checkDisconnected = () => {
+                if (!isConnected) {
+                  console.log('Previous connection successfully disconnected');
+                  resolve();
+                } else {
+                  console.log('Waiting for disconnection...');
+                  setTimeout(checkDisconnected, 50);
+                }
+              };
+              checkDisconnected();
+            });
           }
           
           console.log('Calling selectRoom with roomId:', selectedRoom.id);
@@ -288,8 +298,7 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
       presentationStyle="pageSheet"
       onRequestClose={handleClose}
     >
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#1f2937" />
+      <SafeAreaView style={styles.container} edges={['top']}>
         
         {/* 헤더 */}
         <View style={styles.header}>

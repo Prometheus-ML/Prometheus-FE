@@ -51,7 +51,7 @@ export default function EventModal({ visible, onClose, event }: EventModalProps)
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <SafeAreaView className="flex-1 bg-black">
+      <SafeAreaView className="flex-1 bg-black" edges={['top']}>
         {/* 헤더 */}
         <View className="px-4 py-4 border-b border-white/20">
           <View className="flex-row items-center justify-between">
