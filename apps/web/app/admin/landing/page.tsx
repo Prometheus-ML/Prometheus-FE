@@ -8,6 +8,7 @@ import SponsorsTab from '@/src/components/landing/SponsorsTab';
 import HonorHallTab from '@/src/components/landing/HonorHallTab';
 import InterviewsTab from '@/src/components/landing/InterviewsTab';
 import LinksTab from '@/src/components/landing/LinksTab';
+import HistoryTab from '@/src/components/landing/HistoryTab';
 
 
 export default function AdminLandingPage() {
@@ -17,21 +18,24 @@ export default function AdminLandingPage() {
   // Hydration 완료 상태 관리
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'sponsors' | 'honor-hall' | 'interviews' | 'links'>('sponsors');
+  const [activeTab, setActiveTab] = useState<'sponsors' | 'honor-hall' | 'interviews' | 'links' | 'history'>('sponsors');
   
   const {
     adminSponsors,
     adminHonorHall,
     adminInterviews,
     adminLinks,
+    adminHistories,
     isLoadingAdminSponsors,
     isLoadingAdminHonorHall,
     isLoadingAdminInterviews,
     isLoadingAdminLinks,
+    isLoadingAdminHistories,
     getAdminSponsors,
     getAdminHonorHall,
     getAdminInterviews,
     getAdminLinks,
+    getAdminHistories,
   } = useLanding();
 
   // Hydration 완료 감지
@@ -68,12 +72,14 @@ export default function AdminLandingPage() {
         await getAdminInterviews();
       } else if (activeTab === 'links') {
         await getAdminLinks();
+      } else if (activeTab === 'history') {
+        await getAdminHistories();
       }
     } catch (error) {
       console.error('Failed to load data:', error);
       setError('데이터를 불러오는 중 오류가 발생했습니다.');
     }
-  }, [activeTab, getAdminSponsors, getAdminHonorHall, getAdminInterviews, getAdminLinks]);
+  }, [activeTab, getAdminSponsors, getAdminHonorHall, getAdminInterviews, getAdminLinks, getAdminHistories]);
 
   useEffect(() => {
     if (!isMounted || !isAuthenticated() || !canAccessAdministrator()) return;
@@ -92,8 +98,8 @@ export default function AdminLandingPage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Landing 관리</h1>
-          <p className="text-sm text-gray-300 mt-1">프로메테우스 Landing 페이지 관리</p>
+          <h1 className="text-2xl font-bold text-white">랜딩 관리</h1>
+          <p className="text-sm text-gray-300 mt-1">프로메테우스 랜딩 페이지 관리</p>
         </div>
       </div>
 
@@ -140,6 +146,16 @@ export default function AdminLandingPage() {
           >
             링크 관리
           </button>
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`px-4 py-2 rounded-md font-medium transition-colors ${
+              activeTab === 'history'
+                ? 'bg-red-500 text-white'
+                : 'text-white hover:bg-white/10'
+            }`}
+          >
+            히스토리 관리
+          </button>
         </div>
       </GlassCard>
 
@@ -182,6 +198,15 @@ export default function AdminLandingPage() {
         <LinksTab
           isLoading={isLoadingAdminLinks}
           links={adminLinks}
+          onRefresh={loadData}
+        />
+      )}
+
+      {/* 히스토리 관리 탭 */}
+      {activeTab === 'history' && (
+        <HistoryTab
+          isLoading={isLoadingAdminHistories}
+          histories={adminHistories}
           onRefresh={loadData}
         />
       )}
