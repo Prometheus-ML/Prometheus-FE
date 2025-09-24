@@ -1,0 +1,47 @@
+---
+alwaysApply: false
+---
+# Development Rules & Best Practices
+
+## Code Quality Standards
+- Write clean, readable, and maintainable code
+- Follow TypeScript best practices and use strict mode
+- Use meaningful variable and function names
+- Add proper JSDoc comments for complex functions
+- Keep functions small and focused on single responsibility
+
+## React & Next.js Guidelines
+- Use functional components with hooks
+- Implement proper error boundaries
+- Optimize performance with React.memo, useMemo, and useCallback when appropriate
+- Follow Next.js 15 App Router conventions
+- Use proper TypeScript interfaces for props and state
+
+## State Management
+- Use Zustand for global state management
+- Keep local state in components when possible
+- Avoid prop drilling by using context or stores appropriately
+
+## Styling & UI
+- Use Tailwind CSS utility classes consistently
+- Follow mobile-first responsive design principles
+- Maintain consistent spacing and typography scales
+- Ensure accessibility standards are met
+
+## Testing & Debugging
+- Write unit tests for critical business logic
+- Use React Testing Library for component testing
+- Implement proper error handling and logging
+- Test on multiple devices and browsers
+
+## Performance & Optimization
+- Implement code splitting and lazy loading
+- Optimize images and assets
+- Use proper caching strategies
+- Monitor bundle size and performance metrics
+
+## Git & Collaboration
+- Write clear, descriptive commit messages
+- Use conventional commit format when possible
+- Create feature branches for new development
+- Review code before merging to main branch

@@ -60,7 +60,6 @@ yarn-error.log*
 # IDE / Editor configs
 .vscode/
 .idea/
-.cursor/
 
 .watchmanconfig
 
