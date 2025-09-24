@@ -3,11 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import ProjectForm from '@/src/components/ProjectForm';
+import ProjectForm from '@/src/components/project/ProjectForm';
 import { useProject } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
-import GlassCard from '../../../../src/components/GlassCard';
-import RedButton from '../../../../src/components/RedButton';
+import GlassCard from '@/src/components/GlassCard';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';

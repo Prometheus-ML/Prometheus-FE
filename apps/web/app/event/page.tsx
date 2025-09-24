@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { useEvent, useMyAttendance } from '@prometheus-fe/hooks';
 import { Event, EventFilter, AttendanceStatus, MyAttendance } from '@prometheus-fe/types';
 import { useAuthStore } from '@prometheus-fe/stores';
-import GlassCard from '../../src/components/GlassCard';
-import RedButton from '../../src/components/RedButton';
-import EventModal from '../../src/components/EventModal';
-import EventListModal from '../../src/components/EventListModal';
+import GlassCard from '@/src/components/GlassCard';
+import RedButton from '@/src/components/RedButton';
+import EventModal from '@/src/components/event/EventModal';
+import EventListModal from '@/src/components/event/EventListModal';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 

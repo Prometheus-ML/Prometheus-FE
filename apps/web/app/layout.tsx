@@ -1,7 +1,7 @@
 import React from 'react';
-import { AppProviders } from '../src/context/AppProviders';
-import Navigation from '../src/components/Navigation';
-import ChatToggleWrapper from '../src/components/ChatToggleWrapper';
+import { AppProviders } from '@/src/context/AppProviders';
+import Navigation from '@/src/components/Navigation';
+import ChatToggleWrapper from '@/src/components/chat/ChatToggleWrapper';
 import './globals.css';
 
 export const metadata = {

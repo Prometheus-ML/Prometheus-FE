@@ -3,8 +3,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useGroup } from '@prometheus-fe/hooks';
-import GlassCard from '../../../src/components/GlassCard';
-import RedButton from '../../../src/components/RedButton';
+import GlassCard from '@/src/components/GlassCard';
+import RedButton from '@/src/components/RedButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faUsers, faUserGraduate, faCheck, faTimes, faEye, faHeart, faSearch, faUndo } from '@fortawesome/free-solid-svg-icons';
 

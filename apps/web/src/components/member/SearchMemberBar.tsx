@@ -4,9 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useMember } from '@prometheus-fe/hooks';
 import { MemberSummaryResponse } from '@prometheus-fe/types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faSearch
-} from '@fortawesome/free-solid-svg-icons';
+import { faSearch } from '@fortawesome/free-solid-svg-icons';
 
 // 기존 SearchMemberBar를 MemberSelector로 변경
 interface MemberSelectorProps {

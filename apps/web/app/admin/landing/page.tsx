@@ -14,8 +14,8 @@ import {
   LandingInterviewCreateRequest,
   LandingLinkCreateRequest
 } from '@prometheus-fe/types';
-import GlassCard from '../../../src/components/GlassCard';
-import RedButton from '../../../src/components/RedButton';
+import GlassCard from '@/src/components/GlassCard';
+import RedButton from '@/src/components/RedButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faEdit, faTrash, faUpload, faTimes, faBuilding, faHandshake, faCalendarAlt, faStickyNote, faStar, faLink, faCrown } from '@fortawesome/free-solid-svg-icons';
 import Image from 'next/image';

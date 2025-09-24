@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useRouter } from 'next/navigation';
-import GlassCard from '../../src/components/GlassCard';
-import RedButton from '../../src/components/RedButton';
+import GlassCard from '@/src/components/GlassCard';
 
 // 임시 통계 데이터
 const statsData = {

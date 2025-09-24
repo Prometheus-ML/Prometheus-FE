@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MemberSelector } from './SearchMemberBar';
+import { MemberSelector } from '@/src/components/member/SearchMemberBar';
 import { MemberSummaryResponse } from '@prometheus-fe/types';
-import Portal from './Portal';
+import Portal from '@/src/components/Portal';
 
 interface Member {
   id: string;

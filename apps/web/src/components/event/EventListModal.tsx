@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Event, EventFilter } from '@prometheus-fe/types';
 import { useEvent } from '@prometheus-fe/hooks';
-import Portal from './Portal';
+import Portal from '@/src/components/Portal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faCalendarAlt, 

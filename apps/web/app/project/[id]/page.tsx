@@ -6,10 +6,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useProject, useImage, useMember } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
-import AddMemberModal from '../../../src/components/AddMemberModal';
-import GlassCard from '../../../src/components/GlassCard';
-import RedButton from '../../../src/components/RedButton';
-import Portal from '../../../src/components/Portal';
+import AddMemberModal from '@/src/components/member/AddMemberModal';
+import GlassCard from '@/src/components/GlassCard';
+import RedButton from '@/src/components/RedButton';
+import Portal from '@/src/components/Portal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faEdit, 

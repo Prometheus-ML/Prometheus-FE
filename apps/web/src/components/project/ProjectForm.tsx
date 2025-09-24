@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useImage, useProject } from '@prometheus-fe/hooks';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolder, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
-import { SearchMemberBar } from './SearchMemberBar';
+import { SearchMemberBar } from '../member/SearchMemberBar';
 import { MemberSummaryResponse } from '@prometheus-fe/types';
 
 interface ProjectMember {

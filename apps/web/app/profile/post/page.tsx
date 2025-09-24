@@ -2,8 +2,8 @@
 
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useCommunity } from '@prometheus-fe/hooks';
-import GlassCard from '../../../src/components/GlassCard';
-import PostModal from '../../../src/components/PostModal';
+import GlassCard from '@/src/components/GlassCard';
+import PostModal from '@/src/components/community/PostModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faComments } from '@fortawesome/free-solid-svg-icons';
 

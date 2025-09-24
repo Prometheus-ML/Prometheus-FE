@@ -16,7 +16,7 @@ import {
   faPaperPlane
 } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
-import Portal from './Portal';
+import Portal from '@/src/components/Portal';
 
 interface PostModalProps {
   postId: number | null;

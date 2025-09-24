@@ -4,11 +4,10 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useCommunity } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
-import PostModal from '../../src/components/PostModal';
-import PostForm from '../../src/components/PostForm';
-import RedButton from '../../src/components/RedButton';
-import GlassCard from '../../src/components/GlassCard';
-import { QueryBar } from '../../src/components/QueryBar';
+import PostModal from '@/src/components/community/PostModal';
+import PostForm from '@/src/components/community/PostForm';
+import GlassCard from '@/src/components/GlassCard';
+import { QueryBar } from '@/src/components/QueryBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faTrash, faUser, faCalendarAlt, faComments, faSearch, faUndo, faArrowLeft, faHeart, faImage } from '@fortawesome/free-solid-svg-icons';
 

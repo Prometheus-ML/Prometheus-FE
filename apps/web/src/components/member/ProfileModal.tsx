@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useImage, useCoffeeChat, useProject } from '@prometheus-fe/hooks';
-import RedButton from './RedButton';
+import RedButton from '@/src/components/RedButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faCoffee,
@@ -20,7 +20,7 @@ import {
   faFigma
 } from '@fortawesome/free-brands-svg-icons';
 import { MemberDetailResponse, Project } from '@prometheus-fe/types';
-import Portal from './Portal';
+import Portal from '@/src/components/Portal';
 import { useAuthStore } from '@prometheus-fe/stores';
 
 interface ProfileModalProps {
