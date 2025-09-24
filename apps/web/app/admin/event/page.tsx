@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useEvent, useEventDetail, useAttendance, useAttendanceCodeManagement, useAttendanceManagement } from '@prometheus-fe/hooks';
 import { Event, EventFormData, AttendanceFormData, EventType, AttendanceStatus, AttendanceCode } from '@prometheus-fe/types';
-import GlassCard from '../../../src/components/GlassCard';
-import RedButton from '../../../src/components/RedButton';
-import EventModal from '../../../src/components/EventModal';
-import AttendanceModal from '../../../src/components/AttendanceModal';
-import Portal from '../../../src/components/Portal';
+import GlassCard from '@/src/components/GlassCard';
+import RedButton from '@/src/components/RedButton';
+import EventModal from '@/src/components/event/EventModal';
+import AttendanceModal from '@/src/components/event/AttendanceModal';
+import Portal from '@/src/components/Portal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faPlus, 

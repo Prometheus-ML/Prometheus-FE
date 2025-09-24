@@ -5,8 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useProject, useImage } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
-import GlassCard from '../../../src/components/GlassCard';
-import RedButton from '../../../src/components/RedButton';
+import GlassCard from '@/src/components/GlassCard';
+import RedButton from '@/src/components/RedButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faUndo, faHeart } from '@fortawesome/free-solid-svg-icons';
 

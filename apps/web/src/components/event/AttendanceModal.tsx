@@ -3,15 +3,13 @@
 import { useState, useEffect } from 'react';
 import { Event, AttendanceStatus, MemberSummaryResponse } from '@prometheus-fe/types';
 import { useEvent, useMyAttendance, useAttendanceCodeManagement, useAttendance, useAttendanceManagement } from '@prometheus-fe/hooks';
-import GlassCard from './GlassCard';
-import RedButton from './RedButton';
-import Portal from './Portal';
-import { MemberSelector } from './SearchMemberBar';
+import Portal from '@/src/components/Portal';
+import { MemberSelector } from '@/src/components/member/SearchMemberBar';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faCalendarAlt, 
-  faCheck, 
+  faCheck,
   faTimes,
   faKey,
   faQrcode,

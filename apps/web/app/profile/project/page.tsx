@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useProject } from '@prometheus-fe/hooks';
-import GlassCard from '../../../src/components/GlassCard';
+import GlassCard from '@/src/components/GlassCard';
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 

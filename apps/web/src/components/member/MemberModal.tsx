@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useImage } from '@prometheus-fe/hooks';
 import type { MemberResponse, MemberCreateRequest, MemberUpdateRequest, ImageCategory } from '@prometheus-fe/types';
-import Portal from './Portal';
+import Portal from '@/src/components/Portal';
 
 interface MemberModalProps {
   isOpen: boolean;

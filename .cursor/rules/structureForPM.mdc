@@ -1,0 +1,304 @@
+---
+alwaysApply: false
+---
+
+# 🏗️ Prometheus Project Structure & Architecture Rules
+
+## 📋 Project Overview
+
+Prometheus는 다중 프로젝트로 구성된 모노레포 구조입니다:
+
+- **Prometheus-FE**: React/Next.js 기반 프론트엔드 (모노레포)
+- **Prometheus-Web-API**: Python FastAPI 기반 백엔드
+- **Prometheus-Web-Front**: Nuxt.js 기반 레거시 프론트엔드
+- **yinsh-fe**: 게임 앱 프로젝트 (React Native + Next.js)
+
+## 🎯 Core Architecture Principles
+
+### 1. 단방향 의존성 (Unidirectional Dependency)
+```
+Pages/Components → Hooks → API → DTOs
+       ↓            ↓      ↓     ↓
+    Types    ←   Types ← Types ← Types
+```
+
+### 2. 계층별 책임 분리 (Layer Separation of Concerns)
+
+#### 📱 UI Layer (Pages/Components)
+- **책임**: 사용자 인터페이스 렌더링, 사용자 상호작용 처리
+- **허용 Import**: `@prometheus-fe/hooks`, `@prometheus-fe/types`, `@prometheus-fe/stores`
+- **금지 Import**: `@prometheus-fe/api`, DTO 직접 import
+
+#### 🎣 Business Logic Layer (Hooks)
+- **책임**: 비즈니스 로직 처리, 상태 관리 (로컬), API 호출 및 에러 처리
+- **허용 Import**: `@prometheus-fe/api`, `@prometheus-fe/types`, `@prometheus-fe/stores`
+- **금지 Import**: DTO 직접 import (API를 통해서만 접근)
+
+#### 📡 Data Access Layer (API)
+- **책임**: HTTP 요청/응답 처리, 데이터 변환 (DTO ↔ Domain), 에러 핸들링
+- **허용 Import**: `@prometheus-fe/types`, DTO files
+- **금지 Import**: Hooks, Pages, Stores
+
+#### 📝 DTO Layer (Data Transfer Objects)
+- **책임**: API 요청/응답 타입 정의
+- **허용 Import**: `@prometheus-fe/types`
+- **금지 Import**: API, Hooks, Pages, Stores
+
+#### 🔧 Types Layer (Domain Types)
+- **책임**: 도메인 객체 타입 정의
+- **허용 Import**: 없음 (완전히 독립적)
+- **금지 Import**: 모든 다른 레이어
+
+#### 🏪 Stores Layer (Global State)
+- **책임**: 전역 상태 관리, 상태 지속성
+- **허용 Import**: `@prometheus-fe/types`
+- **금지 Import**: API, Hooks, Pages (단, Pages에서는 Stores 사용 가능)
+
+## 📁 File Structure & Naming Conventions
+
+### Prometheus-FE Structure
+```
+Prometheus-FE/
+├── apps/
+│   ├── web/                    # Next.js 웹 앱
+│   │   ├── app/               # App Router 페이지
+│   │   │   ├── admin/         # 관리자 페이지
+│   │   │   ├── auth/          # 인증 페이지
+│   │   │   ├── project/       # 프로젝트 관리 페이지
+│   │   │   └── layout.tsx     # 루트 레이아웃
+│   │   └── src/
+│   │       └── components/    # 재사용 가능한 컴포넌트
+│   └── mobile/                # React Native 모바일 앱
+├── packages/
+│   ├── types/                 # 🔧 Domain Types Layer
+│   │   └── src/
+│   │       ├── Project.d.ts   # 프로젝트 도메인 타입
+│   │       ├── User.d.ts      # 사용자 도메인 타입
+│   │       └── index.ts       # 타입 export
+│   ├── api/                   # 📡 Data Access Layer
+│   │   └── src/
+│   │       ├── projectApi.ts  # 프로젝트 API 클래스
+│   │       ├── userApi.ts     # 사용자 API 클래스
+│   │       ├── dto/           # 📝 DTO Layer
+│   │       │   ├── project.dto.ts  # 프로젝트 요청/응답 타입
+│   │       │   └── user.dto.ts     # 사용자 요청/응답 타입
+│   │       └── index.ts       # API export
+│   ├── hooks/                 # 🎣 Business Logic Layer
+│   │   └── src/
+│   │       ├── useProject.ts  # 프로젝트 비즈니스 로직
+│   │       ├── useUser.ts     # 사용자 비즈니스 로직
+│   │       └── index.ts       # Hook export
+│   ├── stores/                # 🏪 Global State Layer
+│   │   └── src/
+│   │       ├── authStore.ts   # 인증 전역 상태
+│   │       ├── userStore.ts   # 사용자 전역 상태
+│   │       └── index.ts       # Store export
+│   └── context/               # React Context Providers
+│       └── src/
+│           ├── ApiProvider.tsx # API 컨텍스트
+│           └── index.ts       # Context export
+```
+
+### Naming Conventions
+
+#### 파일명 규칙
+- **Types**: `Project.d.ts`, `User.d.ts`, `Auth.d.ts`
+- **DTOs**: `project.dto.ts`, `user.dto.ts`, `auth.dto.ts`
+- **APIs**: `projectApi.ts`, `userApi.ts`, `authApi.ts`
+- **Hooks**: `useProject.ts`, `useUser.ts`, `useAuth.ts`
+- **Stores**: `projectStore.ts`, `userStore.ts`, `authStore.ts`
+- **Pages**: `page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`
+- **Components**: `ProjectForm.tsx`, `UserModal.tsx`, `AuthButton.tsx`
+
+#### 인터페이스/타입명 규칙
+- **Domain Types**: `Project`, `User`, `Auth`
+- **Request DTOs**: `CreateProjectRequest`, `UpdateUserRequest`, `LoginRequest`
+- **Response DTOs**: `CreateProjectDto`, `GetProjectsDto`, `LoginDto`
+- **Hook 반환 타입**: `useProject()`, `useUser()`, `useAuth()`
+- **Store 타입**: `AuthStore`, `UserStore`
+
+## 🚫 Import Restrictions Matrix
+
+| Layer | 허용되는 Import | 금지되는 Import |
+|-------|----------------|-----------------|
+| **Pages/Components** | `@prometheus-fe/hooks`<br/>`@prometheus-fe/types`<br/>`@prometheus-fe/stores` | `@prometheus-fe/api`<br/>DTO 직접 import |
+| **Hooks** | `@prometheus-fe/api`<br/>`@prometheus-fe/types`<br/>`@prometheus-fe/stores` | DTO 직접 import<br/>(API를 통해서만 접근) |
+| **API** | `@prometheus-fe/types`<br/>DTO files | Hooks, Pages, Stores |
+| **DTOs** | `@prometheus-fe/types` | API, Hooks, Pages, Stores |
+| **Types** | 없음 (독립적) | 모든 다른 레이어 |
+| **Stores** | `@prometheus-fe/types` | API, Hooks, Pages |
+
+## 🔄 Data Flow Rules
+
+### 1. 생성 흐름 (Create Flow)
+```
+Form Data (UI) → Hook (validation) → API (transform) → DTO → Backend
+```
+
+### 2. 조회 흐름 (Read Flow)
+```
+Backend → DTO → API (transform) → Domain Type → Hook (cache) → UI
+```
+
+### 3. 수정 흐름 (Update Flow)
+```
+Form Data (UI) → Hook (merge) → API (transform) → DTO → Backend
+                     ↓
+                Local State Update
+```
+
+### 4. 에러 처리 흐름 (Error Flow)
+```
+API Error → Hook (handle/transform) → UI (display)
+```
+
+## 📝 Code Examples
+
+### ✅ 올바른 구현 예시
+
+#### Pages/Components Layer
+```typescript
+// ✅ 올바른 예시: Pages에서 Hook만 사용
+import { useProject } from '@prometheus-fe/hooks';
+import { Project } from '@prometheus-fe/types';
+
+function ProjectPage() {
+  const { projects, fetchProjects, isLoading } = useProject();
+  
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+  
+  return (
+    <div>
+      {isLoading ? <Loading /> : projects.map(project => ...)}
+    </div>
+  );
+}
+```
+
+#### Hooks Layer
+```typescript
+// ✅ 올바른 예시: Hook에서 API 사용
+import { useApi } from '@prometheus-fe/context';
+import { Project } from '@prometheus-fe/types';
+import { useState, useCallback } from 'react';
+
+export function useProject() {
+  const { project } = useApi();
+  const [projects, setProjects] = useState<Project[]>([]);
+  
+  const fetchProjects = useCallback(async (params?: any) => {
+    try {
+      const data = await project.list(params); // API를 통해서만
+      setProjects(data.projects || []);
+    } catch (error) {
+      console.error('프로젝트 조회 실패:', error);
+      throw error;
+    }
+  }, [project]);
+  
+  return { projects, fetchProjects };
+}
+```
+
+#### API Layer
+```typescript
+// ✅ 올바른 예시: API에서 DTO와 Domain Type 사용
+import { Project } from '@prometheus-fe/types';
+import { CreateProjectRequest, CreateProjectDto } from './dto/project.dto';
+import { ApiClient } from './apiClient';
+
+export class ProjectApi {
+  private apiClient: ApiClient;
+  
+  async create(formData: any): Promise<CreateProjectDto> {
+    // 데이터 변환 로직
+    const data: CreateProjectRequest = {
+      title: formData.title.trim(),
+      // ... 기타 변환 로직
+    };
+    
+    const response = await this.apiClient.post<CreateProjectDto>('/admin/projects/', data);
+    return response;
+  }
+}
+```
+
+### ❌ 잘못된 구현 예시
+
+```typescript
+// ❌ 잘못된 예시: Page에서 직접 API 사용
+import { projectApi } from '@prometheus-fe/api'; // 금지!
+import { CreateProjectRequest } from '@prometheus-fe/api/dto'; // 금지!
+
+function ProjectPage() {
+  const handleCreate = async (data: CreateProjectRequest) => {
+    await projectApi.create(data); // 금지! Hook을 통해야 함
+  };
+}
+```
+
+```typescript
+// ❌ 잘못된 예시: Hook에서 직접 DTO import
+import { CreateProjectRequest } from '@prometheus-fe/api/dto'; // 금지!
+
+export function useProject() {
+  const createProject = async (data: CreateProjectRequest) => {
+    // 금지! API를 통해서만 DTO 사용
+  };
+}
+```
+
+## 🧪 Testing Rules
+
+### 단위 테스트 범위
+- **Components**: UI 상호작용 및 렌더링 테스트
+- **Hooks**: 비즈니스 로직 및 상태 관리 테스트
+- **API**: HTTP 요청/응답 및 데이터 변환 테스트
+- **Stores**: 전역 상태 관리 테스트
+
+### 모킹 규칙
+- **Pages/Components**: Hooks 모킹
+- **Hooks**: API 모킹
+- **API**: HTTP 클라이언트 모킹
+- **Stores**: 독립적 테스트 (모킹 최소화)
+
+## 🚀 Development Workflow
+
+### 새 기능 개발 순서
+1. **Types 정의**: 도메인 타입 먼저 정의
+2. **DTO 정의**: API 요청/응답 타입 정의
+3. **API 구현**: HTTP 통신 로직 구현
+4. **Hook 구현**: 비즈니스 로직 구현
+5. **UI 구현**: 컴포넌트 및 페이지 구현
+
+### 코드 리뷰 체크리스트
+- [ ] Import 제한 룰 준수 여부
+- [ ] 계층별 책임 분리 준수 여부
+- [ ] 네이밍 컨벤션 준수 여부
+- [ ] 단방향 의존성 준수 여부
+- [ ] 적절한 에러 처리 여부
+
+## 📈 Benefits of This Architecture
+
+1. **명확한 책임 분리**: 각 계층이 고유한 역할만 수행
+2. **높은 재사용성**: 비즈니스 로직이 UI에 독립적
+3. **쉬운 테스트**: 각 계층을 독립적으로 테스트 가능
+4. **유지보수성 향상**: 변경 사항의 영향 범위 최소화
+5. **개발 효율성**: 개발자가 어디에 무엇을 구현해야 할지 명확
+6. **팀 협업 향상**: 일관된 구조로 코드 이해도 증대
+
+## 🔧 Migration Guidelines
+
+기존 코드를 이 구조로 마이그레이션할 때:
+
+1. **Types 먼저 분리**: 도메인 타입을 독립적으로 분리
+2. **API 계층 정리**: DTO와 API 로직 분리
+3. **Hook 리팩토링**: 비즈니스 로직을 Hook으로 이동
+4. **Component 정리**: UI 로직만 남기고 비즈니스 로직 제거
+5. **Import 정리**: 계층별 Import 제한 적용
+
+---
+
+*이 문서는 Prometheus 프로젝트의 코드 품질과 유지보수성을 향상시키기 위한 가이드라인입니다. 새로운 요구사항이나 기술 변화에 따라 지속적으로 업데이트됩니다.*

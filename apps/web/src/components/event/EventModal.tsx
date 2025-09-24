@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { Event, EventFormData, EventType } from '@prometheus-fe/types';
-import GlassCard from './GlassCard';
-import RedButton from './RedButton';
-import Portal from './Portal';
+import Portal from '@/src/components/Portal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faEdit, 

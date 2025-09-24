@@ -1,0 +1,46 @@
+---
+description: Code dependency hierarchy and separation of concerns rules
+globs: ["**/*.{ts,tsx,js,jsx}"]
+alwaysApply: false
+---
+
+# Code Dependency Hierarchy Rules
+
+## Dependency Flow (Bottom-up)
+```
+types → api → hooks → components/pages
+```
+
+## Allowed Dependencies
+
+### 1. types/
+- **Can import from**: Nothing (base layer)
+- **Can be imported by**: All layers (types, api, hooks, components, pages)
+
+### 2. api/
+- **Can import from**: types only
+- **Can be imported by**: hooks only
+
+### 3. hooks/
+- **Can import from**: api, types only
+- **Can be imported by**: components, pages only
+
+### 4. components/ & pages/
+- **Can import from**: hooks, types only
+- **Can be imported by**: Other components/pages, hooks
+
+## Forbidden Dependencies
+
+❌ **NEVER do these:**
+- components/pages → api (use hooks instead)
+- hooks → components (creates circular dependency)
+- api → hooks (violates layer separation)
+- api → components (violates layer separation)
+
+## Benefits
+- Clear separation of concerns
+- Easier testing and maintenance
+- Predictable data flow
+- Reusable business logic
+- Clean architecture principles
+

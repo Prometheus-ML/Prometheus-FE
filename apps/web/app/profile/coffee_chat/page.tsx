@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useImage, useCoffeeChat } from '@prometheus-fe/hooks';
-import GlassCard from '../../../src/components/GlassCard';
-import RedButton from '../../../src/components/RedButton';
-import TabBar from '../../../src/components/TabBar';
+import GlassCard from '@/src/components/GlassCard';
+import RedButton from '@/src/components/RedButton';
+import TabBar from '@/src/components/TabBar';
 import { 
   CoffeeChatMember,
   CoffeeChatRequest,

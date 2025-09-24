@@ -3,9 +3,9 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useImage, useMember } from '@prometheus-fe/hooks';
-import { MemberSelector } from '../../../src/components/SearchMemberBar';
-import GlassCard from '../../../src/components/GlassCard';
-import RedButton from '../../../src/components/RedButton';
+import { MemberSelector } from '@/src/components/member/SearchMemberBar';
+import GlassCard from '@/src/components/GlassCard';
+import RedButton from '@/src/components/RedButton';
 import { 
   MemberResponse, 
   MemberSummaryResponse, 

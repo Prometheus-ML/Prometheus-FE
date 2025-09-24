@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useGroup } from '@prometheus-fe/hooks';
 import { useImage } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
-import GlassCard from './GlassCard';
+import GlassCard from '@/src/components/GlassCard';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faUsers, 

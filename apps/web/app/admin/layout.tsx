@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import GlassCard from '../../src/components/GlassCard';
+import GlassCard from '@/src/components/GlassCard';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faUsers, 

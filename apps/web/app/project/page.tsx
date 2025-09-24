@@ -6,9 +6,9 @@ import { useProject } from '@prometheus-fe/hooks';
 import { useImage } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { Project } from '@prometheus-fe/types';
-import GlassCard from '../../src/components/GlassCard';
-import RedButton from '../../src/components/RedButton';
-import QueryBar from '../../src/components/QueryBar';
+import GlassCard from '@/src/components/GlassCard';
+import RedButton from '@/src/components/RedButton';
+import QueryBar from '@/src/components/QueryBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faFolder, 

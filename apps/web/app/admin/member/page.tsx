@@ -13,10 +13,10 @@ import {
   MemberCreateRequest,
   MemberUpdateRequest
 } from '@prometheus-fe/types';
-import MemberModal from '../../../src/components/MemberModal';
-import GlassCard from '../../../src/components/GlassCard';
-import RedButton from '../../../src/components/RedButton';
-import QueryBar from '../../../src/components/QueryBar';
+import MemberModal from '@/src/components/member/MemberModal';
+import GlassCard from '@/src/components/GlassCard';
+import RedButton from '@/src/components/RedButton';
+import QueryBar from '@/src/components/QueryBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faUndo, 

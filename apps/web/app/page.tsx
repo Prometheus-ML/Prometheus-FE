@@ -10,7 +10,7 @@ import {
   faDiscord 
 } from '@fortawesome/free-brands-svg-icons';
 import { faEnvelope, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import RedButton from '../src/components/RedButton';
+import RedButton from '@/src/components/RedButton';
 import { useProject, useLanding, useImage } from '@prometheus-fe/hooks';
 import { Project } from '@prometheus-fe/types';
 
