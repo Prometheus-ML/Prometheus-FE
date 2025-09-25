@@ -378,7 +378,7 @@ export default function AdminProjectPage() {
                       상세보기
                     </Link>
                     <Link 
-                      href={`/admin/project/${project.id}/edit`}
+                      href={`/project/${project.id}/edit`}
                       className="text-green-400 hover:text-green-300 text-sm font-medium"
                     >
                       편집
