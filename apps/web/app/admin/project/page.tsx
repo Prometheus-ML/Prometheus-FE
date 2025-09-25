@@ -15,6 +15,7 @@ export default function AdminProjectPage() {
     projects, 
     isLoadingProjects, 
     fetchProjectsForAdmin, 
+    deleteProjectForAdmin,
     searchQuery, 
     statusFilter, 
     setSearch, 
@@ -378,19 +379,46 @@ export default function AdminProjectPage() {
                       상세보기
                     </Link>
                     <Link 
-                      href={`/admin/project/${project.id}/edit`}
+                      href={`/project/${project.id}/edit`}
                       className="text-green-400 hover:text-green-300 text-sm font-medium"
                     >
                       편집
                     </Link>
                     <button
                       className="text-red-400 hover:text-red-300 text-sm font-medium"
-                      onClick={() => {
-                        if (confirm('정말로 이 프로젝트를 삭제하시겠습니까?')) {
-                          // TODO: 프로젝트 삭제 기능 구현
-                          alert('삭제 기능은 곧 구현될 예정입니다.');
+                      onClick={async () => {
+                        if (confirm('정말로 이 프로젝트를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없으며, 프로젝트와 관련된 모든 데이터(멤버, 좋아요 등)가 함께 삭제됩니다.')) {
+                          try {
+                            setIsLocalLoading(true);
+                            setError('');
+                            
+                            await deleteProjectForAdmin(project.id);
+                            
+                            // 삭제 성공 후 목록 새로고침
+                            await fetchProjectsForAdmin();
+                            
+                            alert('프로젝트가 성공적으로 삭제되었습니다.');
+                          } catch (err) {
+                            console.error('프로젝트 삭제 실패:', err);
+                            if (err instanceof Error) {
+                              if (err.message.includes('403')) {
+                                setError('권한이 없습니다.');
+                              } else if (err.message.includes('404')) {
+                                setError('프로젝트를 찾을 수 없습니다.');
+                              } else if (err.message.includes('500')) {
+                                setError('서버 내부 오류가 발생했습니다.');
+                              } else {
+                                setError(`프로젝트 삭제 중 오류가 발생했습니다: ${err.message}`);
+                              }
+                            } else {
+                              setError('프로젝트 삭제 중 오류가 발생했습니다.');
+                            }
+                          } finally {
+                            setIsLocalLoading(false);
+                          }
                         }
                       }}
+                      disabled={isLocalLoading || isLoadingProjects}
                     >
                       삭제
                     </button>
