@@ -31,12 +31,13 @@ export default function AboutPage() {
     historyItems.sort((a, b) => b.date.getTime() - a.date.getTime());
 
     return (
-      <div className="space-y-8">
+      <div className="space-y-6 md:space-y-8">
         {historyItems.map((item) => (
-          <div key={item.id} className="flex items-start space-x-6">
-            <div className="flex-shrink-0 w-24 text-center">
-              <div className="w-3 h-3 bg-[#B91C1C] rounded-full mx-auto mb-2"></div>
-              <p className="text-sm text-gray-400">
+          <div key={item.id} className="flex flex-col md:flex-row md:items-start space-y-4 md:space-y-0 md:space-x-6">
+            {/* 날짜 부분 - 모바일에서는 상단, 데스크톱에서는 좌측 */}
+            <div className="flex-shrink-0 w-full md:w-32 text-center md:text-center">
+              <div className="w-3 h-3 bg-[#B91C1C] rounded-full mx-auto mb-2 md:mb-3"></div>
+              <p className="text-xs md:text-sm text-gray-400 leading-relaxed">
                 {item.date.toLocaleDateString('ko-KR', {
                   year: 'numeric',
                   month: 'long',
@@ -44,17 +45,19 @@ export default function AboutPage() {
                 })}
               </p>
             </div>
-            <div className="flex-1 bg-white/10 rounded-lg p-4 border border-white/20">
-              <div className="flex items-center gap-2 mb-2">
-                <h3 className="font-semibold text-lg text-white">{item.title}</h3>
-                {item.gen && (
-                  <span className="px-2 py-1 text-xs bg-gray-500/20 text-gray-300 rounded">
+            
+            {/* 내용 부분 */}
+            <div className="flex-1 bg-white/10 rounded-lg p-3 md:p-4 border border-white/20">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                <h3 className="font-semibold text-base md:text-lg text-white">{item.title}</h3>
+                {item.gen !== undefined && item.gen !== null && (
+                  <span className="px-2 py-1 text-xs bg-gray-500/20 text-gray-300 rounded self-start sm:self-center">
                     {item.gen}기
                   </span>
                 )}
               </div>
               {item.desc.map((desc, idx) => (
-                <p key={idx} className="text-sm text-gray-300">{desc}</p>
+                <p key={idx} className="text-xs md:text-sm text-gray-300">{desc}</p>
               ))}
             </div>
           </div>
