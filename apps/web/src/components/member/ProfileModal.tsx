@@ -281,9 +281,6 @@ export default function ProfileModal({
                     <p className="text-sm text-gray-300 mb-1">
                       {member.school} {member.major}
                     </p>
-                    <p className="text-xs text-gray-400 underline">
-                      {member.email}
-                    </p>
                   </div>
                 </div>
 
