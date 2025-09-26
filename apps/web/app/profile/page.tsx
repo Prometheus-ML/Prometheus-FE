@@ -180,11 +180,13 @@ export default function MyPage() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <div className="text-xl font-semibold text-white">{myProfile.name}</div>
-                  {myProfile.gen && (
+                  {myProfile.gen !== null && myProfile.gen !== undefined && (
                     <span className={`px-1.5 py-0.5 text-xs rounded-full font-medium flex font-semibold items-center gap-1 flex-shrink-0 ${
+                      myProfile.gen === 0 ? 'bg-purple-500/20 text-purple-300' : 
                       myProfile.gen <= 4 ? 'bg-gray-500/20 text-gray-300' : 'bg-[#8B0000] text-[#ffa282]'
                     }`}>
-                      {myProfile.gen <= 4 ? '이전기수' : `${myProfile.gen}기`}
+                      {myProfile.gen === 0 ? '창립멤버' : 
+                       myProfile.gen <= 4 ? '이전기수' : `${myProfile.gen}기`}
                     </span>
                   )}
                 </div>
@@ -245,7 +247,10 @@ export default function MyPage() {
                   </div>
                   <div>
                     <label className="text-xs text-gray-400 font-medium">기수</label>
-                    <div className="mt-1 text-gray-300">{myProfile.gen ?? '-'}</div>
+                    <div className="mt-1 text-gray-300">
+                      {myProfile.gen === 0 ? '창립멤버' : 
+                       myProfile.gen !== null && myProfile.gen !== undefined ? `${myProfile.gen}기` : '-'}
+                    </div>
                   </div>
                   <div>
                     <label className="text-xs text-gray-400 font-medium">학교</label>

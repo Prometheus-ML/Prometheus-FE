@@ -4,8 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useImage, useCoffeeChat } from '@prometheus-fe/hooks';
-import GlassCard from '@/src/components/GlassCard';
-import RedButton from '@/src/components/RedButton';
 import TabBar from '@/src/components/TabBar';
 import { 
   CoffeeChatMember,
@@ -358,7 +356,11 @@ export default function CoffeeChatPage() {
                   <div className="flex-1">
                     <div className="font-medium">
                       {user.name} 
-                      {user.gen && <span className="text-xs text-gray-500"> · {user.gen}기</span>}
+                      {user.gen !== null && user.gen !== undefined && (
+                        <span className="text-xs text-gray-500">
+                          · {user.gen === 0 ? '창립멤버' : `${user.gen}기`}
+                        </span>
+                      )}
                     </div>
                     <div className="text-sm text-gray-600">{user.school} {user.major}</div>
                     {user.mbti && <div className="text-xs text-gray-500">MBTI: {user.mbti}</div>}
@@ -428,8 +430,10 @@ export default function CoffeeChatPage() {
                     <div>
                       <div className="font-medium">
                         {getRecipientName(request)}
-                        {getRecipientGen(request) !== null && (
-                          <span className="text-xs text-gray-500"> · {getRecipientGen(request)}기</span>
+                        {getRecipientGen(request) !== null && getRecipientGen(request) !== undefined && (
+                          <span className="text-xs text-gray-500">
+                            · {getRecipientGen(request) === 0 ? '창립멤버' : `${getRecipientGen(request)}기`}
+                          </span>
                         )}
                       </div>
                       <div className="text-xs text-gray-600">
@@ -486,8 +490,10 @@ export default function CoffeeChatPage() {
                     <div>
                       <div className="font-medium">
                         {getRequesterName(request)}
-                        {getRequesterGen(request) !== null && (
-                          <span className="text-xs text-gray-500"> · {getRequesterGen(request)}기</span>
+                        {getRequesterGen(request) !== null && getRequesterGen(request) !== undefined && (
+                          <span className="text-xs text-gray-500">
+                            · {getRequesterGen(request) === 0 ? '창립멤버' : `${getRequesterGen(request)}기`}
+                          </span>
                         )}
                       </div>
                       <div className="text-xs text-gray-600">
