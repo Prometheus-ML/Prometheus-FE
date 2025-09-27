@@ -17,7 +17,7 @@ export function useMember() {
     if (!member) {
       console.warn('member is not available. Ensure useMember is used within ApiProvider.');
       setIsLoadingMembers(false);
-      return { members: [], total: 0, page: 1, size: 20 };
+      return { members: [], total: 0, page: 1, size: 21 };
     }
     try {
       setIsLoadingMembers(true);
@@ -205,14 +205,14 @@ export function useMember() {
   const getPublicMembers = useCallback(async (params?: any) => {
     if (!member) {
       console.warn('member is not available. Ensure useMember is used within ApiProvider.');
-      return { members: [], total: 0, page: 1, size: 20 };
+      return { members: [], total: 0, page: 1, size: 21 };
     }
     try {
       const data = await member.getPublicMembers(params);
       return data;
     } catch (error) {
       console.error('공개 멤버 목록 조회 실패:', error);
-      return { members: [], total: 0, page: 1, size: 20 };
+      return { members: [], total: 0, page: 1, size: 21 };
     }
   }, [member]);
 
@@ -220,14 +220,14 @@ export function useMember() {
   const getPrivateMembers = useCallback(async (params?: any) => {
     if (!member) {
       console.warn('member is not available. Ensure useMember is used within ApiProvider.');
-      return { members: [], total: 0, page: 1, size: 20 };
+      return { members: [], total: 0, page: 1, size: 21 };
     }
     try {
       const data = await member.getPrivateMembers(params);
       return data;
     } catch (error) {
       console.error('인증된 사용자용 멤버 목록 조회 실패:', error);
-      return { members: [], total: 0, page: 1, size: 20 };
+      return { members: [], total: 0, page: 1, size: 21 };
     }
   }, [member]);
 
