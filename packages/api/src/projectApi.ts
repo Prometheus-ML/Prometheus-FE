@@ -82,7 +82,7 @@ export class ProjectApi {
       if (params?.sort_order) sp.set('sort_order', params.sort_order);
       
       const query = sp.toString() ? `?${sp.toString()}` : '';
-      const url = `/projects/${query}`.replace(/\/$/, query ? '/' : '');
+      const url = `/projects${query}`;
       
       const response = await this.apiClient.get<GetprojectDto>(url);
       return response;
