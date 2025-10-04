@@ -4,6 +4,7 @@ import { useLanding } from '@prometheus-fe/hooks';
 import { LandingLink } from '@prometheus-fe/types';
 import GlassCard from '@/src/components/GlassCard';
 import RedButton from '@/src/components/RedButton';
+import LinkModal from '@/src/components/landing/LinkModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faTrash, faLink } from '@fortawesome/free-solid-svg-icons';
 
@@ -14,7 +15,13 @@ interface LinksTabProps {
 }
 
 export default function LinksTab({ isLoading, links, onRefresh }: LinksTabProps) {
-  const { deleteAdminLink } = useLanding();
+  const {
+    deleteAdminLink,
+    createAdminLink,
+    isLinkModalOpen,
+    openLinkModal,
+    closeLinkModal
+  } = useLanding();
 
   return (
     <GlassCard className="overflow-hidden">
@@ -26,7 +33,10 @@ export default function LinksTab({ isLoading, links, onRefresh }: LinksTabProps)
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-white">링크 목록</h2>
-            <RedButton className="inline-flex items-center">
+            <RedButton
+              className="inline-flex items-center"
+              onClick={openLinkModal}
+            >
               <FontAwesomeIcon icon={faPlus} className="mr-2 h-4 w-4" />
               링크 추가
             </RedButton>
@@ -66,6 +76,16 @@ export default function LinksTab({ isLoading, links, onRefresh }: LinksTabProps)
           )}
         </div>
       )}
+
+      {/* 링크 추가 모달 */}
+      <LinkModal
+        isOpen={isLinkModalOpen}
+        onClose={closeLinkModal}
+        onSubmit={async (data) => {
+          await createAdminLink(data);
+          onRefresh();
+        }}
+      />
     </GlassCard>
   );
 }

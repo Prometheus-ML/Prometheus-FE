@@ -559,6 +559,27 @@ export const useLanding = () => {
     }
   }, [landing]);
 
+  // 모달 상태 관리
+  const [isInterviewModalOpen, setIsInterviewModalOpen] = useState<boolean>(false);
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState<boolean>(false);
+
+  // 모달 열기/닫기 함수들
+  const openInterviewModal = useCallback((): void => {
+    setIsInterviewModalOpen(true);
+  }, []);
+
+  const closeInterviewModal = useCallback((): void => {
+    setIsInterviewModalOpen(false);
+  }, []);
+
+  const openLinkModal = useCallback((): void => {
+    setIsLinkModalOpen(true);
+  }, []);
+
+  const closeLinkModal = useCallback((): void => {
+    setIsLinkModalOpen(false);
+  }, []);
+
   // 선택된 항목 관리
   const handleInterviewSelect = useCallback((interview: LandingInterview): void => {
     setSelectedInterview(interview);
@@ -691,6 +712,16 @@ export const useLanding = () => {
     updateAdminLink,
     deleteAdminLink,
     
+    // 모달 상태
+    isInterviewModalOpen,
+    isLinkModalOpen,
+
+    // 모달 제어 함수들
+    openInterviewModal,
+    closeInterviewModal,
+    openLinkModal,
+    closeLinkModal,
+
     // 선택 관리
     handleInterviewSelect,
     handleInterviewDeselect,

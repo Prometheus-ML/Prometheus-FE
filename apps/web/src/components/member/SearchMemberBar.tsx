@@ -127,7 +127,7 @@ export const MemberSelector: React.FC<MemberSelectorProps> = ({
           onFocus={handleFocus}
           onBlur={handleBlur}
           placeholder={placeholder}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
           disabled={isLoadingMembers}
         />
         {isLoadingMembers && (
@@ -375,7 +375,7 @@ export const SearchMemberBar: React.FC<SearchMemberBarProps> = ({
           onFocus={handleFocus}
           onBlur={handleBlur}
           placeholder={placeholder}
-          className="w-full border border-[#404040] rounded-md px-10 py-3 bg-[#1A1A1A] text-[#FFFFFF] placeholder-[#e0e0e0] focus:border-[#c2402a] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full border border-[#404040] rounded-md px-10 py-3 bg-[#1A1A1A] text-black placeholder-[#e0e0e0] focus:border-[#c2402a] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={isLoadingMembers}
         />
         {isLoadingMembers && (

@@ -4,6 +4,7 @@ import { useLanding } from '@prometheus-fe/hooks';
 import { LandingInterview } from '@prometheus-fe/types';
 import GlassCard from '@/src/components/GlassCard';
 import RedButton from '@/src/components/RedButton';
+import InterviewModal from '@/src/components/landing/InterviewModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faTrash, faStar } from '@fortawesome/free-solid-svg-icons';
 
@@ -14,7 +15,13 @@ interface InterviewsTabProps {
 }
 
 export default function InterviewsTab({ isLoading, interviews, onRefresh }: InterviewsTabProps) {
-  const { deleteAdminInterview } = useLanding();
+  const {
+    deleteAdminInterview,
+    createAdminInterview,
+    isInterviewModalOpen,
+    openInterviewModal,
+    closeInterviewModal
+  } = useLanding();
 
   return (
     <GlassCard className="overflow-hidden">
@@ -26,7 +33,10 @@ export default function InterviewsTab({ isLoading, interviews, onRefresh }: Inte
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-white">인터뷰 목록</h2>
-            <RedButton className="inline-flex items-center">
+            <RedButton
+              className="inline-flex items-center"
+              onClick={openInterviewModal}
+            >
               <FontAwesomeIcon icon={faPlus} className="mr-2 h-4 w-4" />
               인터뷰 추가
             </RedButton>
@@ -72,6 +82,16 @@ export default function InterviewsTab({ isLoading, interviews, onRefresh }: Inte
           )}
         </div>
       )}
+
+      {/* 인터뷰 추가 모달 */}
+      <InterviewModal
+        isOpen={isInterviewModalOpen}
+        onClose={closeInterviewModal}
+        onSubmit={async (data) => {
+          await createAdminInterview(data);
+          onRefresh();
+        }}
+      />
     </GlassCard>
   );
 }
