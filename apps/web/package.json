@@ -20,6 +20,7 @@
     "@prometheus-fe/context": "workspace:*",
     "@prometheus-fe/hooks": "workspace:*",
     "@prometheus-fe/types": "workspace:*",
+    "lucide-react": "^0.546.0",
     "next": "^15.2.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
