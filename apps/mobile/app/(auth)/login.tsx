@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, StyleSheet, TouchableOpacity, Dimensions, Alert, Image } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, Dimensions, Alert, Image, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { GoogleLoginButton } from '../../components';
@@ -9,7 +9,10 @@ const { width, height } = Dimensions.get('window');
 
 export default function Login() {
   const [googleConfigured, setGoogleConfigured] = useState(false);
-  const { error, clearError } = useAuthStore();
+  const [showTempLogin, setShowTempLogin] = useState(false);
+  const [tempUsername, setTempUsername] = useState('');
+  const [tempPassword, setTempPassword] = useState('');
+  const { error, clearError, tempLogin, isLoading } = useAuthStore();
 
   // Google Sign-In 설정
   useEffect(() => {
@@ -56,6 +59,18 @@ export default function Login() {
     }
   }, [error, clearError]);
 
+  const handleTempLogin = async () => {
+    if (!tempUsername.trim() || !tempPassword.trim()) {
+      Alert.alert('입력 오류', '아이디와 비밀번호를 입력해주세요.');
+      return;
+    }
+
+    const success = await tempLogin(tempUsername.trim(), tempPassword.trim());
+    if (success) {
+      router.replace('/');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Background with curved shapes */}
@@ -82,17 +97,77 @@ export default function Login() {
 
         {/* Login section */}
         <View style={styles.loginSection}>
-          {googleConfigured ? (
-            <GoogleLoginButton />
+          {!showTempLogin ? (
+            <>
+              {googleConfigured ? (
+                <GoogleLoginButton />
+              ) : (
+                <View style={[styles.googleButton, { opacity: 0.5 }]}>
+                  <Text style={styles.googleButtonText}>Google 로그인 설정 중...</Text>
+                </View>
+              )}
+              
+              <TouchableOpacity 
+                style={styles.tempLoginToggle}
+                onPress={() => setShowTempLogin(true)}
+              >
+                <Text style={styles.tempLoginToggleText}>임시 로그인 (개발용)</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity onPress={() => router.back()}>
+                <Text style={styles.infoText}>프로메테우스 멤버가 아니에요</Text>
+              </TouchableOpacity>
+            </>
           ) : (
-            <View style={[styles.googleButton, { opacity: 0.5 }]}>
-              <Text style={styles.googleButtonText}>Google 로그인 설정 중...</Text>
+            <View style={styles.tempLoginContainer}>
+              <TouchableOpacity 
+                style={styles.backButton}
+                onPress={() => setShowTempLogin(false)}
+              >
+                <Text style={styles.backButtonText}>← 뒤로</Text>
+              </TouchableOpacity>
+              
+              <Text style={styles.tempLoginTitle}>임시 로그인</Text>
+              <Text style={styles.tempLoginSubtitle}>개발 및 테스트용 계정</Text>
+              
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>아이디</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="username"
+                  placeholderTextColor="#888"
+                  value={tempUsername}
+                  onChangeText={setTempUsername}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+              
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>비밀번호</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="password"
+                  placeholderTextColor="#888"
+                  value={tempPassword}
+                  onChangeText={setTempPassword}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+              
+              <TouchableOpacity 
+                style={[styles.tempLoginButton, isLoading && styles.tempLoginButtonDisabled]}
+                onPress={handleTempLogin}
+                disabled={isLoading}
+              >
+                <Text style={styles.tempLoginButtonText}>
+                  {isLoading ? '로그인 중...' : '로그인'}
+                </Text>
+              </TouchableOpacity>
             </View>
           )}
-          
-          <TouchableOpacity onPress={() => router.back()}>
-            <Text style={styles.infoText}>프로메테우스 멤버가 아니에요</Text>
-          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
@@ -216,6 +291,79 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 14,
     color: '#888888',
+    textAlign: 'center',
+  },
+  tempLoginToggle: {
+    marginTop: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  tempLoginToggleText: {
+    fontSize: 14,
+    color: '#888888',
+    textAlign: 'center',
+    textDecorationLine: 'underline',
+  },
+  tempLoginContainer: {
+    width: '100%',
+    paddingHorizontal: 20,
+  },
+  backButton: {
+    alignSelf: 'flex-start',
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    marginBottom: 20,
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+  },
+  tempLoginTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  tempLoginSubtitle: {
+    fontSize: 14,
+    color: '#888888',
+    textAlign: 'center',
+    marginBottom: 32,
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: '#FFFFFF',
+  },
+  tempLoginButton: {
+    backgroundColor: '#8B0000',
+    paddingVertical: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#c2402a',
+    marginTop: 8,
+  },
+  tempLoginButtonDisabled: {
+    opacity: 0.5,
+  },
+  tempLoginButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
     textAlign: 'center',
   },
 });

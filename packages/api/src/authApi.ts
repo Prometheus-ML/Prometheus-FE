@@ -1,5 +1,5 @@
 import { ApiClient } from './apiClient';
-import type { TokenResponse, GoogleAuthUrlResponse, GoogleCallbackRequest, UserInfo } from '@prometheus-fe/types';
+import type { TokenResponse, GoogleAuthUrlResponse, GoogleCallbackRequest, UserInfo, TempLoginRequest } from '@prometheus-fe/types';
 
 export class AuthApi {
   private readonly api: ApiClient;
@@ -19,6 +19,10 @@ export class AuthApi {
 
   googleLogin(id_token: string) {
     return this.api.post<TokenResponse>('/auth/google/login', { id_token });
+  }
+
+  tempLogin(payload: TempLoginRequest) {
+    return this.api.post<TokenResponse>('/auth/temp/login', payload);
   }
 
   refresh(refreshToken: string) {
