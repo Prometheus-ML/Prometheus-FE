@@ -19,6 +19,34 @@ export interface TempLoginRequest {
   password: string;
 }
 
+export interface AppleAuthUrlResponse {
+  auth_url: string;
+  state?: string | null;
+}
+
+export interface AppleCallbackRequest {
+  code: string;
+  state?: string | null;
+  user?: {
+    name?: {
+      firstName?: string;
+      lastName?: string;
+    };
+    email?: string;
+  } | null;
+}
+
+export interface AppleLoginRequest {
+  id_token: string;
+  user?: {
+    name?: {
+      firstName?: string;
+      lastName?: string;
+    };
+    email?: string;
+  } | null;
+}
+
 export interface UserInfo {
   id: string;
   name: string;

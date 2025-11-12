@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Text, View, StyleSheet, TouchableOpacity, Dimensions, Alert, Image, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { GoogleLoginButton } from '../../components';
+import { GoogleLoginButton, AppleLoginButton } from '../../components';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { router } from 'expo-router';
 const { width, height } = Dimensions.get('window');
@@ -106,6 +106,8 @@ export default function Login() {
                   <Text style={styles.googleButtonText}>Google 로그인 설정 중...</Text>
                 </View>
               )}
+              
+              <AppleLoginButton />
               
               <TouchableOpacity 
                 style={styles.tempLoginToggle}
