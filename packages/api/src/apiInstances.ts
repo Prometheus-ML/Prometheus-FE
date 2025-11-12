@@ -8,6 +8,7 @@ import { StorageApi } from './storageApi';
 import { CommunityApi } from './communityApi';
 import { GroupApi } from './groupApi';
 import { EventApi } from './eventApi';
+import { DashboardApi } from './dashboardApi';
 
 // API 클라이언트 옵션 생성 함수
 export const createApiClientOptions = (): ApiClientOptions => {
@@ -40,7 +41,7 @@ export const createStorageApi = (apiClient: ApiClient) => new StorageApi(apiClie
 export const createCommunityApi = (apiClient: ApiClient) => new CommunityApi(apiClient);
 export const createGroupApi = (apiClient: ApiClient) => new GroupApi(apiClient);
 export const createEventApi = (apiClient: ApiClient) => new EventApi(apiClient);
-
+export const createDashboardApi = (apiClient: ApiClient) => new DashboardApi(apiClient);
 // API 클래스 타입 export
 export type { 
   AuthApi, 
@@ -51,7 +52,8 @@ export type {
   StorageApi, 
   CommunityApi, 
   GroupApi,
-  EventApi
+  EventApi,
+  DashboardApi
 };
 
 export type { ApiClientOptions, AuthCallbacks };

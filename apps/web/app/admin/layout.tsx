@@ -43,7 +43,7 @@ const navbarItems = [
     requiredGrant: 'Administrator'
   },
   {
-    name: '스폰서',
+    name: '랜딩',
     href: '/admin/landing',
     icon: faHandshake,
     requiredGrant: 'Administrator'
