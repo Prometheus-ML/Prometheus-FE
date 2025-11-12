@@ -7,3 +7,4 @@ export * from './useEvent';
 export * from './useCoffeeChat';
 export * from './useLanding';
 export * from './useChat';
+export * from './useDashBoard';

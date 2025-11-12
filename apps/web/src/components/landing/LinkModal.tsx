@@ -81,7 +81,7 @@ export default function LinkModal({ isOpen, onClose, onSubmit }: LinkModalProps)
 
     try {
       // useImage 훅을 사용하여 이미지 업로드
-      const imageUrl = await uploadImage(file, 'link');
+      const imageUrl = await uploadImage(file, 'post');
       if (imageUrl) {
         setForm(prev => ({ ...prev, image_url: imageUrl }));
       }
@@ -204,7 +204,7 @@ export default function LinkModal({ isOpen, onClose, onSubmit }: LinkModalProps)
                     className="rounded-lg border border-white/20 object-cover transition-all group-hover:border-white/40"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      if (target.src !== form.image_url) {
+                      if (target.src !== form.image_url && form.image_url) {
                         target.src = form.image_url;
                       }
                     }}

@@ -14,6 +14,11 @@ export interface GoogleCallbackRequest {
   state?: string | null;
 }
 
+export interface TempLoginRequest {
+  username: string;
+  password: string;
+}
+
 export interface UserInfo {
   id: string;
   name: string;

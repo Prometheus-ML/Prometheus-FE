@@ -12,6 +12,7 @@ export * from './communityApi';
 export * from './groupApi';
 export * from './eventApi';
 export * from './chatApi';
+export * from './dashboardApi';
 
 // DTO Types
 export * from './dto/project.dto';
@@ -21,6 +22,7 @@ export * from './dto/event.dto';
 export * from './dto/landing.dto';
 export * from './dto/coffeeChat.dto';
 export * from './dto/chat.dto';
+export * from './dto/dashboard.dto';
 
 // Types
 export type { ApiClientOptions } from './apiClient';

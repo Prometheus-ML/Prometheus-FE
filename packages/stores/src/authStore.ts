@@ -34,6 +34,7 @@ export interface AuthState {
   
   // Authentication flows
   googleCallback: (code: string) => Promise<boolean>;
+  tempLogin: (username: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   refreshAccessToken: () => Promise<boolean>;
   
@@ -263,6 +264,53 @@ export const useAuthStore = create<AuthState>()(
             return true;
           } catch (error: any) {
             console.error('Google 로그인 실패:', error);
+            
+            // 서버에서 받은 detail 메시지가 있으면 그것을 사용
+            let errorMessage = '로그인 처리 중 오류가 발생했습니다.';
+            
+            if (error?.response?.data?.detail) {
+              errorMessage = error.response.data.detail;
+            } else if (error?.detail) {
+              errorMessage = error.detail;
+            } else if (error?.message) {
+              errorMessage = error.message;
+            }
+            
+            set({
+              isLoading: false,
+              error: errorMessage,
+            });
+            return false;
+          }
+        },
+
+        tempLogin: async (username: string, password: string) => {
+          if (!authApiInstance) {
+            set({ error: 'API가 초기화되지 않았습니다.' });
+            return false;
+          }
+
+          set({ isLoading: true, error: null });
+          try {
+            // 1. 임시 로그인으로 토큰 받기
+            const tokens = await authApiInstance.tempLogin({ username, password });
+            
+            // 2. 토큰 저장
+            get().setTokens(tokens.access_token, tokens.refresh_token);
+            
+            // 3. 사용자 정보 조회
+            const user = await authApiInstance.verify();
+            
+            // 4. 상태 일괄 업데이트
+            set({
+              user,
+              isLoading: false,
+              error: null,
+            });
+
+            return true;
+          } catch (error: any) {
+            console.error('임시 로그인 실패:', error);
             
             // 서버에서 받은 detail 메시지가 있으면 그것을 사용
             let errorMessage = '로그인 처리 중 오류가 발생했습니다.';

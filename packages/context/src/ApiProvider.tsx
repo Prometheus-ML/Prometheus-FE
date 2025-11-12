@@ -14,6 +14,7 @@ import {
   createGroupApi,
   createEventApi,
   createChatApi,
+  createDashboardApi,
   AuthApi,
   MemberApi,
   CoffeeChatApi,
@@ -23,7 +24,8 @@ import {
   CommunityApi,
   GroupApi,
   EventApi,
-  ChatApi
+  ChatApi,
+  DashboardApi
 } from '@prometheus-fe/api';
 import { useAuthStore } from '@prometheus-fe/stores';
 
@@ -44,6 +46,7 @@ type ApiInstances = {
   group: GroupApi;
   event: EventApi;
   chat: ChatApi;
+  dashboard: DashboardApi;
 };
 
 const ApiContext = createContext<ApiInstances | null>(null);
@@ -117,6 +120,7 @@ export const ApiProvider = ({ children, router }: ApiProviderProps) => {
       group: createGroupApi(client),
       event: createEventApi(client),
       chat: createChatApi(client),
+      dashboard: createDashboardApi(client),
     } as const as ApiInstances;
   }, []);
 

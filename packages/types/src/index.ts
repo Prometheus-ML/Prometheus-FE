@@ -9,4 +9,5 @@ export * from './Community';
 export * from './Group';
 export * from './Event';
 export * from './Chat';
+export * from './Dashboard';
 
