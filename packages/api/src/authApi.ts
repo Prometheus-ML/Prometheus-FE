@@ -1,5 +1,5 @@
 import { ApiClient } from './apiClient';
-import type { TokenResponse, GoogleAuthUrlResponse, GoogleCallbackRequest, UserInfo, TempLoginRequest } from '@prometheus-fe/types';
+import type { TokenResponse, GoogleAuthUrlResponse, GoogleCallbackRequest, AppleAuthUrlResponse, AppleCallbackRequest, AppleLoginRequest, UserInfo, TempLoginRequest } from '@prometheus-fe/types';
 
 export class AuthApi {
   private readonly api: ApiClient;
@@ -33,6 +33,19 @@ export class AuthApi {
   verify() {
     // 액세스 토큰을 Authorization 헤더로 전송
     return this.api.get<UserInfo>('/auth/verify-access-token');
+  }
+
+  getAppleAuthUrl(state?: string) {
+    const query = state ? `?state=${encodeURIComponent(state)}` : '';
+    return this.api.get<AppleAuthUrlResponse>(`/auth/apple/url${query}`);
+  }
+
+  appleCallback(payload: AppleCallbackRequest) {
+    return this.api.post<TokenResponse>('/auth/apple/callback', payload);
+  }
+
+  appleLogin(payload: AppleLoginRequest) {
+    return this.api.post<TokenResponse>('/auth/apple/login', payload);
   }
 }
 
