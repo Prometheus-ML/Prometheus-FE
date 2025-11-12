@@ -3,6 +3,7 @@ import { TouchableOpacity, Text, View, Alert, ActivityIndicator, Platform } from
 import { useAuthStore } from '@prometheus-fe/stores';
 import { router } from 'expo-router';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import Svg, { Path } from 'react-native-svg';
 
 interface AppleLoginButtonProps {
   onPress?: () => void;
@@ -99,6 +100,16 @@ const AppleLoginButton: React.FC<AppleLoginButtonProps> = ({
     }
   };
 
+  // Apple 로고 SVG (Apple 공식 디자인)
+  const appleLogo = (
+    <Svg viewBox="0 0 24 24" width={18} height={18} style={{ marginRight: 8 }}>
+      <Path
+        d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"
+        fill="#FFFFFF"
+      />
+    </Svg>
+  );
+
   // iOS가 아니면 버튼을 표시하지 않음
   if (Platform.OS !== 'ios') {
     return null;
@@ -112,36 +123,50 @@ const AppleLoginButton: React.FC<AppleLoginButtonProps> = ({
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
-          paddingHorizontal: 24,
-          paddingVertical: 16,
-          borderRadius: 12,
+          paddingHorizontal: 20,
+          paddingVertical: 12,
+          minHeight: 44, // Apple 최소 터치 영역
+          borderRadius: 8,
           marginBottom: 20,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
-          elevation: 4,
-          opacity: (isLoading || disabled) ? 0.7 : 1,
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.2,
+          shadowRadius: 2,
+          elevation: 2,
+          opacity: (isLoading || disabled) ? 0.6 : 1,
         },
         style,
       ]}
       onPress={handleAppleLogin}
       disabled={disabled || isLoading}
+      activeOpacity={0.8}
     >
       {isLoading ? (
         <>
-          <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 16 }} />
-          <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}>
+          <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 12 }} />
+          <Text
+            style={{
+              color: '#FFFFFF',
+              fontSize: 17,
+              fontWeight: '400',
+              letterSpacing: -0.41,
+            }}
+          >
             로그인 중...
           </Text>
         </>
       ) : (
         <>
-          <View style={{ width: 20, height: 20, marginRight: 16 }}>
-            <Text style={{ color: '#FFFFFF', fontSize: 18 }}>🍎</Text>
-          </View>
-          <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}>
-            Apple로 로그인
+          {appleLogo}
+          <Text
+            style={{
+              color: '#FFFFFF',
+              fontSize: 17,
+              fontWeight: '400',
+              letterSpacing: -0.41,
+            }}
+          >
+            Apple로 계속하기
           </Text>
         </>
       )}
