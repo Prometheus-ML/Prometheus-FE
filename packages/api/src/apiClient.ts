@@ -69,9 +69,31 @@ export class ApiClient {
         : JSON.stringify(options.body);
     }
 
+    // 로깅 추가 (특히 Apple 로그인 관련)
+    if (endpoint.includes('/auth/apple')) {
+      console.log('[ApiClient] Making request:', {
+        method,
+        url,
+        endpoint,
+        hasBody: !!options.body,
+        bodyType: options.body instanceof FormData ? 'FormData' : typeof options.body,
+        hasAuth: !!headers.Authorization,
+        retryCount,
+      });
+    }
+
     try {
       const response = await fetch(url, config);
       if (retryCount > 3) throw new Error('Too many retries');
+
+      if (endpoint.includes('/auth/apple')) {
+        console.log('[ApiClient] Response received:', {
+          status: response.status,
+          statusText: response.statusText,
+          ok: response.ok,
+          contentType: response.headers.get('content-type'),
+        });
+      }
 
       if (response.status === 401) {
         const responseText = await response.text();
@@ -95,10 +117,33 @@ export class ApiClient {
 
       if (!response.ok) {
         const message = (data && (data.detail || data.message)) || `Request failed with status ${response.status}`;
+        if (endpoint.includes('/auth/apple')) {
+          console.error('[ApiClient] Request failed:', {
+            status: response.status,
+            message,
+            data,
+          });
+        }
         throw { status: response.status, data, message } as any;
       }
+      
+      if (endpoint.includes('/auth/apple')) {
+        console.log('[ApiClient] Request successful:', {
+          hasData: !!data,
+          dataKeys: data ? Object.keys(data) : [],
+        });
+      }
+      
       return data as T;
     } catch (error: any) {
+      if (endpoint.includes('/auth/apple')) {
+        console.error('[ApiClient] Request error:', {
+          error,
+          message: error?.message,
+          status: error?.status,
+          isNetworkError: error instanceof TypeError && error.message.includes('Failed to fetch'),
+        });
+      }
       if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
         throw { status: 0, data: null, message: 'Network error: Unable to connect to server' } as any;
       }

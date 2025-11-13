@@ -72,12 +72,12 @@ export default function LoginPage() {
             <span className="font-pretendard">Google 계정으로 계속하기</span>
           </button>
 
-          <button
-              onClick={handleAppleLogin}
-              disabled={isLoadingApple}
-              className="w-2/3 mx-auto flex items-center justify-center gap-3 bg-black text-white hover:bg-gray-900 hover:shadow-lg hover:scale-105 font-semibold py-3 px-6 rounded-lg transition-all duration-300 mb-6 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoadingApple ? (
+          {/*<button
+            onClick={handleAppleLogin}
+            disabled={isLoadingApple}
+            className="w-2/3 mx-auto flex items-center justify-center gap-3 bg-black text-white hover:bg-gray-900 hover:shadow-lg hover:scale-105 font-semibold py-3 px-6 rounded-lg transition-all duration-300 mb-6 disabled:opacity-50 disabled:cursor-not-allowed"
+          >*/}
+            {/*isLoadingApple ? (
               <>
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                 <span className="font-pretendard">로딩 중...</span>
@@ -89,8 +89,8 @@ export default function LoginPage() {
                 </svg>
                 <span className="font-pretendard">Apple로 계속하기</span>
               </>
-            )}
-          </button>
+            )*/}
+          {/*</button>*/}
 
            {/* Divider */}
            <div className="flex items-center mb-6">
