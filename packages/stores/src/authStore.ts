@@ -377,7 +377,14 @@ export const useAuthStore = create<AuthState>()(
         },
 
         appleLogin: async (idToken: string, user?: { name?: { firstName?: string; lastName?: string }; email?: string }) => {
+          console.log('[authStore] appleLogin called with:', {
+            hasIdToken: !!idToken,
+            idTokenLength: idToken?.length,
+            hasUser: !!user,
+          });
+
           if (!authApiInstance) {
+            console.error('[authStore] AuthApi가 초기화되지 않았습니다.');
             set({ error: 'API가 초기화되지 않았습니다.' });
             return false;
           }
@@ -385,7 +392,8 @@ export const useAuthStore = create<AuthState>()(
           set({ isLoading: true, error: null });
           try {
             // 1. Apple ID 토큰으로 로그인
-            const tokens = await authApiInstance.appleLogin({
+            console.log('[authStore] Calling authApiInstance.appleLogin...');
+            const payload = {
               id_token: idToken,
               user: user ? {
                 name: user.name ? {
@@ -394,13 +402,30 @@ export const useAuthStore = create<AuthState>()(
                 } : undefined,
                 email: user.email,
               } : undefined,
+            };
+            console.log('[authStore] Payload:', {
+              hasIdToken: !!payload.id_token,
+              hasUser: !!payload.user,
+            });
+
+            const tokens = await authApiInstance.appleLogin(payload);
+            console.log('[authStore] Tokens received:', {
+              hasAccessToken: !!tokens?.access_token,
+              hasRefreshToken: !!tokens?.refresh_token,
             });
             
             // 2. 토큰 저장
             get().setTokens(tokens.access_token, tokens.refresh_token);
+            console.log('[authStore] Tokens saved');
             
             // 3. 사용자 정보 조회
+            console.log('[authStore] Calling verify to get user info...');
             const userInfo = await authApiInstance.verify();
+            console.log('[authStore] User info received:', {
+              hasUser: !!userInfo,
+              userId: userInfo?.id,
+              userEmail: userInfo?.email,
+            });
             
             // 4. 상태 일괄 업데이트
             set({
@@ -409,9 +434,16 @@ export const useAuthStore = create<AuthState>()(
               error: null,
             });
 
+            console.log('[authStore] Apple login completed successfully');
             return true;
           } catch (error: any) {
-            console.error('Apple 로그인 실패:', error);
+            console.error('[authStore] Apple 로그인 실패:', error);
+            console.error('[authStore] Error details:', {
+              message: error?.message,
+              status: error?.status,
+              response: error?.response?.data,
+              stack: error?.stack,
+            });
             
             // 서버에서 받은 detail 메시지가 있으면 그것을 사용
             let errorMessage = '로그인 처리 중 오류가 발생했습니다.';

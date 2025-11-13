@@ -22,7 +22,8 @@
             ]
           }
         ]
-      }
+      },
+      "useAppleSignIn": true
     },
     "android": {
       "adaptiveIcon": {
