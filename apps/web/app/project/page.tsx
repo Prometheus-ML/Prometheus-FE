@@ -91,10 +91,15 @@ export default function ProjectPage() {
         setIsLoading(true);
       }
       
+      // 전체 기수이고 검색어가 없을 때는 모든 프로젝트를 한 번에 가져오기 (최대 100개)
+      const isAllGenNoSearch = appliedGen === 'all' && !appliedSearchTerm.trim();
+      const fetchSize = isAllGenNoSearch ? 100 : size;
+      const fetchPage = isAllGenNoSearch ? 1 : page;
+      
       let params: any = {
-        page,
-        size,
-        status: 'completed' // 완료된 프로젝트만 조회
+        page: fetchPage,
+        size: fetchSize,
+        // status 필터 제거: 모든 상태의 프로젝트 조회
       };
 
       // 검색어 필터 적용
@@ -430,8 +435,9 @@ export default function ProjectPage() {
           </div>
         )}
 
-        {/* 페이지네이션 */}
-        {!isLoading && !isSearchLoading && filteredProjects.length > 0 && totalPages > 1 && (
+        {/* 페이지네이션 - 전체 기수가 아니고 검색어가 없을 때만 표시 */}
+        {!isLoading && !isSearchLoading && filteredProjects.length > 0 && totalPages > 1 && 
+         !(appliedGen === 'all' && !appliedSearchTerm.trim()) && (
           <div className="flex justify-center mt-8">
             <div className="flex items-center space-x-2">
               <button
