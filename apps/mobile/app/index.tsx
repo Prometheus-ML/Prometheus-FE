@@ -145,14 +145,14 @@ export default function Home() {
         
         {/* Right: Icons */}
         <View style={styles.headerIcons}>
-          {canAccessAdministrator() && (
+          {/*{canAccessAdministrator() && (
             <TouchableOpacity 
               style={styles.adminButton}
               onPress={() => router.push('/admin')}
             >
               <Text style={styles.adminButtonText}>Admin</Text>
             </TouchableOpacity>
-          )}
+          )*/}
           <TouchableOpacity style={styles.iconButton}>
             <FontAwesome name="bell" size={20} color="#FFFFFF" />
           </TouchableOpacity>
