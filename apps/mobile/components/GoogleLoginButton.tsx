@@ -72,7 +72,7 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
         }
       } else {
         console.error('No server auth code received from Google');
-        Alert.alert('Google 로그인', 'Google 인증 토큰을 받지 못했습니다.');
+        //Alert.alert('Google 로그인', 'Google 인증 토큰을 받지 못했습니다.');
       }
     } catch (error: any) {
       console.error('Google Auth Error:', error);

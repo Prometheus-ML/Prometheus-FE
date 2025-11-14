@@ -51,10 +51,14 @@ export default function Login() {
     configureGoogleSignIn();
   }, []);
 
-  // 에러가 있을 때 표시
+  // 회원이 아닌 경우에만 Alert로 표시
   useEffect(() => {
     if (error) {
-      Alert.alert('로그인 오류', error);
+      // 회원 미등록 에러인 경우에만 Alert 표시
+      if (error.includes('프로메테우스 회원으로 등록되지 않은 계정입니다')) {
+        Alert.alert('로그인 실패', error);
+      }
+      // 다른 에러는 Alert로 표시하지 않음
       clearError();
     }
   }, [error, clearError]);
