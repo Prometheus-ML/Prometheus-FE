@@ -94,22 +94,22 @@ export default function Login() {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>EULA 약관</Text>
             <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
-              <Text style={styles.modalSectionTitle}>불관용 정책 명시</Text>
+              <Text style={styles.modalSectionTitle}>불관용 정책</Text>
               <Text style={styles.modalText}>
                 프로메테우스는 불쾌감을 주는 콘텐츠 또는 악성 사용자에 대해
-                관용이 없음(no tolerance) 정책을 적용합니다.
+                관용이 없다.
               </Text>
 
               <Text style={styles.modalSectionTitle}>사용자 책임</Text>
               <Text style={styles.modalText}>
-                사용자가 생성하는 모든 콘텐츠에 대한 책임은 사용자 본인에게 있습니다. 사용자는 불법적이거나
-                불쾌한 콘텐츠를 게시해서는 안 되며, 관련 법령과 커뮤니티 가이드를 준수해야 합니다.
+                사용자가 생성하는 모든 콘텐츠에 대한 책임은 사용자 본인에게 있다. 사용자는 불법적이거나
+                불쾌한 콘텐츠를 게시해서는 안 되며, 관련 법령과 커뮤니티 가이드를 준수해야 한다.
               </Text>
 
               <Text style={styles.modalSectionTitle}>강력한 조치</Text>
               <Text style={styles.modalText}>
                 불관용 정책을 위반할 경우, 프로메테우스는 서비스 내 콘텐츠 삭제, 계정 일시 정지, 또는
-                영구 퇴출 등의 강력한 조치를 취할 수 있습니다.
+                영구 퇴출 등의 강력한 조치를 취할 수 있다.
               </Text>
             </ScrollView>
 
@@ -130,7 +130,7 @@ export default function Login() {
                   setIsTermsModalVisible(false);
                 }}
               >
-                <Text style={styles.modalButtonText}>동의합니다</Text>
+                <Text style={styles.modalButtonText}>동의함</Text>
               </TouchableOpacity>
             </View>
           </View>
