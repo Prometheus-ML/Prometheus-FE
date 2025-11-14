@@ -9,16 +9,23 @@ interface GoogleLoginButtonProps {
   onPress?: () => void;
   disabled?: boolean;
   style?: any;
+  isTermsAgreed?: boolean;
 }
 
 const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   onPress,
   disabled = false,
   style,
+  isTermsAgreed = true,
 }) => {
   const { googleCallback, isLoading, error, clearError } = useAuthStore();
 
   const handleGoogleLogin = async () => {
+    if (!isTermsAgreed) {
+      Alert.alert('약관 동의 필요', 'EULA약관에 동의해야 로그인할 수 있습니다.');
+      return;
+    }
+
     if (onPress) {
       onPress();
       return;

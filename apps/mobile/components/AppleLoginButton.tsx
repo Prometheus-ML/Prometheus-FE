@@ -4,10 +4,19 @@ import { useAuthStore } from '@prometheus-fe/stores';
 import { router } from 'expo-router';
 import * as AppleAuthentication from 'expo-apple-authentication';
 
-export default function AppleLoginButton() {
+interface AppleLoginButtonProps {
+  isTermsAgreed?: boolean;
+}
+
+export default function AppleLoginButton({ isTermsAgreed = true }: AppleLoginButtonProps) {
   const { appleLogin, error, clearError } = useAuthStore();
 
   const handleAppleLogin = async () => {
+    if (!isTermsAgreed) {
+      Alert.alert('약관 동의 필요', 'EULA약관에 동의해야 로그인할 수 있습니다.');
+      return;
+    }
+
     // iOS에서만 Apple 로그인 지원
     if (Platform.OS !== 'ios') {
       Alert.alert(

@@ -153,9 +153,9 @@ export default function Home() {
               <Text style={styles.adminButtonText}>Admin</Text>
             </TouchableOpacity>
           )*/}
-          <TouchableOpacity style={styles.iconButton}>
+          {/* <TouchableOpacity style={styles.iconButton}>
             <FontAwesome name="bell" size={20} color="#FFFFFF" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity 
             style={styles.iconButton} 
             onPress={() => {
