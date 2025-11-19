@@ -155,9 +155,6 @@ export default function MyPage() {
                 Admin
               </RedButton>
             )}
-            <Link href="/notifications" className="text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
-              <FontAwesomeIcon icon={faBell} className="w-5 h-5" />
-            </Link>
             <Link href="/profile" className="text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
               <FontAwesomeIcon icon={faUser} className="w-5 h-5" />
             </Link>
