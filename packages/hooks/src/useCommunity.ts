@@ -15,6 +15,7 @@ export function useCommunity() {
   const [isUpdatingPost, setIsUpdatingPost] = useState(false);
   const [isCreatingComment, setIsCreatingComment] = useState(false);
   const [isTogglingLike, setIsTogglingLike] = useState(false);
+  const [isReportingPost, setIsReportingPost] = useState(false);
   
   // 멤버 게시글 히스토리 관련 상태
   const [memberPosts, setMemberPosts] = useState<Post[]>([]);
@@ -287,6 +288,24 @@ export function useCommunity() {
     }
   }, [community]);
 
+  // 게시글 신고
+  const reportPost = useCallback(async (postId: number | string, payload: any) => {
+    if (!community) {
+      console.warn('community is not available. Ensure useCommunity is used within ApiProvider.');
+      return null;
+    }
+    try {
+      setIsReportingPost(true);
+      const response = await community.reportPost(postId, payload);
+      return response;
+    } catch (error) {
+      console.error('게시글 신고 실패:', error);
+      throw error;
+    } finally {
+      setIsReportingPost(false);
+    }
+  }, [community]);
+
   return {
     // 상태
     posts,
@@ -300,6 +319,7 @@ export function useCommunity() {
     isUpdatingPost,
     isCreatingComment,
     isTogglingLike,
+    isReportingPost,
     
     // 멤버 게시글 히스토리 관련 상태
     memberPosts,
@@ -318,6 +338,7 @@ export function useCommunity() {
     filterPostsByCategory,
     toggleLike,
     getLikeStatus,
+    reportPost,
     
     // 핸들러들
     handlePostSelect,

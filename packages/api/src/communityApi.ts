@@ -10,6 +10,8 @@ import {
   CreateCommentResponse,
   LikeStatusResponse,
   GetMemberPostsHistoryResponse,
+  CreatePostReportRequest,
+  PostReportResponse,
 } from './dto/community.dto';
 import type {
   Post,
@@ -140,6 +142,17 @@ export class CommunityApi {
     } catch (error: any) {
       console.error(`Error fetching like status for post ${postId}:`, error);
       throw new Error(error.message || 'Failed to fetch like status');
+    }
+  }
+
+  // Reports API
+  async reportPost(postId: number | string, data: CreatePostReportRequest): Promise<PostReportResponse> {
+    try {
+      const response = await this.api.post<PostReportResponse>(`${this.postsBase}/${postId}/reports`, data);
+      return response;
+    } catch (error: any) {
+      console.error(`Error reporting post ${postId}:`, error);
+      throw new Error(error.message || 'Failed to report post');
     }
   }
 }

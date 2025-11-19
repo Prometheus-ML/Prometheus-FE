@@ -17,6 +17,7 @@ import { useCommunity } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useImage } from '@prometheus-fe/hooks';
 import { Ionicons } from '@expo/vector-icons';
+import type { PostReportReason } from '@prometheus-fe/types';
 
 const CATEGORIES = [
   { value: 'all', label: '전체' },
@@ -25,6 +26,19 @@ const CATEGORIES = [
   { value: 'career', label: '진로' },
   { value: 'promotion', label: '홍보' },
   { value: 'announcement', label: '공지사항' },
+] as const;
+
+const REPORT_REASON_OPTIONS: {
+  value: PostReportReason;
+  label: string;
+  description: string;
+}[] = [
+  { value: 'spam', label: '스팸/홍보', description: '도배 또는 광고성 게시글' },
+  { value: 'abuse', label: '욕설/혐오', description: '타인 비방, 혐오 표현' },
+  { value: 'misinformation', label: '허위 정보', description: '사실과 다른 정보' },
+  { value: 'illegal', label: '불법/위험', description: '법 위반 또는 위험 조장' },
+  { value: 'inappropriate', label: '부적절한 콘텐츠', description: '커뮤니티 가이드 위반' },
+  { value: 'other', label: '기타', description: '기타 신고 사유' },
 ] as const;
 
 export default function CommunityPage() {
@@ -686,11 +700,14 @@ function PostDetailModal({ visible, post, onClose }: {
     createComment,
     deleteComment,
     toggleLike,
+    reportPost,
+    isReportingPost,
   } = useCommunity();
   
   const { user } = useAuthStore();
   const { getThumbnailUrl } = useImage();
   const [newComment, setNewComment] = useState('');
+  const [reportModalVisible, setReportModalVisible] = useState(false);
 
   useEffect(() => {
     if (visible && post) {
@@ -745,6 +762,15 @@ function PostDetailModal({ visible, post, onClose }: {
       console.error('좋아요 토글 실패:', err);
       Alert.alert('오류', '좋아요 처리에 실패했습니다.');
     }
+  };
+
+  const handleReportSubmit = async (payload: { reason: PostReportReason; description?: string }) => {
+    if (!post) {
+      throw new Error('게시글 정보를 찾을 수 없습니다.');
+    }
+    await reportPost(post.id, payload);
+    Alert.alert('신고 완료', '신고가 접수되었습니다. 운영진이 검토할 예정입니다.');
+    setReportModalVisible(false);
   };
 
   if (!post) return null;
@@ -811,6 +837,24 @@ function PostDetailModal({ visible, post, onClose }: {
                       {selectedPost.author_gen}기
                     </Text>
                   </View>
+                {user && user.id !== selectedPost.author_id && (
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 4,
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                      borderRadius: 16,
+                      backgroundColor: 'rgba(220, 38, 38, 0.15)',
+                      marginLeft: 'auto',
+                    }}
+                    onPress={() => setReportModalVisible(true)}
+                  >
+                    <Ionicons name="flag-outline" size={16} color="#fca5a5" />
+                    <Text style={{ color: '#fca5a5', fontSize: 12, fontWeight: '600' }}>신고</Text>
+                  </TouchableOpacity>
+                )}
                 </View>
               </View>
 
@@ -989,6 +1033,186 @@ function PostDetailModal({ visible, post, onClose }: {
           </View>
         )}
       </SafeAreaView>
+      <ReportPostModal
+        visible={reportModalVisible}
+        onClose={() => setReportModalVisible(false)}
+        onSubmit={handleReportSubmit}
+        isSubmitting={isReportingPost}
+        postTitle={selectedPost?.title}
+      />
+    </Modal>
+  );
+}
+
+function ReportPostModal({ 
+  visible, 
+  onClose, 
+  onSubmit, 
+  isSubmitting, 
+  postTitle 
+}: {
+  visible: boolean;
+  onClose: () => void;
+  onSubmit: (payload: { reason: PostReportReason; description?: string }) => Promise<void>;
+  isSubmitting: boolean;
+  postTitle?: string;
+}) {
+  const [selectedReason, setSelectedReason] = useState<PostReportReason>('spam');
+  const [details, setDetails] = useState('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!visible) {
+      setSelectedReason('spam');
+      setDetails('');
+      setError('');
+    }
+  }, [visible]);
+
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
+    try {
+      setError('');
+      await onSubmit({
+        reason: selectedReason,
+        description: details.trim() ? details.trim() : undefined,
+      });
+    } catch (err: any) {
+      setError(
+        err?.message ||
+        err?.data?.detail ||
+        '신고 처리 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.'
+      );
+    }
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <View style={{
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+      }}>
+        <View style={{
+          width: '100%',
+          borderRadius: 16,
+          backgroundColor: '#111',
+          borderWidth: 1,
+          borderColor: 'rgba(255,255,255,0.1)',
+          padding: 20,
+        }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <View>
+              <Text style={{ color: '#fca5a5', fontSize: 12, marginBottom: 4 }}>게시글 신고</Text>
+              <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '700' }}>{postTitle || '게시글'}</Text>
+            </View>
+            <TouchableOpacity onPress={onClose}>
+              <Ionicons name="close" size={22} color="#999" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={{ gap: 8 }}>
+            {REPORT_REASON_OPTIONS.map((reason) => (
+              <TouchableOpacity
+                key={reason.value}
+                onPress={() => setSelectedReason(reason.value)}
+                style={{
+                  padding: 12,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: selectedReason === reason.value ? '#f87171' : 'rgba(255,255,255,0.1)',
+                  backgroundColor: selectedReason === reason.value ? 'rgba(248,113,113,0.12)' : 'rgba(255,255,255,0.05)',
+                }}
+              >
+                <Text style={{ color: '#fff', fontWeight: '600', marginBottom: 4 }}>
+                  {reason.label}
+                </Text>
+                <Text style={{ color: '#9ca3af', fontSize: 12 }}>
+                  {reason.description}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <View style={{ marginTop: 16 }}>
+            <Text style={{ color: '#d1d5db', fontSize: 13, marginBottom: 6 }}>
+              상세 설명 (선택)
+            </Text>
+            <TextInput
+              value={details}
+              onChangeText={setDetails}
+              placeholder="신고 사유를 자세히 적어주시면 빠른 검토에 도움이 됩니다."
+              placeholderTextColor="#6b7280"
+              multiline
+              maxLength={1000}
+              numberOfLines={4}
+              textAlignVertical="top"
+              style={{
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.1)',
+                borderRadius: 12,
+                padding: 12,
+                color: '#FFFFFF',
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                minHeight: 100,
+              }}
+            />
+            <Text style={{ color: '#6b7280', fontSize: 10, textAlign: 'right', marginTop: 4 }}>
+              {details.length}/1000
+            </Text>
+          </View>
+
+          {error ? (
+            <View style={{
+              marginTop: 12,
+              padding: 10,
+              borderRadius: 10,
+              backgroundColor: 'rgba(239,68,68,0.15)',
+              borderWidth: 1,
+              borderColor: 'rgba(239,68,68,0.3)',
+            }}>
+              <Text style={{ color: '#fca5a5', fontSize: 12 }}>{error}</Text>
+            </View>
+          ) : null}
+
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 20 }}>
+            <TouchableOpacity
+              onPress={onClose}
+              style={{
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.1)',
+              }}
+            >
+              <Text style={{ color: '#d1d5db', fontSize: 14 }}>취소</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleSubmit}
+              disabled={isSubmitting}
+              style={{
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                borderRadius: 12,
+                backgroundColor: isSubmitting ? '#7f1d1d' : '#b91c1c',
+                opacity: isSubmitting ? 0.7 : 1,
+              }}
+            >
+              <Text style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>
+                {isSubmitting ? '제출 중...' : '신고하기'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
     </Modal>
   );
 }
