@@ -140,4 +140,14 @@ export class MemberApi {
   getMemberPosts(memberId: string) {
     return this.api.get<any[]>(`${this.base}/${memberId}/posts`);
   }
+
+  // 17. 멤버 차단
+  blockMember(memberId: string) {
+    return this.api.post<any>(`${this.base}/${memberId}/block`, {});
+  }
+
+  // 18. 멤버 차단 해제
+  unblockMember(memberId: string) {
+    return this.api.delete<any>(`${this.base}/${memberId}/block`);
+  }
 }

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useImage, useCoffeeChat, useProject } from '@prometheus-fe/hooks';
+import { useImage, useCoffeeChat, useProject, useMember } from '@prometheus-fe/hooks';
 import RedButton from '@/src/components/RedButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -12,7 +12,8 @@ import {
   faPaperPlane,
   faCircle,
   faFolder,
-  faExternalLinkAlt
+  faExternalLinkAlt,
+  faBan
 } from '@fortawesome/free-solid-svg-icons';
 import { 
   faGithub,
@@ -40,9 +41,11 @@ export default function ProfileModal({
   const [isRequesting, setIsRequesting] = useState(false);
   const [userProjects, setUserProjects] = useState<Array<Project & { role?: string }>>([]);
   const [isLoadingProjects, setIsLoadingProjects] = useState(false);
+  const [isBlocking, setIsBlocking] = useState(false);
   const { getThumbnailUrl } = useImage();
   const { createRequest } = useCoffeeChat();
   const { fetchMemberProjectHistory } = useProject();
+  const { blockMember, unblockMember } = useMember();
   const { user } = useAuthStore();
 
   useEffect(() => {
@@ -104,10 +107,39 @@ export default function ProfileModal({
       });
       setShowCoffeeChat(false);
       setCoffeeChatMessage('');
+      alert('커피챗 요청이 전송되었습니다.');
     } catch (error) {
       console.error('Failed to send coffee chat:', error);
+      alert('커피챗 요청 전송에 실패했습니다.');
     } finally {
       setIsRequesting(false);
+    }
+  };
+
+  const handleBlockMember = async () => {
+    if (!member || !user) return;
+    
+    if (member.id === user.id) {
+      alert('자기 자신을 차단할 수 없습니다.');
+      return;
+    }
+    
+    if (!confirm(`${member.name}님을 차단하시겠습니까? 차단하면 해당 멤버는 당신의 커피챗을 볼 수 없게 됩니다.`)) {
+      return;
+    }
+    
+    try {
+      setIsBlocking(true);
+      await blockMember(member.id);
+      alert('멤버가 차단되었습니다.');
+      // 모달을 닫거나 새로고침할 수 있음
+      onClose();
+    } catch (error: any) {
+      console.error('Failed to block member:', error);
+      const errorMessage = error?.response?.data?.detail || '멤버 차단에 실패했습니다.';
+      alert(errorMessage);
+    } finally {
+      setIsBlocking(false);
     }
   };
 
@@ -219,16 +251,17 @@ export default function ProfileModal({
                         </span>
                       )}
                       <h3 className="text-2xl font-semibold text-white">{member.name}</h3>
-                      {member.coffee_chat_enabled && (
-                        <div className="relative">
-                          <div 
-                            className={`w-8 h-8 bg-[#00654D] rounded-full flex items-center justify-center hover:bg-[#004d3a] transition-all duration-300 cursor-pointer ${
-                              showCoffeeChat ? 'rotate-180' : ''
-                            }`}
-                            onClick={handleCoffeeChatToggle}
-                          >
-                            <FontAwesomeIcon icon={faCoffee} className="w-4 h-4 text-white" />
-                          </div>
+                      <div className="flex items-center gap-2">
+                        {member.coffee_chat_enabled && (
+                          <div className="relative">
+                            <div 
+                              className={`w-8 h-8 bg-[#00654D] rounded-full flex items-center justify-center hover:bg-[#004d3a] transition-all duration-300 cursor-pointer ${
+                                showCoffeeChat ? 'rotate-180' : ''
+                              }`}
+                              onClick={handleCoffeeChatToggle}
+                            >
+                              <FontAwesomeIcon icon={faCoffee} className="w-4 h-4 text-white" />
+                            </div>
                           
                           {/* 커피챗 메시지 입력 영역 */}
                           <div className={`absolute top-full left-0 mt-2 w-80 bg-[#1A1A1A] backdrop-blur-lg rounded-lg border border-[#404040] shadow-xl transition-all duration-300 z-20 ${
@@ -276,7 +309,23 @@ export default function ProfileModal({
                             </div>
                           </div>
                         </div>
-                      )}
+                        )}
+                        {/* 차단 버튼 - 자기 자신이 아닌 경우에만 표시 */}
+                        {user && member.id !== user.id && (
+                          <button
+                            onClick={handleBlockMember}
+                            disabled={isBlocking}
+                            className="w-8 h-8 bg-gray-600/50 hover:bg-gray-600 rounded-full flex items-center justify-center transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="멤버 차단"
+                          >
+                            {isBlocking ? (
+                              <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                              <FontAwesomeIcon icon={faBan} className="w-4 h-4 text-white" />
+                            )}
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <p className="text-sm text-gray-300 mb-1">
                       {member.school} {member.major}
