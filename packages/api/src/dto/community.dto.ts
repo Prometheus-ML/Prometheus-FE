@@ -2,6 +2,8 @@ import type {
   Post,
   Comment,
   LikeStatus,
+  PostReport,
+  PostReportReason,
 } from '@prometheus-fe/types';
 
 // 공통 응답 인터페이스 (내부에서만 사용)
@@ -69,6 +71,19 @@ export interface GetMemberPostsHistoryResponse {
   active_posts: number;
   deleted_posts: number;
   items: Post[];
+}
+
+// 게시글 신고
+export interface CreatePostReportRequest {
+  reason: PostReportReason;
+  description?: string;
+}
+
+export interface PostReportResponse extends PostReport {}
+
+export interface PostReportListResponse {
+  total: number;
+  items: PostReport[];
 }
 
 

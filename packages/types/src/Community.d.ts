@@ -45,4 +45,31 @@ export interface MemberPostsHistory {
   items: Post[];
 }
 
+export type PostReportReason =
+  | 'spam'
+  | 'abuse'
+  | 'misinformation'
+  | 'illegal'
+  | 'inappropriate'
+  | 'other';
+
+export type PostReportStatus = 'pending' | 'resolved' | 'dismissed';
+
+export interface PostReport {
+  id: number;
+  post_id: number;
+  post_title?: string;
+  reporter_id: string;
+  reporter_name: string;
+  reporter_gen: number;
+  reason: PostReportReason;
+  description?: string;
+  status: PostReportStatus;
+  resolver_id?: string | null;
+  resolution_note?: string | null;
+  created_at: string;
+  resolved_at?: string | null;
+}
+
+
 

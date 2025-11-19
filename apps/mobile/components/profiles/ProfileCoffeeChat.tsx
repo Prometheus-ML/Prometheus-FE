@@ -476,7 +476,7 @@ export default function ProfileCoffeeChat() {
         <View style={styles.filterContainer}>
           <Text style={styles.filterLabel}>기수:</Text>
           <FlatList
-            data={[{ gen: null, label: '전체' }, ...Array.from({ length: 20 }, (_, i) => ({ gen: i + 1, label: `${i + 1}기` }))]}
+            data={[{ gen: null, label: '전체' }, ...Array.from({ length: 9 }, (_, i) => ({ gen: i, label: `${i}기` }))]}
             renderItem={({ item }) => (
               <TouchableOpacity
                 onPress={() => setSelectedGen(item.gen)}

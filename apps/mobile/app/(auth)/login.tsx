@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, StyleSheet, TouchableOpacity, Dimensions, Alert, Image, TextInput } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, Dimensions, Alert, Image, TextInput, Modal, ScrollView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { GoogleLoginButton, AppleLoginButton } from '../../components';
@@ -12,6 +12,8 @@ export default function Login() {
   const [showTempLogin, setShowTempLogin] = useState(false);
   const [tempUsername, setTempUsername] = useState('');
   const [tempPassword, setTempPassword] = useState('');
+  const [isTermsAgreed, setIsTermsAgreed] = useState(false);
+  const [isTermsModalVisible, setIsTermsModalVisible] = useState(false);
   const { error, clearError, tempLogin, isLoading } = useAuthStore();
 
   // Google Sign-In 설정
@@ -51,15 +53,24 @@ export default function Login() {
     configureGoogleSignIn();
   }, []);
 
-  // 에러가 있을 때 표시
+  // 회원이 아닌 경우에만 Alert로 표시
   useEffect(() => {
     if (error) {
-      Alert.alert('로그인 오류', error);
+      // 회원 미등록 에러인 경우에만 Alert 표시
+      if (error.includes('프로메테우스 회원으로 등록되지 않은 계정입니다')) {
+        Alert.alert('로그인 실패', error);
+      }
+      // 다른 에러는 Alert로 표시하지 않음
       clearError();
     }
   }, [error, clearError]);
 
   const handleTempLogin = async () => {
+    if (!isTermsAgreed) {
+      Alert.alert('약관 동의 필요', 'EULA약관에 동의해야 로그인할 수 있습니다.');
+      return;
+    }
+
     if (!tempUsername.trim() || !tempPassword.trim()) {
       Alert.alert('입력 오류', '아이디와 비밀번호를 입력해주세요.');
       return;
@@ -73,6 +84,59 @@ export default function Login() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      <Modal
+        visible={isTermsModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsTermsModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>EULA 약관</Text>
+            <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+              <Text style={styles.modalSectionTitle}>불관용 정책</Text>
+              <Text style={styles.modalText}>
+                프로메테우스는 불쾌감을 주는 콘텐츠 또는 악성 사용자에 대해
+                관용이 없다.
+              </Text>
+
+              <Text style={styles.modalSectionTitle}>사용자 책임</Text>
+              <Text style={styles.modalText}>
+                사용자가 생성하는 모든 콘텐츠에 대한 책임은 사용자 본인에게 있다. 사용자는 불법적이거나
+                불쾌한 콘텐츠를 게시해서는 안 되며, 관련 법령과 커뮤니티 가이드를 준수해야 한다.
+              </Text>
+
+              <Text style={styles.modalSectionTitle}>강력한 조치</Text>
+              <Text style={styles.modalText}>
+                불관용 정책을 위반할 경우, 프로메테우스는 서비스 내 콘텐츠 삭제, 계정 일시 정지, 또는
+                영구 퇴출 등의 강력한 조치를 취할 수 있다.
+              </Text>
+            </ScrollView>
+
+            <View style={styles.modalButtonRow}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalCancelButton]}
+                onPress={() => {
+                  setIsTermsAgreed(false);
+                  setIsTermsModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>동의하지 않음</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalConfirmButton]}
+                onPress={() => {
+                  setIsTermsAgreed(true);
+                  setIsTermsModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>동의함</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {/* Background with curved shapes */}
       <View style={styles.background}>
         <View style={styles.curvedShape1} />
@@ -100,20 +164,29 @@ export default function Login() {
           {!showTempLogin ? (
             <>
               {googleConfigured ? (
-                <GoogleLoginButton />
+                <GoogleLoginButton isTermsAgreed={isTermsAgreed} />
               ) : (
                 <View style={[styles.googleButton, { opacity: 0.5 }]}>
                   <Text style={styles.googleButtonText}>Google 로그인 설정 중...</Text>
                 </View>
               )}
-              
-              <AppleLoginButton />
-              
+              {Platform.OS === 'ios' && (
+                <AppleLoginButton isTermsAgreed={isTermsAgreed} />
+              )}
+
+              <TouchableOpacity
+                style={styles.termsContainer}
+                onPress={() => setIsTermsModalVisible(true)}
+              >
+                <View style={[styles.termsIndicator, isTermsAgreed && styles.termsIndicatorActive]} />
+                <Text style={styles.termsText}>EULA약관에 동의합니다.</Text>
+              </TouchableOpacity>
+
               <TouchableOpacity 
                 style={styles.tempLoginToggle}
                 onPress={() => setShowTempLogin(true)}
               >
-                <Text style={styles.tempLoginToggleText}>임시 로그인 (개발용)</Text>
+                <Text style={styles.tempLoginToggleText}>임시 로그인 (심사용)</Text>
               </TouchableOpacity>
               
               <TouchableOpacity onPress={() => router.back()}>
@@ -159,6 +232,14 @@ export default function Login() {
                 />
               </View>
               
+              <TouchableOpacity
+                style={styles.termsContainer}
+                onPress={() => setIsTermsModalVisible(true)}
+              >
+                <View style={[styles.termsIndicator, isTermsAgreed && styles.termsIndicatorActive]} />
+                <Text style={styles.termsText}>EULA약관에 동의합니다.</Text>
+              </TouchableOpacity>
+
               <TouchableOpacity 
                 style={[styles.tempLoginButton, isLoading && styles.tempLoginButtonDisabled]}
                 onPress={handleTempLogin}
@@ -295,8 +376,30 @@ const styles = StyleSheet.create({
     color: '#888888',
     textAlign: 'center',
   },
+  termsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 8,
+  },
+  termsIndicator: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: '#c2402a',
+    marginRight: 8,
+    backgroundColor: 'transparent',
+  },
+  termsIndicatorActive: {
+    backgroundColor: '#c2402a',
+  },
+  termsText: {
+    fontSize: 13,
+    color: '#888888',
+    textDecorationLine: 'underline',
+  },
   tempLoginToggle: {
-    marginTop: 16,
     paddingVertical: 12,
     paddingHorizontal: 20,
   },
@@ -305,6 +408,21 @@ const styles = StyleSheet.create({
     color: '#888888',
     textAlign: 'center',
     textDecorationLine: 'underline',
+  },
+  appleDisabledContainer: {
+    width: 200,
+    height: 44,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#4B5563',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  appleDisabledText: {
+    fontSize: 11,
+    color: '#9CA3AF',
   },
   tempLoginContainer: {
     width: '100%',
@@ -357,7 +475,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#c2402a',
-    marginTop: 8,
+    marginTop: 16,
   },
   tempLoginButtonDisabled: {
     opacity: 0.5,
@@ -367,5 +485,65 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  modalContent: {
+    width: '100%',
+    maxHeight: '80%',
+    backgroundColor: '#111111',
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    borderWidth: 1,
+    borderColor: '#c2402a',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 12,
+  },
+  modalScroll: {
+    marginBottom: 16,
+  },
+  modalSectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  modalText: {
+    fontSize: 13,
+    color: '#D1D5DB',
+    lineHeight: 18,
+  },
+  modalButtonRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 999,
+  },
+  modalCancelButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  modalConfirmButton: {
+    backgroundColor: '#c2402a',
+  },
+  modalButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });

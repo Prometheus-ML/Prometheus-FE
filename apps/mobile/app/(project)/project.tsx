@@ -79,7 +79,7 @@ export default function ProjectPage() {
       let params: any = {
         page,
         size,
-        status: 'completed' // 완료된 프로젝트만 조회
+        // status 필터 제거: 모든 상태의 프로젝트 조회
       };
 
       // 검색어 필터 적용

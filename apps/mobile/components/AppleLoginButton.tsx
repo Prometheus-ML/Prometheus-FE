@@ -4,10 +4,19 @@ import { useAuthStore } from '@prometheus-fe/stores';
 import { router } from 'expo-router';
 import * as AppleAuthentication from 'expo-apple-authentication';
 
-export default function AppleLoginButton() {
+interface AppleLoginButtonProps {
+  isTermsAgreed?: boolean;
+}
+
+export default function AppleLoginButton({ isTermsAgreed = true }: AppleLoginButtonProps) {
   const { appleLogin, error, clearError } = useAuthStore();
 
   const handleAppleLogin = async () => {
+    if (!isTermsAgreed) {
+      Alert.alert('약관 동의 필요', 'EULA약관에 동의해야 로그인할 수 있습니다.');
+      return;
+    }
+
     // iOS에서만 Apple 로그인 지원
     if (Platform.OS !== 'ios') {
       Alert.alert(
@@ -95,11 +104,6 @@ export default function AppleLoginButton() {
         Alert.alert(
           'Apple 로그인',
           'Apple 로그인을 사용할 수 없습니다.\n\n해결 방법:\n1. iOS 13 이상이 필요합니다\n2. Apple ID가 기기에 로그인되어 있어야 합니다\n3. 설정 > Apple ID > 암호 및 보안에서 Apple ID 로그인 활성화'
-        );
-      } else {
-        Alert.alert(
-          'Apple 로그인 오류',
-          `오류 코드: ${error.code}\n메시지: ${error.message}\n\n다시 시도해주세요.`
         );
       }
     }

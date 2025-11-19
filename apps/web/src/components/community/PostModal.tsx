@@ -13,10 +13,11 @@ import {
   faCalendarAlt, 
   faComments,
   faCircle,
-  faPaperPlane
+  faPaperPlane,
+  faFlag,
 } from '@fortawesome/free-solid-svg-icons';
-import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 import Portal from '@/src/components/Portal';
+import PostReportModal from '@/src/components/community/PostReportModal';
 
 interface PostModalProps {
   postId: number | null;
@@ -49,11 +50,15 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
     clearSelectedPost,
     clearComments,
     toggleLike,
+    reportPost,
+    isReportingPost,
   } = useCommunity();
 
   const { user, canAccessAdministrator } = useAuthStore();
   const [newComment, setNewComment] = useState<any>({ content: '' });
   const [error, setError] = useState('');
+  const [reportToast, setReportToast] = useState<string | null>(null);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   // useImage 훅 사용
   const { getThumbnailUrl } = useImage();
@@ -80,8 +85,16 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
       clearComments();
       setNewComment({ content: '' });
       setError('');
+      setReportToast(null);
+      setIsReportModalOpen(false);
     }
   }, [isOpen, clearSelectedPost, clearComments]);
+
+  useEffect(() => {
+    if (!reportToast) return;
+    const timer = setTimeout(() => setReportToast(null), 5000);
+    return () => clearTimeout(timer);
+  }, [reportToast]);
 
   const getAuthorDisplayName = (authorId: string) => {
     if (selectedPost) {
@@ -179,10 +192,20 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
     return 'bg-[#8B0000] text-[#ffa282]';
   };
 
+  const handleReportSubmit = async (payload: { reason: string; description?: string }) => {
+    if (!postId) {
+      throw new Error('게시글 정보를 찾을 수 없습니다.');
+    }
+    await reportPost(postId, payload);
+    setReportToast('신고가 접수되었습니다. 운영진이 곧 확인할 예정입니다.');
+    setIsReportModalOpen(false);
+  };
+
   if (!isOpen) return null;
 
   return (
-    <Portal>
+    <>
+      <Portal>
       <div className="fixed inset-0 z-50 overflow-y-auto">
         {/* Prometheus background */}
         <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0 relative z-10">
@@ -200,6 +223,11 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                   </svg>
                 </div>
                 <h3 className="text-lg leading-6 font-kimm-bold text-white mb-2">게시글 상세</h3>
+                {reportToast && (
+                  <div className="mx-auto mb-3 max-w-md rounded-full border border-red-500/30 bg-red-500/10 px-4 py-1 text-xs text-red-200">
+                    {reportToast}
+                  </div>
+                )}
                 
                 <button 
                   onClick={onClose} 
@@ -242,14 +270,25 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                       <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" />
                       {new Date(selectedPost.created_at).toLocaleString('ko-KR')}
                     </span>
-                    {user && user.id === selectedPost.author_id && (
-                      <button
-                        onClick={handleDeletePost}
-                        className="text-red-400 hover:text-red-300 text-sm ml-auto"
-                      >
-                        게시글 삭제
-                      </button>
-                    )}
+                    <div className="ml-auto flex items-center gap-3">
+                      {user && user.id !== selectedPost.author_id && (
+                        <button
+                          onClick={() => setIsReportModalOpen(true)}
+                          className="flex items-center gap-1 text-xs font-semibold text-red-300 transition hover:text-red-100"
+                        >
+                          <FontAwesomeIcon icon={faFlag} className="h-3 w-3" />
+                          신고하기
+                        </button>
+                      )}
+                      {user && user.id === selectedPost.author_id && (
+                        <button
+                          onClick={handleDeletePost}
+                          className="text-red-400 hover:text-red-300 text-sm"
+                        >
+                          게시글 삭제
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* 좋아요 버튼 - 제목 오른쪽에 */}
@@ -422,6 +461,14 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
           </div>
         </div>
       </div>
-    </Portal>
+      </Portal>
+      <PostReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        onSubmit={handleReportSubmit}
+        postTitle={selectedPost?.title}
+        isSubmitting={isReportingPost}
+      />
+    </>
   );
 }

@@ -9,16 +9,23 @@ interface GoogleLoginButtonProps {
   onPress?: () => void;
   disabled?: boolean;
   style?: any;
+  isTermsAgreed?: boolean;
 }
 
 const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   onPress,
   disabled = false,
   style,
+  isTermsAgreed = true,
 }) => {
   const { googleCallback, isLoading, error, clearError } = useAuthStore();
 
   const handleGoogleLogin = async () => {
+    if (!isTermsAgreed) {
+      Alert.alert('약관 동의 필요', 'EULA약관에 동의해야 로그인할 수 있습니다.');
+      return;
+    }
+
     if (onPress) {
       onPress();
       return;
@@ -72,7 +79,7 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
         }
       } else {
         console.error('No server auth code received from Google');
-        Alert.alert('Google 로그인', 'Google 인증 토큰을 받지 못했습니다.');
+        //Alert.alert('Google 로그인', 'Google 인증 토큰을 받지 못했습니다.');
       }
     } catch (error: any) {
       console.error('Google Auth Error:', error);
