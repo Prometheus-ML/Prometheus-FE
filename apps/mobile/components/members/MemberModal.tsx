@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MemberDetailResponse } from '@prometheus-fe/types';
-import { useImage, useCoffeeChat } from '@prometheus-fe/hooks';
+import { useImage, useCoffeeChat, useMember } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -26,6 +26,7 @@ interface MemberModalProps {
 export default function MemberModal({ isOpen, onClose, member }: MemberModalProps) {
   const { getThumbnailUrl } = useImage();
   const { createRequest } = useCoffeeChat();
+  const { blockMember } = useMember();
   const { user } = useAuthStore();
 
   // 커피챗 관련 상태
@@ -33,6 +34,7 @@ export default function MemberModal({ isOpen, onClose, member }: MemberModalProp
   const [coffeeChatMessage, setCoffeeChatMessage] = useState('');
   const [isRequesting, setIsRequesting] = useState(false);
   const [modalImageError, setModalImageError] = useState(false);
+  const [isBlocking, setIsBlocking] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -79,6 +81,41 @@ export default function MemberModal({ isOpen, onClose, member }: MemberModalProp
     } finally {
       setIsRequesting(false);
     }
+  };
+
+  const handleBlockMember = () => {
+    if (!member || !user) return;
+    if (member.id === user.id) {
+      Alert.alert('알림', '자기 자신은 차단할 수 없습니다.');
+      return;
+    }
+
+    Alert.alert(
+      '멤버 차단',
+      `${member.name}님을 차단하시겠습니까?\n차단하면 해당 멤버는 당신의 커피챗 상태를 볼 수 없습니다.`,
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '차단',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setIsBlocking(true);
+              await blockMember(member.id);
+              Alert.alert('완료', '멤버가 차단되었습니다.');
+              onClose();
+            } catch (error: any) {
+              console.error('Failed to block member:', error);
+              const message =
+                error?.response?.data?.detail || '멤버 차단에 실패했습니다.';
+              Alert.alert('오류', message);
+            } finally {
+              setIsBlocking(false);
+            }
+          },
+        },
+      ],
+    );
   };
 
   const handleLinkPress = async (url: string) => {
@@ -206,25 +243,55 @@ export default function MemberModal({ isOpen, onClose, member }: MemberModalProp
                 </View>
               )}
 
-              {member.coffee_chat_enabled && (
-                <TouchableOpacity
-                  onPress={handleCoffeeChatToggle}
-                  style={{
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    borderRadius: 16,
-                    backgroundColor: '#00654D',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 6,
-                  }}
-                >
-                  <Ionicons name="cafe" size={14} color="white" />
-                  <Text style={{ color: 'white', fontSize: 14, fontWeight: '600' }}>
-                    커피챗 가능
-                  </Text>
-                </TouchableOpacity>
-              )}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                {member.coffee_chat_enabled && (
+                  <TouchableOpacity
+                    onPress={handleCoffeeChatToggle}
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      borderRadius: 16,
+                      backgroundColor: '#00654D',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}
+                  >
+                    <Ionicons name="cafe" size={14} color="white" />
+                    <Text style={{ color: 'white', fontSize: 14, fontWeight: '600' }}>
+                      커피챗 가능
+                    </Text>
+                  </TouchableOpacity>
+                )}
+
+                {user && member.id !== user.id && (
+                  <TouchableOpacity
+                    onPress={handleBlockMember}
+                    disabled={isBlocking}
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      borderRadius: 16,
+                      backgroundColor: 'rgba(220, 38, 38, 0.15)',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 6,
+                      borderWidth: 1,
+                      borderColor: 'rgba(220, 38, 38, 0.4)',
+                      opacity: isBlocking ? 0.6 : 1,
+                    }}
+                  >
+                    {isBlocking ? (
+                      <ActivityIndicator size="small" color="#DC2626" />
+                    ) : (
+                      <Ionicons name="ban" size={16} color="#F87171" />
+                    )}
+                    <Text style={{ color: '#F87171', fontSize: 14, fontWeight: '600' }}>
+                      차단
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
 
             {/* 이메일 */}

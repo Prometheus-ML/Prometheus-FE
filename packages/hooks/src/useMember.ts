@@ -273,6 +273,34 @@ export function useMember() {
     }
   }, [member]);
 
+  // 17. 멤버 차단
+  const blockMember = useCallback(async (memberId: string) => {
+    if (!member) {
+      throw new Error('member is not available');
+    }
+    try {
+      const data = await member.blockMember(memberId);
+      return data;
+    } catch (error) {
+      console.error(`멤버 ${memberId} 차단 실패:`, error);
+      throw error;
+    }
+  }, [member]);
+
+  // 18. 멤버 차단 해제
+  const unblockMember = useCallback(async (memberId: string) => {
+    if (!member) {
+      throw new Error('member is not available');
+    }
+    try {
+      const data = await member.unblockMember(memberId);
+      return data;
+    } catch (error) {
+      console.error(`멤버 ${memberId} 차단 해제 실패:`, error);
+      throw error;
+    }
+  }, [member]);
+
   return {
     // 상태
     members: allMembers,
@@ -301,6 +329,8 @@ export function useMember() {
     getMemberDetail,
     getMemberProjects,
     getMemberPosts,
+    blockMember,
+    unblockMember,
     
     // 핸들러들
     handleMemberSelect: useCallback((member: any) => setSelectedMember(member), []),
