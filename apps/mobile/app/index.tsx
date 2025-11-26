@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Text, View, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '@prometheus-fe/stores';
@@ -65,7 +64,7 @@ export default function Home() {
   // Loading state
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.container}>
         {/* Header Skeleton */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
@@ -123,12 +122,12 @@ export default function Home() {
             </View>
           </View>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
@@ -145,17 +144,6 @@ export default function Home() {
         
         {/* Right: Icons */}
         <View style={styles.headerIcons}>
-          {/*{canAccessAdministrator() && (
-            <TouchableOpacity 
-              style={styles.adminButton}
-              onPress={() => router.push('/admin')}
-            >
-              <Text style={styles.adminButtonText}>Admin</Text>
-            </TouchableOpacity>
-          )*/}
-          {/* <TouchableOpacity style={styles.iconButton}>
-            <FontAwesome name="bell" size={20} color="#FFFFFF" />
-          </TouchableOpacity> */}
           <TouchableOpacity 
             style={styles.iconButton} 
             onPress={() => {
@@ -323,7 +311,7 @@ export default function Home() {
           </>
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

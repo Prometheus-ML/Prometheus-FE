@@ -59,7 +59,18 @@ export default function GroupModal({ group, visible, onClose }: GroupModalProps)
   } = useGroup();
 
   const [error, setError] = useState('');
+  const [localLikeCount, setLocalLikeCount] = useState<number | null>(null);
   const { getThumbnailUrl } = useImage({});
+
+  // 그룹의 좋아요 개수 (로컬 상태가 있으면 우선 사용, 없으면 prop 사용)
+  const displayLikeCount = localLikeCount !== null ? localLikeCount : (group?.like_count || 0);
+
+  // 그룹 prop이 변경되면 로컬 상태 초기화
+  useEffect(() => {
+    if (group) {
+      setLocalLikeCount(null); // prop의 값으로 리셋
+    }
+  }, [group?.id]);
 
   // 그룹 상태 확인 (마감됨/진행중)
   const getGroupStatus = (group: Group) => {
@@ -105,7 +116,11 @@ export default function GroupModal({ group, visible, onClose }: GroupModalProps)
   const handleLikeToggle = async () => {
     if (!group) return;
     try {
-      await toggleGroupLike(group.id);
+      const result = await toggleGroupLike(group.id);
+      // 좋아요 개수를 즉시 업데이트
+      if (result && typeof result.like_count === 'number') {
+        setLocalLikeCount(result.like_count);
+      }
     } catch (err) {
       console.error('좋아요 토글 실패:', err);
       setError('좋아요 처리에 실패했습니다.');
@@ -314,7 +329,7 @@ export default function GroupModal({ group, visible, onClose }: GroupModalProps)
               {group.max_members && (
                 <Text style={styles.detailText}>최대 인원: {group.max_members}명</Text>
               )}
-              <Text style={styles.detailText}>좋아요: {group.like_count || 0}개</Text>
+              <Text style={styles.detailText}>좋아요: {displayLikeCount}개</Text>
             </View>
 
             {/* 마감일 정보 */}

@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
   TextInput,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useEvent, useMyAttendance } from '@prometheus-fe/hooks';
@@ -136,7 +135,7 @@ export default function EventPage() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['top']}>
+    <View className="flex-1 bg-black">
       {/* 헤더 */}
       <View className="px-4 py-4 border-b border-white/20">
         <View className="flex-row items-center justify-between">
@@ -315,7 +314,7 @@ export default function EventPage() {
         onClose={() => setShowEventListModal(false)}
         filter={filter}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 

@@ -11,7 +11,6 @@ import {
   Dimensions,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useMember, useImage } from '@prometheus-fe/hooks';
@@ -449,7 +448,7 @@ export default function MemberScreen() {
   // 로딩 상태
   if (isLoading && !appliedSearchTerm && appliedGen === 'all' && appliedStatus === 'all') {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }} edges={['top']}>
+      <View style={{ flex: 1, backgroundColor: '#000' }}>
         
         {/* 헤더 */}
         <View style={{ 
@@ -487,12 +486,12 @@ export default function MemberScreen() {
             ))}
           </View>
         </ScrollView>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }} edges={['top']}>
+    <View style={{ flex: 1, backgroundColor: '#000' }}>
       
       {/* 헤더 */}
       <View style={{ 
@@ -772,6 +771,6 @@ export default function MemberScreen() {
         onClose={closeDetail}
         member={selectedMember}
       />
-    </SafeAreaView>
+    </View>
   );
 }

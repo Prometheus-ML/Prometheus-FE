@@ -381,29 +381,25 @@ export function useProject() {
     try {
       const response = await project.addLike(projectId);
       
-      // 새로운 API 응답 구조에 맞게 처리
-      if (response.success) {
-        // 로컬 상태 업데이트 - 응답에서 받은 정확한 값 사용
-        setAllProjects(prev => prev.map(p => 
-          p.id === projectId 
-            ? { ...p, like_count: response.like_count, is_liked: response.is_liked }
-            : p
-        ));
-        
-        // selectedProject 상태도 업데이트 - 응답에서 받은 정확한 값 사용
-        if (selectedProject?.id === projectId) {
-          setSelectedProject(prev => prev ? { 
-            ...prev, 
-            like_count: response.like_count, 
-            is_liked: response.is_liked 
-          } : null);
-        }
-        
-        console.log('프로젝트 좋아요 추가 성공:', response.message);
-        return response;
-      } else {
-        throw new Error(response.message || '프로젝트 좋아요 추가에 실패했습니다.');
+      // API 응답 구조에 맞게 처리 (success 필드 없이 직접 처리)
+      // 로컬 상태 업데이트 - 응답에서 받은 정확한 값 사용
+      setAllProjects(prev => prev.map(p => 
+        p.id === projectId 
+          ? { ...p, like_count: response.like_count, is_liked: response.is_liked }
+          : p
+      ));
+      
+      // selectedProject 상태도 업데이트 - 응답에서 받은 정확한 값 사용
+      if (selectedProject?.id === projectId) {
+        setSelectedProject(prev => prev ? { 
+          ...prev, 
+          like_count: response.like_count, 
+          is_liked: response.is_liked 
+        } : null);
       }
+      
+      console.log('프로젝트 좋아요 추가 성공:', response.message);
+      return response;
     } catch (error) {
       console.error(`프로젝트 ${projectId} 좋아요 추가 실패:`, error);
       throw error;
@@ -418,29 +414,25 @@ export function useProject() {
     try {
       const response = await project.removeLike(projectId);
       
-      // 새로운 API 응답 구조에 맞게 처리
-      if (response.success) {
-        // 로컬 상태 업데이트 - 응답에서 받은 정확한 값 사용
-        setAllProjects(prev => prev.map(p => 
-          p.id === projectId 
-            ? { ...p, like_count: response.like_count, is_liked: response.is_liked }
-            : p
-        ));
-        
-        // selectedProject 상태도 업데이트 - 응답에서 받은 정확한 값 사용
-        if (selectedProject?.id === projectId) {
-          setSelectedProject(prev => prev ? { 
-            ...prev, 
-            like_count: response.like_count, 
-            is_liked: response.is_liked 
-          } : null);
-        }
-        
-        console.log('프로젝트 좋아요 제거 성공:', response.message);
-        return response;
-      } else {
-        throw new Error(response.message || '프로젝트 좋아요 제거에 실패했습니다.');
+      // API 응답 구조에 맞게 처리 (success 필드 없이 직접 처리)
+      // 로컬 상태 업데이트 - 응답에서 받은 정확한 값 사용
+      setAllProjects(prev => prev.map(p => 
+        p.id === projectId 
+          ? { ...p, like_count: response.like_count, is_liked: response.is_liked }
+          : p
+      ));
+      
+      // selectedProject 상태도 업데이트 - 응답에서 받은 정확한 값 사용
+      if (selectedProject?.id === projectId) {
+        setSelectedProject(prev => prev ? { 
+          ...prev, 
+          like_count: response.like_count, 
+          is_liked: response.is_liked 
+        } : null);
       }
+      
+      console.log('프로젝트 좋아요 제거 성공:', response.message);
+      return response;
     } catch (error) {
       console.error(`프로젝트 ${projectId} 좋아요 제거 실패:`, error);
       throw error;

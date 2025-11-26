@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { View, Text, ScrollView, TouchableOpacity, Image, RefreshControl, Alert, TextInput } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useProject } from '@prometheus-fe/hooks';
 import { useImage } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
@@ -330,7 +329,7 @@ export default function ProjectPage() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['top']}>
+    <View className="flex-1 bg-black">
       {/* 헤더 */}
       <View className="px-4 py-6 border-b border-white/20">
         <View className="flex-row items-center justify-between">
@@ -432,6 +431,6 @@ export default function ProjectPage() {
           </View>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

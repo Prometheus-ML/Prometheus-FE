@@ -1,6 +1,7 @@
 import React from 'react';
 import { usePathname } from 'expo-router';
 import { TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -12,6 +13,8 @@ interface ChatToggleProps {
 const ChatToggle: React.FC<ChatToggleProps> = ({ onToggle, isOpen }) => {
   const pathname = usePathname();
   const { user } = useAuthStore();
+  const insets = useSafeAreaInsets();
+  
   // 루트 페이지(/)에서는 ChatToggle을 숨김
   if (pathname === '/(auth)/login' || pathname === '/landing' || !user) {
     return null;
@@ -22,7 +25,10 @@ const ChatToggle: React.FC<ChatToggleProps> = ({ onToggle, isOpen }) => {
   };
 
   return (
-    <View className="absolute bottom-6 right-6 z-50">
+    <View 
+      className="absolute right-6 z-50"
+      style={{ bottom: 24 + insets.bottom }}
+    >
       <TouchableOpacity
         onPress={handlePress}
         className={`
