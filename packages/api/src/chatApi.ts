@@ -133,15 +133,26 @@ export class ChatApi {
    */
   getWebSocketUrl(chatRoomId: number, token: string): string {
     // ApiClient의 baseUrl을 직접 접근할 수 없으므로, 환경 변수나 설정에서 가져와야 함
-    const baseUrl = process.env.NEXT_PUBLIC_API_URI || process.env.EXPO_PUBLIC_API_URI || 'http://localhost:8000';
-    const wsBaseUrl = baseUrl.replace('http://', 'ws://').replace('https://', 'wss://');
+    const baseUrl = process.env.NEXT_PUBLIC_API_URI || 'http://localhost:8000';
+    
+    // baseUrl에서 마지막 슬래시 제거
+    const normalizedBaseUrl = baseUrl.replace(/\/$/, '');
+    
+    // WebSocket 프로토콜로 변환
+    const wsBaseUrl = normalizedBaseUrl.replace('http://', 'ws://').replace('https://', 'wss://');
+    
+    // baseUrl에 이미 /api/v1이 포함되어 있는지 확인
+    const hasApiV1 = normalizedBaseUrl.includes('/api/v1');
+    const apiPath = hasApiV1 ? '/chat/ws' : '/api/v1/chat/ws';
+    
+    // JWT 토큰을 URL 인코딩하여 특수 문자 문제 방지
+    const encodedToken = encodeURIComponent(token);
     
     // 연결 최적화를 위한 쿼리 파라미터 추가
     // optimize=true: 서버에서 즉시 연결 상태 전송
     // reconnect=true: 재연결 지원 활성화
     // heartbeat=true: 하트비트 메시지 활성화
-    // transports=websocket: Socket.IO 클라이언트에서 websocket 전송만 사용 (에러 방지)
-    return `${wsBaseUrl}/chat/ws/${chatRoomId}?token=${token}&optimize=true&reconnect=true&heartbeat=true&transports=websocket`;
+    return `${wsBaseUrl}${apiPath}/${chatRoomId}?token=${encodedToken}&optimize=true&reconnect=true&heartbeat=true`;
   }
 }
 

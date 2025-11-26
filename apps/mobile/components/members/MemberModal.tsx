@@ -295,9 +295,9 @@ export default function MemberModal({ isOpen, onClose, member }: MemberModalProp
             </View>
 
             {/* 이메일 */}
-            <Text style={{ color: '#e0e0e0', fontSize: 16, marginBottom: 8 }}>
+            {/* <Text style={{ color: '#e0e0e0', fontSize: 16, marginBottom: 8 }}>
               {member.email}
-            </Text>
+            </Text> */}
           </View>
 
           {/* 커피챗 요청 섹션 */}
