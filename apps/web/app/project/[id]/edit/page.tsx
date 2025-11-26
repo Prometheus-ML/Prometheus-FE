@@ -210,6 +210,7 @@ export default function EditProjectPage() {
           }}
           mode="edit"
           showStatus={false}
+          isAdmin={canManage}
           onSubmit={handleSave}
         />
       </div>

@@ -22,6 +22,7 @@ export interface CreateProjectRequest {
   panel_url?: string | null;
   thumbnail_url?: string | null;
   gen: number;
+  status?: 'active' | 'completed' | 'paused' | null;
 }
 
 export interface CreateProjectDto extends BaseResponse {

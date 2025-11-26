@@ -76,13 +76,13 @@ export default function NewProjectPage() {
         <GlassCard className="mb-6">
           <div className="p-6">
             <h2 className="text-lg font-semibold text-white mb-4">프로젝트 정보</h2>
-                    <ProjectForm 
-          initial={{}}
-          mode="create"
-          showStatus={true}
-          isAdmin={true}
-          onSubmit={handleSubmit}
-        />
+            <ProjectForm 
+              initial={{}}
+              mode="create"
+              showStatus={true}
+              isAdmin={true}
+              onSubmit={handleSubmit}
+            />
           </div>
         </GlassCard>
       </div>
