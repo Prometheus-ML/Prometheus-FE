@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useLanding } from '@prometheus-fe/hooks';
+import { useLanding, useImage } from '@prometheus-fe/hooks';
 
 export default function NewsPage() {
   const { links, getLinks, isLoadingLinks } = useLanding();
+  const { getImageUrl } = useImage();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
@@ -52,13 +53,25 @@ export default function NewsPage() {
                     <div className="w-full h-48 bg-white/10 relative">
                       {link.image_url ? (
                         <Image
-                          src={link.image_url}
+                          src={getImageUrl(link.image_url, 400)}
                           alt={link.title}
                           width={400}
                           height={192}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            // Google Drive 링크인 경우 썸네일 URL로 재시도
+                            if (link.image_url?.includes('drive.google.com')) {
+                              const fileId = link.image_url.match(/\/d\/([^\/]+)/)?.[1];
+                              if (fileId) {
+                                target.src = `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`;
+                              }
+                            } else if (link.image_url && target.src !== link.image_url) {
+                              target.src = link.image_url;
+                            }
+                          }}
                         />
-                      ) : (
+                      ) : ( 
                         <div className="absolute inset-0 flex items-center justify-center">
                           <span className="text-gray-400 text-2xl">📰</span>
                         </div>
@@ -70,7 +83,7 @@ export default function NewsPage() {
                       </h3>
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-gray-400">
-                          {new Date(link.created_at).toLocaleDateString()}
+                          {new Date(link.post_date).toLocaleDateString()}
                         </span>
                         <a 
                           href={link.url} 
