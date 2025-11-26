@@ -10,7 +10,6 @@ import {
   StyleSheet,
   FlatList,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@prometheus-fe/stores';
 import { useImage, useMember } from '@prometheus-fe/hooks';
@@ -413,17 +412,17 @@ export default function ProfileScreen() {
 
   if (isLoadingProfile || !myProfile) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#8B0000" />
           <Text style={styles.loadingText}>프로필을 불러오는 중...</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       
       {/* 프로필 헤더 */}
       <ProfileHeader
@@ -456,7 +455,7 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
         style={styles.content}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 

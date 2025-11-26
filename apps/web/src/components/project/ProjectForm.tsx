@@ -238,8 +238,7 @@ export default function ProjectForm({
       thumbnail_url: formData.thumbnail_url || '',
       gen: typeof formData.gen === 'number' ? formData.gen : undefined,
       status: formData.status,
-      members: formData.members,
-      ...(showStatus ? { status: formData.status } : {})
+      members: formData.members
     };
     
     console.log('Submitting project form data:', payload);

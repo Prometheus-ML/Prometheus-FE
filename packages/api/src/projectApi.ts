@@ -40,7 +40,8 @@ export class ProjectApi {
         demo_url: formData.demo_url?.trim() || null,
         panel_url: formData.panel_url?.trim() || null,
         thumbnail_url: formData.thumbnail_url?.trim() || null,
-        gen: formData.gen || 1 // Default to gen 1 if not provided
+        gen: formData.gen || 1, // Default to gen 1 if not provided
+        status: formData.status || 'active' // Default to active if not provided
       };
       
       // Admin API 사용 (관리자 전용)

@@ -265,6 +265,9 @@ export function useGroup() {
       if (selectedGroup && selectedGroup.id === groupId) {
         setSelectedGroup(prev => prev ? { ...prev, like_count: result.like_count } : null);
       }
+
+      // 결과 반환 (모달에서 즉시 업데이트하기 위해)
+      return result;
     } catch (error) {
       console.error(`그룹 ${groupId} 좋아요 토글 실패:`, error);
       throw error;

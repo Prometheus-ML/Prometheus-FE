@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Text, View, StyleSheet, TouchableOpacity, Dimensions, Alert, Image, TextInput, Modal, ScrollView, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { GoogleLoginButton, AppleLoginButton } from '../../components';
 import { useAuthStore } from '@prometheus-fe/stores';
@@ -14,7 +13,7 @@ export default function Login() {
   const [tempPassword, setTempPassword] = useState('');
   const [isTermsAgreed, setIsTermsAgreed] = useState(false);
   const [isTermsModalVisible, setIsTermsModalVisible] = useState(false);
-  const { error, clearError, tempLogin, isLoading } = useAuthStore();
+  const { error, clearError, tempLogin } = useAuthStore();
 
   // Google Sign-In 설정
   useEffect(() => {
@@ -83,7 +82,7 @@ export default function Login() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       <Modal
         visible={isTermsModalVisible}
         transparent
@@ -241,19 +240,18 @@ export default function Login() {
               </TouchableOpacity>
 
               <TouchableOpacity 
-                style={[styles.tempLoginButton, isLoading && styles.tempLoginButtonDisabled]}
+                style={styles.tempLoginButton}
                 onPress={handleTempLogin}
-                disabled={isLoading}
               >
                 <Text style={styles.tempLoginButtonText}>
-                  {isLoading ? '로그인 중...' : '로그인'}
+                  로그인
                 </Text>
               </TouchableOpacity>
             </View>
           )}
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -476,9 +474,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#c2402a',
     marginTop: 16,
-  },
-  tempLoginButtonDisabled: {
-    opacity: 0.5,
   },
   tempLoginButtonText: {
     color: '#FFFFFF',

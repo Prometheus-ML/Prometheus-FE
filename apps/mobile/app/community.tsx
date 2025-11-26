@@ -11,7 +11,6 @@ import {
   Modal,
   Image,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useCommunity } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
@@ -186,7 +185,7 @@ export default function CommunityPage() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }} edges={['top']}>
+    <View style={{ flex: 1, backgroundColor: '#000' }}>
       {/* 헤더 */}
       <View style={{
         flexDirection: 'row',
@@ -495,7 +494,7 @@ export default function CommunityPage() {
           fetchPostsData(); // 모달 닫을 때 목록 새로고침
         }}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -538,7 +537,7 @@ function PostCreateModal({ visible, onClose, onSubmit, isSubmitting }: {
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }} edges={['top']}>
+      <View style={{ flex: 1, backgroundColor: '#000' }}>
         {/* 헤더 */}
         <View style={{
           flexDirection: 'row',
@@ -679,7 +678,7 @@ function PostCreateModal({ visible, onClose, onSubmit, isSubmitting }: {
             </Text>
           </TouchableOpacity>
         </ScrollView>
-      </SafeAreaView>
+      </View>
     </Modal>
   );
 }
@@ -782,7 +781,7 @@ function PostDetailModal({ visible, post, onClose }: {
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }} edges={['top']}>
+      <View style={{ flex: 1, backgroundColor: '#000' }}>
         {/* 헤더 */}
         <View style={{
           flexDirection: 'row',
@@ -1032,7 +1031,7 @@ function PostDetailModal({ visible, post, onClose }: {
             <Text style={{ color: '#888', fontSize: 16 }}>게시글을 찾을 수 없습니다.</Text>
           </View>
         )}
-      </SafeAreaView>
+      </View>
       <ReportPostModal
         visible={reportModalVisible}
         onClose={() => setReportModalVisible(false)}

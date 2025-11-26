@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, ScrollView, TouchableOpacity, Image, Alert, Modal } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, ScrollView, TouchableOpacity, Image, Alert, Modal, Dimensions } from 'react-native';
 import { useProject, useImage, useMember } from '@prometheus-fe/hooks';
 import { useAuthStore } from '@prometheus-fe/stores';
 import AddMemberModal from '../../../components/AddMemberModal';
 import { Ionicons } from '@expo/vector-icons';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface Member {
   id: string;
@@ -88,6 +89,8 @@ export default function ProjectDetailPage() {
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [memberModalMode, setMemberModalMode] = useState<'add' | 'edit'>('add');
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [imageViewerVisible, setImageViewerVisible] = useState(false);
+  const [viewingImageUrl, setViewingImageUrl] = useState<string | null>(null);
 
   // 실제 인증 상태 사용
   const { canAccessAdministrator, user } = useAuthStore();
@@ -323,22 +326,18 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={['top']}>
+    <View className="flex-1 bg-black">
       {/* 헤더 */}
-      <View className="px-4 py-6 border-b border-white/20">
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center">
-            <TouchableOpacity
-              onPress={() => router.back()}
-              className="w-10 h-10 flex items-center justify-center mr-3"
-            >
-              <Ionicons name="arrow-back" size={24} color="white" />
-            </TouchableOpacity>
-            <View>
-              <Text className="text-xl font-bold text-white">프로젝트 상세</Text>
-              <Text className="text-sm text-gray-300">프로젝트 정보 및 팀원</Text>
-            </View>
-          </View>
+      <View className="px-4 py-6 border-b border-white/20 flex-row items-center">
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="w-10 h-10 flex items-center justify-center mr-3"
+        >
+          <Ionicons name="arrow-back" size={24} color="white" />
+        </TouchableOpacity>
+        <View>
+          <Text className="text-xl font-bold text-white">프로젝트 상세</Text>
+          <Text className="text-sm text-gray-300">프로젝트 정보 및 팀원</Text>
         </View>
       </View>
 
@@ -447,22 +446,36 @@ export default function ProjectDetailPage() {
         {(isValidUrl(selectedProject.thumbnail_url) || isValidUrl(selectedProject.panel_url)) && (
           <View className="mb-8">
             {isValidUrl(selectedProject.thumbnail_url) && (
-              <View className="mb-6">
+              <TouchableOpacity 
+                className="mb-6"
+                onPress={() => {
+                  setViewingImageUrl(getThumbnailUrl(selectedProject.thumbnail_url!, 1200));
+                  setImageViewerVisible(true);
+                }}
+                activeOpacity={0.9}
+              >
                 <Image
                   source={{ uri: getThumbnailUrl(selectedProject.thumbnail_url!, 800) }}
                   className="w-full h-48 rounded-lg"
                   resizeMode="cover"
                 />
-              </View>
+              </TouchableOpacity>
             )}
             {isValidUrl(selectedProject.panel_url) && (
-              <View className="mb-6">
+              <TouchableOpacity 
+                className="mb-6"
+                onPress={() => {
+                  setViewingImageUrl(getThumbnailUrl(selectedProject.panel_url!, 2000));
+                  setImageViewerVisible(true);
+                }}
+                activeOpacity={0.9}
+              >
                 <Image
                   source={{ uri: getThumbnailUrl(selectedProject.panel_url!, 1000) }}
-                  className="w-full h-64 rounded-lg"
-                  resizeMode="cover"
+                  className="w-full h-72 rounded"
+                  resizeMode="contain"
                 />
-              </View>
+              </TouchableOpacity>
             )}
           </View>
         )}
@@ -568,6 +581,61 @@ export default function ProjectDetailPage() {
         onClose={closeMemberModal}
         onSubmit={submitMember}
       />
-    </SafeAreaView>
+
+      {/* 이미지 뷰어 모달 */}
+      <Modal
+        visible={imageViewerVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setImageViewerVisible(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.95)' }}>
+          {/* 닫기 버튼 */}
+          <View style={{ 
+            position: 'absolute', 
+            top: 50, 
+            right: 20, 
+            zIndex: 1000,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            borderRadius: 20,
+            padding: 8
+          }}>
+            <TouchableOpacity
+              onPress={() => setImageViewerVisible(false)}
+              style={{ padding: 4 }}
+            >
+              <Ionicons name="close" size={28} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+
+          {/* 확대/축소 가능한 이미지 */}
+          {viewingImageUrl && (
+            <ScrollView
+              style={{ flex: 1 }}
+              contentContainerStyle={{ 
+                flexGrow: 1,
+                justifyContent: 'center', 
+                alignItems: 'center' 
+              }}
+              maximumZoomScale={5}
+              minimumZoomScale={1}
+              showsHorizontalScrollIndicator={false}
+              showsVerticalScrollIndicator={false}
+              bouncesZoom={true}
+              centerContent={true}
+            >
+              <Image
+                source={{ uri: viewingImageUrl }}
+                style={{
+                  width: SCREEN_WIDTH,
+                  height: SCREEN_HEIGHT * 0.8,
+                }}
+                resizeMode="contain"
+              />
+            </ScrollView>
+          )}
+        </View>
+      </Modal>
+    </View>
   );
 }

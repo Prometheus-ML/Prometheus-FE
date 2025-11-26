@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,6 @@ import {
   Dimensions,
   RefreshControl,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useGroup } from '@prometheus-fe/hooks';
@@ -102,6 +101,14 @@ export default function GroupPage() {
       });
     }
   }, [groups, checkUserLikedGroup, checkUserMembership]);
+
+  const resolveGroupImageUrl = useCallback((value?: string, size: number = 300) => {
+    if (!value) return '';
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+      return getThumbnailUrl(value, size);
+    }
+    return `https://drive.google.com/thumbnail?id=${value}&sz=w${size}`;
+  }, [getThumbnailUrl]);
 
   const loadGroups = async () => {
     try {
@@ -240,7 +247,7 @@ export default function GroupPage() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
@@ -375,7 +382,7 @@ export default function GroupPage() {
                 <View style={styles.thumbnailContainer}>
                   {group.thumbnail_url && !imageErrors[group.id.toString()] ? (
                     <Image
-                      source={{ uri: getThumbnailUrl(group.thumbnail_url, 300) }}
+                      source={{ uri: resolveGroupImageUrl(group.thumbnail_url, 300) }}
                       style={styles.thumbnail}
                       resizeMode="cover"
                       onError={() => handleImageError(group.id.toString())}
@@ -538,7 +545,19 @@ export default function GroupPage() {
       <GroupModal
         group={selectedGroup}
         visible={showGroupDetail}
-        onClose={() => setShowGroupDetail(false)}
+        onClose={async () => {
+          setShowGroupDetail(false);
+          // 모달이 닫힐 때 그룹 목록을 새로고침하여 좋아요 개수 업데이트
+          await loadGroups();
+          // 선택된 그룹의 좋아요 상태 확인 (이미 toggleGroupLike에서 업데이트되지만 확실히 하기 위해)
+          if (selectedGroup) {
+            try {
+              await checkUserLikedGroup(selectedGroup.id);
+            } catch (error) {
+              console.warn(`그룹 ${selectedGroup.id} 좋아요 상태 확인 실패:`, error);
+            }
+          }
+        }}
       />
 
       {/* 그룹 생성 폼 */}
@@ -548,7 +567,7 @@ export default function GroupPage() {
         onCancel={() => setShowCreateForm(false)}
         isSubmitting={isCreatingGroup}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -558,7 +577,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
   header: {
-    paddingTop: 50,
+    paddingTop: 10,
     paddingBottom: 16,
     paddingHorizontal: 16,
     borderBottomWidth: 1,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -12,9 +12,9 @@ import {
   Image,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-//import * as ImagePicker from 'expo-image-picker';
+import * as ImagePicker from 'expo-image-picker';
 import { useImage } from '@prometheus-fe/hooks';
-import type { ImageCategory } from '@prometheus-fe/types';
+import { useApi } from '@prometheus-fe/context';
 
 interface GroupFormData {
   name: string;
@@ -42,21 +42,14 @@ export default function GroupForm({ visible, onSubmit, onCancel, isSubmitting = 
     thumbnail_url: undefined
   });
 
-  const {
-    uploadImage,
-    validateImageFile,
-    getThumbnailUrl,
-    isUploading: isImageUploading,
-    uploadError: imageUploadError,
-    clearError: clearImageError
-  } = useImage({
-    onUploadSuccess: (response) => {
-      setFormData(prev => ({ ...prev, thumbnail_url: response.id }));
-    },
-    onUploadError: (error) => {
-      console.error('이미지 업로드 실패:', error);
-    }
-  });
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState<string | undefined>(undefined);
+  const [imageUploadError, setImageUploadError] = useState<string | null>(null);
+
+  const clearImageError = useCallback(() => setImageUploadError(null), []);
+
+  const { storage } = useApi();
+  const { getThumbnailUrl, getBestThumbnailUrl } = useImage();
 
   const handleSubmit = async () => {
     if (!formData.name.trim()) {
@@ -91,64 +84,90 @@ export default function GroupForm({ visible, onSubmit, onCancel, isSubmitting = 
     }));
   };
 
-  // const handleImagePicker = async () => {
-  //   try {
-  //     // 권한 요청
-  //     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  const resolveThumbnailPreview = useCallback((value?: string, size: number = 200) => {
+    if (!value) return '';
+    const normalizedUrl = value.startsWith('http://') || value.startsWith('https://')
+      ? value
+      : `https://lh3.googleusercontent.com/d/${value}`;
+    return getThumbnailUrl(normalizedUrl, size);
+  }, [getThumbnailUrl]);
+
+  const previewUri = useMemo(() => {
+    if (thumbnailPreviewUrl) {
+      return thumbnailPreviewUrl;
+    }
+    return resolveThumbnailPreview(formData.thumbnail_url, 200);
+  }, [formData.thumbnail_url, resolveThumbnailPreview, thumbnailPreviewUrl]);
+
+  const handleImagePicker = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
       
-  //     if (permissionResult.granted === false) {
-  //       Alert.alert('권한 필요', '사진 라이브러리에 접근하려면 권한이 필요합니다.');
-  //       return;
-  //     }
+      if (permissionResult.granted === false) {
+        Alert.alert('권한 필요', '사진 라이브러리에 접근하려면 권한이 필요합니다.');
+        return;
+      }
 
-  //     // 이미지 선택
-  //     const result = await ImagePicker.launchImageLibraryAsync({
-  //       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-  //       allowsEditing: true,
-  //       aspect: [16, 9],
-  //       quality: 0.8,
-  //     });
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [16, 9],
+        quality: 0.8,
+      });
 
-  //     if (!result.canceled && result.assets[0]) {
-  //       const asset = result.assets[0];
-        
-  //       // File 객체 생성 (React Native에서는 다른 방식으로 처리)
-  //       const file = {
-  //         uri: asset.uri,
-  //         type: asset.type || 'image/jpeg',
-  //         name: asset.fileName || 'image.jpg',
-  //         size: asset.fileSize || 0,
-  //       } as any;
+      if (result.canceled || !result.assets || result.assets.length === 0) {
+        return;
+      }
 
-  //       // 이미지 파일 검증
-  //       const validationError = validateImageFile(file);
-  //       if (validationError) {
-  //         Alert.alert('오류', validationError);
-  //         return;
-  //       }
+      const asset = result.assets[0];
+      const maxSize = 10 * 1024 * 1024; // 10MB
 
-  //       // 이전 에러 클리어
-  //       clearImageError();
-        
-  //       try {
-  //         // useImage 훅을 사용하여 이미지 업로드
-  //         const imageUrl = await uploadImage(file, 'group' as ImageCategory);
-  //         if (imageUrl) {
-  //           setFormData(prev => ({ ...prev, thumbnail_url: imageUrl }));
-  //         }
-  //       } catch (error) {
-  //         console.error('썸네일 업로드 처리 중 오류:', error);
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error('이미지 선택 오류:', error);
-  //     Alert.alert('오류', '이미지 선택 중 오류가 발생했습니다.');
-  //   }
-  // };
+      if (asset.fileSize && asset.fileSize > maxSize) {
+        Alert.alert('오류', '파일 크기는 10MB를 초과할 수 없습니다.');
+        return;
+      }
+
+      clearImageError();
+      setIsUploadingImage(true);
+      
+      try {
+        const payload = new FormData();
+        payload.append('file', {
+          uri: asset.uri,
+          type: asset.mimeType || 'image/jpeg',
+          name: asset.fileName || `image_${Date.now()}.jpg`,
+        } as any);
+        payload.append('category', 'group');
+
+        const response = await storage.uploadFormData(payload);
+        const previewCandidate = getBestThumbnailUrl(response, 400);
+
+        setFormData(prev => ({ ...prev, thumbnail_url: response.id }));
+        if (previewCandidate) {
+          setThumbnailPreviewUrl(getThumbnailUrl(previewCandidate, 200));
+        } else if (response.id) {
+          setThumbnailPreviewUrl(resolveThumbnailPreview(response.id, 200));
+        }
+      } catch (error: any) {
+        console.error('썸네일 업로드 처리 중 오류:', error);
+        const errorMessage = error?.message || '이미지 업로드에 실패했습니다.';
+        Alert.alert('오류', errorMessage);
+        setImageUploadError(errorMessage);
+      } finally {
+        setIsUploadingImage(false);
+      }
+    } catch (error) {
+      console.error('이미지 선택 오류:', error);
+      Alert.alert('오류', '이미지 선택 중 오류가 발생했습니다.');
+      setIsUploadingImage(false);
+      setImageUploadError('이미지 선택 중 오류가 발생했습니다.');
+    }
+  };
 
   const removeThumbnail = () => {
     setFormData(prev => ({ ...prev, thumbnail_url: undefined }));
     clearImageError();
+    setThumbnailPreviewUrl(undefined);
   };
 
   const resetForm = () => {
@@ -161,6 +180,7 @@ export default function GroupForm({ visible, onSubmit, onCancel, isSubmitting = 
       thumbnail_url: undefined
     });
     clearImageError();
+    setThumbnailPreviewUrl(undefined);
   };
 
   const handleCancel = () => {
@@ -190,17 +210,17 @@ export default function GroupForm({ visible, onSubmit, onCancel, isSubmitting = 
           <Text style={styles.headerTitle}>새 그룹 생성</Text>
           <TouchableOpacity
             onPress={handleSubmit}
-            disabled={isSubmitting || isImageUploading || !formData.name.trim() || !formData.description?.trim()}
+            disabled={isSubmitting || isUploadingImage || !formData.name.trim() || !formData.description?.trim()}
             style={[
               styles.submitButton,
-              (isSubmitting || isImageUploading || !formData.name.trim() || !formData.description?.trim()) && styles.submitButtonDisabled
+              (isSubmitting || isUploadingImage || !formData.name.trim() || !formData.description?.trim()) && styles.submitButtonDisabled
             ]}
           >
             {isSubmitting ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <Text style={styles.submitButtonText}>
-                {isImageUploading ? '업로드 중...' : '생성'}
+                {isUploadingImage ? '업로드 중...' : '생성'}
               </Text>
             )}
           </TouchableOpacity>
@@ -211,15 +231,14 @@ export default function GroupForm({ visible, onSubmit, onCancel, isSubmitting = 
           <View style={styles.section}>
             <Text style={styles.label}>그룹 썸네일</Text>
             <TouchableOpacity
-              //onPress={handleImagePicker}
-              onPress={() => {}}
-              disabled={isImageUploading}
+              onPress={handleImagePicker}
+              disabled={isUploadingImage}
               style={styles.imageUploadButton}
             >
-              {formData.thumbnail_url ? (
+              {(formData.thumbnail_url || thumbnailPreviewUrl) ? (
                 <View style={styles.imageContainer}>
                   <Image
-                    source={{ uri: getThumbnailUrl(formData.thumbnail_url, 200) }}
+                    source={{ uri: previewUri }}
                     style={styles.uploadedImage}
                     resizeMode="cover"
                   />
@@ -232,7 +251,7 @@ export default function GroupForm({ visible, onSubmit, onCancel, isSubmitting = 
                 </View>
               ) : (
                 <View style={styles.imageUploadPlaceholder}>
-                  {isImageUploading ? (
+                  {isUploadingImage ? (
                     <ActivityIndicator size="large" color="#c2402a" />
                   ) : (
                     <>

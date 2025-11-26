@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,7 +12,7 @@ export default function Landing() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       <TouchableOpacity style={styles.bottomRightButton} onPress={handleGoBack}>
         <Ionicons name="home" size={20} color="#fff" />
       </TouchableOpacity>
@@ -29,7 +28,7 @@ export default function Landing() {
           mediaPlaybackRequiresUserAction={false}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

@@ -2,18 +2,20 @@
   "expo": {
     "name": "Prometheus",
     "slug": "prometheus",
-    "version": "0.1.6",
+    "version": "0.1.8",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "prometheus",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "buildNumber": "6",
+      "buildNumber": "8",
       "supportsTablet": true,
       "bundleIdentifier": "com.prometheusai.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "그룹 썸네일과 프로필 이미지를 업로드하려면 사진 라이브러리 접근이 필요합니다.",
+        "NSPhotoLibraryAddUsageDescription": "선택한 이미지를 업로드하기 위해 사진 라이브러리에 저장 권한이 필요합니다.",
         "CFBundleURLTypes": [
           {
             "CFBundleURLName": "Google Sign-In",
@@ -32,9 +34,11 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.prometheusai.app",
-      "versionCode": 6,
+      "versionCode": 8,
       "permissions": [
-        "android.permission.INTERNET"
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES"
       ]
     },
     "web": {
@@ -42,7 +46,14 @@
     },
     "plugins": [
       "expo-router",
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "그룹 썸네일과 프로필 이미지를 업로드하려면 사진 접근 권한이 필요합니다.",
+          "cameraPermission": "카메라로 촬영한 이미지를 업로드하려면 카메라 접근 권한이 필요합니다."
+        }
+      ]
     ],
     "extra": {
       "router": {},
