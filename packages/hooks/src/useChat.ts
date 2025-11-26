@@ -430,8 +430,41 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
           break;
           
         case 'message_sent':
-          console.log('Message sent confirmation:', data);
+          console.log('Message sent confirmation received:', data);
           // 메시지 전송 확인 처리
+          if ('success' in data) {
+            const messageSentData = data as any;
+            if (messageSentData.success === false) {
+              console.error('Message send failed:', {
+                error: messageSentData.error,
+                timestamp: messageSentData.timestamp,
+                originalMessage: messageSentData.original_message || 'N/A'
+              });
+              
+              // 실패한 메시지가 있다면 임시 메시지 제거
+              if (messageSentData.original_message) {
+                setState(prev => ({
+                  ...prev,
+                  messages: prev.messages.filter(m => {
+                    // 임시 메시지 중에서 실패한 메시지 찾기
+                    if (m.id < 0 && m.content === messageSentData.original_message.content) {
+                      console.log('Removing failed temporary message:', m.id);
+                      return false;
+                    }
+                    return true;
+                  })
+                }));
+              }
+              
+              // 에러 상태 업데이트
+              setState(prev => ({
+                ...prev,
+                error: messageSentData.error || '메시지 전송에 실패했습니다.'
+              }));
+            } else {
+              console.log('Message sent successfully:', messageSentData);
+            }
+          }
           break;
           
         case 'heartbeat':
@@ -698,13 +731,39 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
 
   // 메시지 전송
   const sendMessage = useCallback(async (content: string, messageType: 'text' | 'image' | 'file' | 'system' = 'text'): Promise<boolean> => {
-    if (!state.currentRoom || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+    console.log('sendMessage called:', { 
+      content, 
+      messageType, 
+      hasCurrentRoom: !!state.currentRoom,
+      currentRoomId: state.currentRoom?.id,
+      wsReadyState: wsRef.current?.readyState,
+      wsOpen: wsRef.current?.readyState === WebSocket.OPEN
+    });
+
+    if (!state.currentRoom) {
+      console.error('Cannot send message: currentRoom is not set');
+      return false;
+    }
+
+    if (!wsRef.current) {
+      console.error('Cannot send message: WebSocket is not initialized');
+      return false;
+    }
+
+    if (wsRef.current.readyState !== WebSocket.OPEN) {
+      console.error('Cannot send message: WebSocket is not open', {
+        readyState: wsRef.current.readyState,
+        readyStateText: wsRef.current.readyState === WebSocket.CONNECTING ? 'CONNECTING' :
+                        wsRef.current.readyState === WebSocket.OPEN ? 'OPEN' :
+                        wsRef.current.readyState === WebSocket.CLOSING ? 'CLOSING' :
+                        wsRef.current.readyState === WebSocket.CLOSED ? 'CLOSED' : 'UNKNOWN'
+      });
       return false;
     }
 
     const currentUserId = getCurrentUserId();
     if (!currentUserId) {
-      console.error('User ID not available');
+      console.error('Cannot send message: User ID not available');
       return false;
     }
 
@@ -728,6 +787,13 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
         updated_at: new Date().toISOString()
       };
 
+      console.log('Adding temporary message to state:', {
+        tempId,
+        content,
+        roomId: state.currentRoom.id,
+        senderId: currentUserId
+      });
+
       setState(prev => ({
         ...prev,
         messages: [...prev.messages, tempMessage]
@@ -743,10 +809,29 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
         sender_name: user?.name || user?.email || currentUserId  // 발신자 이름 추가
       };
 
-      wsRef.current.send(JSON.stringify(message));
+      const messageJson = JSON.stringify(message);
+      console.log('Sending WebSocket message:', {
+        messageJson,
+        messageSize: messageJson.length,
+        roomId: state.currentRoom.id,
+        senderId: currentUserId,
+        timestamp: message.timestamp
+      });
+
+      wsRef.current.send(messageJson);
+      
+      console.log('WebSocket message sent successfully');
       return true;
     } catch (error) {
-      console.error('Failed to send message:', error);
+      console.error('Failed to send message:', {
+        error,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        content,
+        messageType,
+        roomId: state.currentRoom?.id,
+        wsReadyState: wsRef.current?.readyState
+      });
       return false;
     }
   }, [state.currentRoom, getCurrentUserId, user]);
