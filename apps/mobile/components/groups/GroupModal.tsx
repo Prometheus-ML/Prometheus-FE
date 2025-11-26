@@ -302,11 +302,11 @@ export default function GroupModal({ group, visible, onClose }: GroupModalProps)
           )}
 
           {/* 그룹 썸네일 */}
-          <View style={styles.thumbnailContainer}>
+          <View className="w-full h-48 bg-white/10 rounded-lg overflow-hidden my-6">
             {group.thumbnail_url ? (
               <Image
-                source={{ uri: resolveThumbnail(group.thumbnail_url, 400) }}
-                style={styles.thumbnail}
+                source={{ uri: getThumbnailUrl(group.thumbnail_url, 400) }}
+                className="w-full h-full"
                 resizeMode="cover"
               />
             ) : (
