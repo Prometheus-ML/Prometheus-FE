@@ -2,14 +2,14 @@
   "expo": {
     "name": "Prometheus",
     "slug": "prometheus",
-    "version": "0.1.8",
+    "version": "0.1.9",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "prometheus",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "buildNumber": "8",
+      "buildNumber": "9",
       "supportsTablet": true,
       "bundleIdentifier": "com.prometheusai.app",
       "infoPlist": {
@@ -34,7 +34,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.prometheusai.app",
-      "versionCode": 8,
+      "versionCode": 9,
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.READ_EXTERNAL_STORAGE",
