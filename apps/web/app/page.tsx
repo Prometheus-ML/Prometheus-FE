@@ -102,7 +102,7 @@ export default function HomePage() {
 
   const fetchSponsors = async () => {
     try {
-      await getSponsors({ page: 1, size: 3 });
+      await getSponsors({ page: 1, size: 1000 }); // 전체 후원사 가져오기
     } catch (error) {
       console.error('후원사 조회 실패:', error);
     }
