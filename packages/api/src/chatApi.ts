@@ -133,7 +133,7 @@ export class ChatApi {
    */
   getWebSocketUrl(chatRoomId: number, token: string): string {
     // ApiClient의 baseUrl을 직접 접근할 수 없으므로, 환경 변수나 설정에서 가져와야 함
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
     const wsBaseUrl = baseUrl.replace('http://', 'ws://').replace('https://', 'wss://');
     
     // 연결 최적화를 위한 쿼리 파라미터 추가
