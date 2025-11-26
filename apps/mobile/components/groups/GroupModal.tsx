@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -61,6 +61,14 @@ export default function GroupModal({ group, visible, onClose }: GroupModalProps)
   const [error, setError] = useState('');
   const [localLikeCount, setLocalLikeCount] = useState<number | null>(null);
   const { getThumbnailUrl } = useImage({});
+
+  const resolveThumbnail = useCallback((value?: string, size: number = 400) => {
+    if (!value) return '';
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+      return getThumbnailUrl(value, size);
+    }
+    return `https://drive.google.com/thumbnail?id=${value}&sz=w${size}`;
+  }, [getThumbnailUrl]);
 
   // 그룹의 좋아요 개수 (로컬 상태가 있으면 우선 사용, 없으면 prop 사용)
   const displayLikeCount = localLikeCount !== null ? localLikeCount : (group?.like_count || 0);
@@ -297,7 +305,7 @@ export default function GroupModal({ group, visible, onClose }: GroupModalProps)
           <View style={styles.thumbnailContainer}>
             {group.thumbnail_url ? (
               <Image
-                source={{ uri: getThumbnailUrl(group.thumbnail_url, 400) }}
+                source={{ uri: resolveThumbnail(group.thumbnail_url, 400) }}
                 style={styles.thumbnail}
                 resizeMode="cover"
               />

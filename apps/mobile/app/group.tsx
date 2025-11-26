@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -101,6 +101,14 @@ export default function GroupPage() {
       });
     }
   }, [groups, checkUserLikedGroup, checkUserMembership]);
+
+  const resolveGroupImageUrl = useCallback((value?: string, size: number = 300) => {
+    if (!value) return '';
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+      return getThumbnailUrl(value, size);
+    }
+    return `https://drive.google.com/thumbnail?id=${value}&sz=w${size}`;
+  }, [getThumbnailUrl]);
 
   const loadGroups = async () => {
     try {
@@ -374,7 +382,7 @@ export default function GroupPage() {
                 <View style={styles.thumbnailContainer}>
                   {group.thumbnail_url && !imageErrors[group.id.toString()] ? (
                     <Image
-                      source={{ uri: getThumbnailUrl(group.thumbnail_url, 300) }}
+                      source={{ uri: resolveGroupImageUrl(group.thumbnail_url, 300) }}
                       style={styles.thumbnail}
                       resizeMode="cover"
                       onError={() => handleImageError(group.id.toString())}
