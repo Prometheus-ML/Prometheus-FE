@@ -26,7 +26,9 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const scrollButtonRef = useRef<HTMLButtonElement>(null);
-  
+  const isInitializingRef = useRef(false);
+  const initializedRoomIdRef = useRef<number | null>(null);
+
   const [state, actions] = useChat({
     autoConnect: false,
     reconnectInterval: 1000,
@@ -58,38 +60,64 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({ isOpen, onClose, selected
 
   // 채팅방 선택 시 자동 연결
   useEffect(() => {
-    if (isOpen && selectedRoom) {
-      const initializeRoom = async () => {
-        try {
-          console.log('Initializing chat room:', selectedRoom);
-          console.log('Current state - currentRoom:', currentRoom, 'isConnected:', isConnected);
-          
-          // 이미 같은 채팅방에 연결되어 있다면 재연결하지 않음
-          if (currentRoom?.id === selectedRoom.id && isConnected) {
-            console.log('Already connected to the same room, skipping initialization');
-            return;
-          }
-          
-          // 기존 연결이 있다면 먼저 해제
-          if (isConnected) {
-            console.log('Disconnecting from previous room before connecting to new room');
-            disconnect();
-            // 연결 해제 완료를 기다림 - 지연 제거
-            await new Promise(resolve => resolve(undefined));
-          }
-          
-          console.log('Calling selectRoom with roomId:', selectedRoom.id);
-          await selectRoom(selectedRoom.id);
-          console.log('Room selection completed');
-          
-        } catch (error) {
-          console.error('Failed to select room:', error);
-        }
-      };
-      
-      initializeRoom();
+    if (!isOpen || !selectedRoom) {
+      // 모달이 닫히거나 선택된 방이 없으면 초기화 상태 리셋
+      isInitializingRef.current = false;
+      initializedRoomIdRef.current = null;
+      return;
     }
-  }, [isOpen, selectedRoom, selectRoom, currentRoom?.id, isConnected, disconnect]);
+
+    const roomId = selectedRoom.id;
+
+    // 이미 같은 방에 연결되어 있고 초기화가 완료된 경우
+    if (initializedRoomIdRef.current === roomId && currentRoom?.id === roomId && isConnected) {
+      console.log('Already connected to the same room, skipping initialization');
+      return;
+    }
+
+    // 이미 초기화 중인 경우 중복 실행 방지
+    if (isInitializingRef.current) {
+      console.log('Already initializing, skipping duplicate initialization');
+      return;
+    }
+
+    // 로딩 중이면 대기 (이전 요청이 완료될 때까지)
+    if (isLoading) {
+      console.log('Previous operation still loading, waiting...');
+      return;
+    }
+
+    const initializeRoom = async () => {
+      try {
+        isInitializingRef.current = true;
+        console.log('Initializing chat room:', roomId);
+        console.log('Current state - currentRoom:', currentRoom?.id, 'isConnected:', isConnected);
+        
+        // 기존 연결이 있고 다른 방에 연결되어 있다면 먼저 해제
+        if (isConnected && currentRoom?.id !== roomId) {
+          console.log('Disconnecting from previous room before connecting to new room');
+          disconnect();
+          // 연결 해제 완료를 기다림
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        console.log('Calling selectRoom with roomId:', roomId);
+        await selectRoom(roomId);
+        initializedRoomIdRef.current = roomId;
+        console.log('Room selection completed');
+        
+      } catch (error) {
+        console.error('Failed to select room:', error);
+        isInitializingRef.current = false;
+        initializedRoomIdRef.current = null;
+      } finally {
+        isInitializingRef.current = false;
+      }
+    };
+    
+    initializeRoom();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, selectedRoom?.id]); // selectedRoom.id만 의존성으로 사용
 
   // WebSocket 연결 상태 변경 시 히스토리 로드
   useEffect(() => {

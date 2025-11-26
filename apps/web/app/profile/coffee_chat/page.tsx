@@ -239,6 +239,12 @@ export default function CoffeeChatPage() {
       };
       await respondToRequest(req.id, payload);
       fetchReceived();
+      // 수락/거절 성공 메시지 표시
+      if (status === 'accepted') {
+        alert('커피챗 요청을 수락했습니다.');
+      } else {
+        alert('커피챗 요청을 거절했습니다.');
+      }
     } catch (err) {
       console.error('Failed to respond request:', err);
       alert('처리 실패');

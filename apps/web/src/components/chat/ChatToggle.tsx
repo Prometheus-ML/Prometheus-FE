@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
+import { useAuthStore } from '@prometheus-fe/stores';
 
 interface ChatToggleProps {
   onToggle: (isOpen: boolean) => void;
@@ -10,9 +11,15 @@ interface ChatToggleProps {
 
 const ChatToggle: React.FC<ChatToggleProps> = ({ onToggle, isOpen }) => {
   const pathname = usePathname();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated());
   
   // 루트 페이지(/)에서는 ChatToggle을 숨김
   if (pathname === '/' || pathname === '/about' || pathname === '/auth/login' || pathname === '/auth/google') {
+    return null;
+  }
+
+  // 유저 정보가 없으면 ChatToggle을 숨김
+  if (!isAuthenticated) {
     return null;
   }
 

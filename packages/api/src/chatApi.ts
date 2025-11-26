@@ -140,7 +140,8 @@ export class ChatApi {
     // optimize=true: 서버에서 즉시 연결 상태 전송
     // reconnect=true: 재연결 지원 활성화
     // heartbeat=true: 하트비트 메시지 활성화
-    return `${wsBaseUrl}/api/v1/chat/ws/${chatRoomId}?token=${token}&optimize=true&reconnect=true&heartbeat=true`;
+    // transports=websocket: Socket.IO 클라이언트에서 websocket 전송만 사용 (에러 방지)
+    return `${wsBaseUrl}/api/v1/chat/ws/${chatRoomId}?token=${token}&optimize=true&reconnect=true&heartbeat=true&transports=websocket`;
   }
 }
 

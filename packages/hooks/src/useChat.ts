@@ -102,6 +102,7 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const connectingRoomIdRef = useRef<number | null>(null); // 연결 중인 roomId 추적
 
   // 현재 사용자 ID 가져오기
   const getCurrentUserId = useCallback((): string | null => {
@@ -117,13 +118,24 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
         return;
       }
 
-      // 이미 연결된 상태라면 재사용 (같은 채팅방인 경우)
+      // 이미 같은 방에 연결 중이거나 연결된 상태라면 재사용
+      if (connectingRoomIdRef.current === roomId) {
+        console.log('WebSocket connection already in progress for this room, skipping');
+        return;
+      }
+
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN && state.currentRoom?.id === roomId) {
         console.log('WebSocket already connected to the same room, reusing connection');
         return;
       }
 
-      // 기존 연결이 있다면 정리
+      // CONNECTING 상태인 경우도 체크
+      if (wsRef.current && wsRef.current.readyState === WebSocket.CONNECTING && connectingRoomIdRef.current === roomId) {
+        console.log('WebSocket connection already in progress for this room, skipping');
+        return;
+      }
+
+      // 기존 연결이 있다면 완전히 정리될 때까지 기다림
       if (wsRef.current) {
         console.log('Cleaning up existing WebSocket connection');
         // 재연결 타이머 정리
@@ -131,12 +143,47 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
           clearTimeout(reconnectTimeoutRef.current);
           reconnectTimeoutRef.current = null;
         }
-        // 기존 연결 해제 (비동기적으로 처리)
-        wsRef.current.close(1000, 'Switching to new room');
-        // wsRef.current는 onclose 이벤트에서 null로 설정
+        
+        const oldWs = wsRef.current;
+        connectingRoomIdRef.current = null; // 기존 연결 중 상태 해제
+        
+        // 기존 연결 해제 및 완전히 닫힐 때까지 대기 (최대 2초)
+        await new Promise<void>((resolve) => {
+          let attempts = 0;
+          const maxAttempts = 40; // 최대 2초 대기 (40 * 50ms)
+          
+          const checkClosed = () => {
+            attempts++;
+            if (oldWs.readyState === WebSocket.CLOSED) {
+              console.log('Previous WebSocket connection closed');
+              resolve();
+            } else if (attempts >= maxAttempts) {
+              console.warn('Previous WebSocket connection close timeout, proceeding anyway');
+              resolve(); // 타임아웃이어도 진행
+            } else {
+              // 아직 닫히지 않았으면 잠시 대기 후 다시 확인
+              setTimeout(checkClosed, 50);
+            }
+          };
+          
+          // 연결이 열려있거나 연결 중이면 닫기
+          if (oldWs.readyState === WebSocket.OPEN || oldWs.readyState === WebSocket.CONNECTING) {
+            oldWs.close(1000, 'Switching to new room');
+            checkClosed();
+          } else {
+            // 이미 닫혔거나 닫히는 중이면 바로 resolve
+            resolve();
+          }
+        });
+        
+        // wsRef.current가 여전히 oldWs를 가리키고 있다면 null로 설정
+        if (wsRef.current === oldWs) {
+          wsRef.current = null;
+        }
       }
 
       // 연결 시도 중 상태로 설정
+      connectingRoomIdRef.current = roomId;
       setState(prev => ({ ...prev, isConnected: false, isLoading: true, error: null }));
 
       const wsUrl = chatApi.getWebSocketUrl(roomId, token);
@@ -160,6 +207,7 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
       ws.onopen = () => {
         clearTimeout(connectionTimeout);
         console.log('WebSocket connected successfully to room:', roomId);
+        connectingRoomIdRef.current = null; // 연결 완료
         setState(prev => ({ 
           ...prev, 
           isConnected: true, 
@@ -187,6 +235,7 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
         // 현재 WebSocket 인스턴스인 경우에만 null로 설정
         if (wsRef.current === ws) {
           wsRef.current = null;
+          connectingRoomIdRef.current = null; // 연결 해제
         }
         
         setState(prev => ({ 
@@ -212,17 +261,23 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
       ws.onerror = (error) => {
         clearTimeout(connectionTimeout);
         console.error('WebSocket error:', error);
-        setState(prev => ({ 
-          ...prev, 
-          error: '웹소켓 연결 오류가 발생했습니다.',
-          isLoading: false 
-        }));
+        // 현재 WebSocket 인스턴스인 경우에만 상태 해제
+        if (wsRef.current === ws) {
+          connectingRoomIdRef.current = null; // 에러 발생 시 연결 중 상태 해제
+          setState(prev => ({ 
+            ...prev, 
+            error: '웹소켓 연결 오류가 발생했습니다.',
+            isLoading: false 
+          }));
+        }
       };
 
+      // 새 연결을 ref에 설정 (기존 연결이 완전히 닫힌 후이므로 안전)
       wsRef.current = ws;
 
     } catch (error) {
       console.error('Failed to connect to WebSocket:', error);
+      connectingRoomIdRef.current = null; // 에러 발생 시 연결 중 상태 해제
       setState(prev => ({ 
         ...prev, 
         error: '연결에 실패했습니다.',
@@ -240,6 +295,9 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
     }
+    
+    // 연결 중 상태 해제
+    connectingRoomIdRef.current = null;
     
     // 웹소켓 연결 해제
     if (wsRef.current) {
@@ -497,9 +555,15 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
     try {
       console.log('Selecting chat room:', roomId);
       
-      // 이미 선택된 채팅방인 경우 무시
-      if (state.currentRoom?.id === roomId) {
-        console.log('Room already selected, skipping selection');
+      // 이미 선택된 채팅방이고 연결되어 있는 경우 무시
+      if (state.currentRoom?.id === roomId && state.isConnected) {
+        console.log('Room already selected and connected, skipping selection');
+        return;
+      }
+
+      // 이미 같은 방에 연결 중인 경우 무시
+      if (connectingRoomIdRef.current === roomId) {
+        console.log('Room connection already in progress, skipping selection');
         return;
       }
       
@@ -521,41 +585,56 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
         throw new Error('Failed to load chat room info');
       }
       
-      // 2. 현재 채팅방 설정 (WebSocket 연결 전에 먼저 설정)
+      // 2. 현재 채팅방 설정
       console.log('Setting current room in state:', room);
       setState(prev => {
         const newState = { 
           ...prev, 
           currentRoom: room,
-          isLoading: false 
+          isLoading: true // 메시지 로딩 중
         };
         console.log('New state after setting current room:', newState);
         return newState;
       });
       
-      console.log('Current room set, connecting WebSocket...');
+      // 3. 메시지 히스토리 먼저 로드
+      console.log('Loading chat history before WebSocket connection...');
+      try {
+        await loadHistory({ chat_room_id: roomId });
+        console.log('Chat history loaded successfully');
+      } catch (historyError) {
+        console.error('Failed to load chat history:', historyError);
+        // 히스토리 로드 실패해도 웹소켓 연결은 시도
+      }
       
-      // 3. 웹소켓 연결
+      // 4. 웹소켓 연결 (메시지 로드 후)
+      console.log('Chat history loaded, connecting WebSocket...');
       await connect(roomId);
       
-      // 4. 연결 완료 대기 및 히스토리 로드 - 지연 제거
+      // 5. 연결 완료 대기
       const waitForConnection = (): Promise<void> => {
         return new Promise((resolve, reject) => {
           let attempts = 0;
-          const maxAttempts = 10; // 최대 5초 대기로 단축
+          const maxAttempts = 50; // 최대 5초 대기 (50 * 100ms)
           
           const checkConnection = () => {
             attempts++;
-            console.log(`Checking WebSocket connection (attempt ${attempts}/${maxAttempts}), isConnected:`, state.isConnected);
+            // ref를 통해 최신 연결 상태 확인
+            const isConnected = wsRef.current?.readyState === WebSocket.OPEN;
+            console.log(`Checking WebSocket connection (attempt ${attempts}/${maxAttempts}), readyState:`, wsRef.current?.readyState);
             
-            if (state.isConnected) {
-              console.log('WebSocket connected successfully, resolving promise');
+            if (isConnected) {
+              console.log('WebSocket connected successfully');
               resolve();
             } else if (attempts >= maxAttempts) {
               console.error('WebSocket connection timeout');
               reject(new Error('WebSocket connection timeout'));
+            } else if (wsRef.current?.readyState === WebSocket.CLOSED) {
+              // 연결이 닫혔다면 에러
+              console.error('WebSocket closed before connection established');
+              reject(new Error('WebSocket closed before connection established'));
             } else {
-              // 지연 시간 단축
+              // 지연 시간
               setTimeout(checkConnection, 100);
             }
           };
@@ -566,8 +645,11 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
       
       try {
         await waitForConnection();
-        console.log('WebSocket connection confirmed, loading chat history');
-        await loadHistory({ chat_room_id: roomId });
+        console.log('WebSocket connection confirmed');
+        setState(prev => ({ 
+          ...prev, 
+          isLoading: false 
+        }));
       } catch (connectionError) {
         console.error('Failed to establish WebSocket connection:', connectionError);
         setState(prev => ({ 
@@ -579,13 +661,14 @@ export const useChat = (options: UseChatOptions = {}): [ChatState, ChatActions] 
       
     } catch (error) {
       console.error('Failed to select chat room:', error);
+      connectingRoomIdRef.current = null; // 에러 발생 시 연결 중 상태 해제
       setState(prev => ({ 
         ...prev, 
         error: '채팅방 선택에 실패했습니다.',
         isLoading: false 
       }));
     }
-  }, [chatApi, connect, state.currentRoom?.id, state.isConnected, loadHistory]);
+  }, [chatApi, connect, loadHistory]); // state 의존성 제거하여 불필요한 재생성 방지
 
   // 채팅방 나가기
   const leaveRoom = useCallback(async (roomId: number): Promise<boolean> => {
