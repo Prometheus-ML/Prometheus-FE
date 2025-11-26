@@ -96,7 +96,7 @@ export default function AboutPage() {
            alt="prometheus description"
            width={1920}
            height={1080}
-           className="object-cover w-full h-screen"
+           className="object-cover w-full "
          />
          
          <div className="absolute w-full transform -translate-x-1/2 -translate-y-1/2 top-[50%] left-[50%] text-center">
