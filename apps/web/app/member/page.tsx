@@ -273,7 +273,7 @@ export default function MemberPage() {
 
         <div className="px-2 sm:px-4 py-4 sm:py-6">
           {/* Member Cards Skeleton */}
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2 sm:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
             {Array.from({ length: 6 }).map((_, index) => (
               <GlassCard key={index} className="animate-pulse">
                 <SkeletonCard />
@@ -350,7 +350,7 @@ export default function MemberPage() {
         )}
         
         {/* 멤버 카드 그리드 */}
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2 sm:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
           {members.map((member, index) => (
             <GlassCard
               key={'id' in member ? member.id : index}
