@@ -19,6 +19,8 @@ export default function MyPage() {
   const [profileEditMode, setProfileEditMode] = useState(false);
   const [profileSubmitting, setProfileSubmitting] = useState(false);
   const [profileImageError, setProfileImageError] = useState(false);
+  const [originalProfileImageUrl, setOriginalProfileImageUrl] = useState<string>('');
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [myProfileDraft, setMyProfileDraft] = useState<MyProfileUpdateRequest>({
     github: '',
     notion: '',
@@ -48,6 +50,7 @@ export default function MyPage() {
     try {
       const data = await getMyProfile();
       if (data) {
+        const imageUrl = data.profile_image_url ?? '';
         // draft 동기화
         setMyProfileDraft({
           github: data.github ?? '',
@@ -60,8 +63,11 @@ export default function MyPage() {
           coffee_chat_enabled: !!data.coffee_chat_enabled,
           self_introduction: data.self_introduction ?? '',
           additional_career: data.additional_career ?? '',
-          profile_image_url: data.profile_image_url ?? ''
+          profile_image_url: imageUrl
         });
+        // 원본 이미지 URL 저장
+        setOriginalProfileImageUrl(imageUrl);
+        setPreviewImageUrl(null);
         setProfileImageError(false);
       }
     } catch (err) {
@@ -80,27 +86,40 @@ export default function MyPage() {
     if (!file) return;
 
     try {
-      setProfileSubmitting(true);
-      
       // 이미지 파일 검증
       const validationError = validateImageFile(file);
       if (validationError) {
         alert(validationError);
+        if (e.target) e.target.value = '';
         return;
       }
 
-      // useImage 훅을 사용하여 이미지 업로드
+      // FileReader를 사용하여 로컬 미리보기 URL 생성
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const previewUrl = reader.result as string;
+        setPreviewImageUrl(previewUrl);
+        setProfileImageError(false);
+      };
+      reader.readAsDataURL(file);
+
+      // 실제 업로드는 백그라운드에서 진행
+      setProfileSubmitting(true);
       const imageUrl = await uploadImage(file, 'member');
       if (imageUrl) {
         setMyProfileDraft(prev => ({
           ...prev,
           profile_image_url: imageUrl
         }));
+        // 업로드된 URL로 미리보기 업데이트
+        setPreviewImageUrl(imageUrl);
         setProfileImageError(false);
       }
     } catch (err) {
       console.error('Upload failed:', err);
       alert('이미지 업로드 실패');
+      // 업로드 실패 시 미리보기 제거
+      setPreviewImageUrl(null);
     } finally {
       setProfileSubmitting(false);
       if (e.target) e.target.value = '';
@@ -112,7 +131,12 @@ export default function MyPage() {
     try {
       setProfileSubmitting(true);
       await updateMyProfile(myProfileDraft);
+      // 저장 성공 시 원본 이미지 URL 업데이트
+      setOriginalProfileImageUrl(myProfileDraft.profile_image_url || '');
+      setPreviewImageUrl(null);
       setProfileEditMode(false);
+      // 프로필 다시 로드하여 최신 데이터 반영
+      await loadMyProfile();
       alert('저장되었습니다');
     } catch (err) {
       console.error('Profile update failed:', err);
@@ -120,13 +144,19 @@ export default function MyPage() {
     } finally {
       setProfileSubmitting(false);
     }
-  }, [updateMyProfile, myProfileDraft]);
+  }, [updateMyProfile, myProfileDraft, loadMyProfile]);
 
   // 프로필 편집 취소
   const cancelMyProfileEdit = useCallback(() => {
     setProfileEditMode(false);
+    // 미리보기 제거하고 원본 이미지로 복원
+    setPreviewImageUrl(null);
+    setMyProfileDraft(prev => ({
+      ...prev,
+      profile_image_url: originalProfileImageUrl
+    }));
     loadMyProfile();
-  }, [loadMyProfile]);
+  }, [loadMyProfile, originalProfileImageUrl]);
 
   // 초기 로드
   useEffect(() => {
@@ -153,22 +183,37 @@ export default function MyPage() {
 
             <div className="flex items-center gap-4 mb-6">
               <div className="relative">
-                {myProfile.profile_image_url && !profileImageError ? (
-                  <div className="relative w-20 h-20">
-                    <Image
-                      src={getThumbnailUrl(myProfile.profile_image_url, 160)}
-                      alt={myProfile.name}
-                      fill
-                      className="rounded-full object-cover border"
-                      onError={() => setProfileImageError(true)}
-                      unoptimized
-                    />
-                  </div>
-                ) : (
-                  <div className="w-20 h-20 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-medium">
-                    {getFirstLetter(myProfile.name)}
-                  </div>
-                )}
+                {(() => {
+                  // 편집 모드이고 미리보기가 있으면 미리보기 표시
+                  const displayImageUrl = profileEditMode && previewImageUrl 
+                    ? previewImageUrl 
+                    : (profileEditMode && myProfileDraft.profile_image_url 
+                      ? myProfileDraft.profile_image_url 
+                      : myProfile.profile_image_url);
+                  
+                  if (displayImageUrl && !profileImageError) {
+                    return (
+                      <div className="relative w-20 h-20">
+                        <Image
+                          src={previewImageUrl && previewImageUrl.startsWith('data:') 
+                            ? previewImageUrl 
+                            : getThumbnailUrl(displayImageUrl, 160)}
+                          alt={myProfile.name}
+                          fill
+                          className="rounded-full object-cover border"
+                          onError={() => setProfileImageError(true)}
+                          unoptimized
+                        />
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div className="w-20 h-20 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-medium">
+                        {getFirstLetter(myProfile.name)}
+                      </div>
+                    );
+                  }
+                })()}
                 <input 
                   ref={profileImageInputRef}
                   type="file" 
@@ -313,7 +358,12 @@ export default function MyPage() {
                 <div className="flex items-center justify-end mb-3 space-x-2">
                   {!profileEditMode ? (
                     <RedButton 
-                      onClick={() => setProfileEditMode(true)} 
+                      onClick={() => {
+                        // 편집 모드 진입 시 원본 이미지 URL 저장
+                        setOriginalProfileImageUrl(myProfileDraft.profile_image_url || '');
+                        setPreviewImageUrl(null);
+                        setProfileEditMode(true);
+                      }} 
                       className="text-sm px-3 py-1.5"
                     >
                       수정
