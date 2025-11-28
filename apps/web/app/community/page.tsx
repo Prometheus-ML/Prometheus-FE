@@ -318,23 +318,23 @@ export default function CommunityPage() {
 
   // Skeleton UI Component
   const SkeletonCard = () => (
-    <div className="p-4 animate-pulse">
-      <div className="flex items-center justify-between">
+    <div className="p-3 sm:p-4 animate-pulse">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
         {/* 왼쪽: 카테고리와 제목 */}
-        <div className="flex-1 flex items-center space-x-3">
-          <div className="w-16 h-4 bg-gray-600 rounded"></div>
-          <div className="w-32 h-5 bg-gray-600 rounded"></div>
+        <div className="flex-1 flex items-center gap-2 sm:gap-3">
+          <div className="w-12 sm:w-16 h-3 sm:h-4 bg-gray-600 rounded"></div>
+          <div className="w-24 sm:w-32 h-3.5 sm:h-5 bg-gray-600 rounded"></div>
         </div>
         
         {/* 오른쪽: 기수, 이름, 날짜, 좋아요, 댓글 */}
-        <div className="flex items-center space-x-2 text-sm text-gray-300 ml-4">
-          <div className="w-12 h-4 bg-gray-600 rounded-full"></div>
-          <div className="w-16 h-4 bg-gray-600 rounded"></div>
-          <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
-          <div className="w-20 h-4 bg-gray-600 rounded"></div>
-          <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
-          <div className="w-8 h-4 bg-gray-600 rounded"></div>
-          <div className="w-8 h-4 bg-gray-600 rounded"></div>
+        <div className="flex items-center flex-wrap gap-1.5 sm:gap-2 sm:ml-4">
+          <div className="w-10 sm:w-12 h-3 sm:h-4 bg-gray-600 rounded-full"></div>
+          <div className="w-12 sm:w-16 h-3 sm:h-4 bg-gray-600 rounded"></div>
+          <div className="w-1 h-1 bg-gray-500 rounded-full hidden sm:block"></div>
+          <div className="w-16 sm:w-20 h-3 sm:h-4 bg-gray-600 rounded"></div>
+          <div className="w-1 h-1 bg-gray-500 rounded-full hidden sm:block"></div>
+          <div className="w-6 sm:w-8 h-3 sm:h-4 bg-gray-600 rounded"></div>
+          <div className="w-6 sm:w-8 h-3 sm:h-4 bg-gray-600 rounded"></div>
         </div>
       </div>
     </div>
@@ -346,34 +346,36 @@ export default function CommunityPage() {
   return (
     <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
       {/* 헤더 */}
-      <header className="mx-4 px-6 py-6 border-b border-white/20">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/my" className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
-              <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
+      <header className="mx-2 sm:mx-4 px-3 sm:px-6 py-4 sm:py-6 border-b border-white/20">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <Link href="/my" className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors flex-shrink-0">
+              <FontAwesomeIcon icon={faArrowLeft} className="w-4 h-4 sm:w-5 sm:h-5" />
             </Link>
-            <div>
-              <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">커뮤니티</h1>
-              <p className="text-sm font-pretendard text-[#e0e0e0]">프로메테우스 커뮤니티 게시판</p>
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-xl font-kimm-bold text-[#FFFFFF] truncate">커뮤니티</h1>
+              <p className="text-xs sm:text-sm font-pretendard text-[#e0e0e0] hidden sm:block">프로메테우스 커뮤니티 게시판</p>
             </div>
           </div>
-          <div className="text-right flex items-center gap-3">
+          <div className="text-right flex items-center gap-2 sm:gap-3 flex-shrink-0">
             {user && (
               <button
                 onClick={() => setShowCreateForm(!showCreateForm)}
-                className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
+                className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
               >
-                <FontAwesomeIcon icon={faPlus} className="w-5 h-5" />
+                <FontAwesomeIcon icon={faPlus} className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             )}
-            <p className="text-sm text-[#e0e0e0]">전체 <span className="text-[#ffa282] font-bold">{totalAll}</span>개</p>
+            <p className="text-xs sm:text-sm text-[#e0e0e0] whitespace-nowrap">
+              전체 <span className="text-[#ffa282] font-bold">{totalAll}</span>개
+            </p>
           </div>
         </div>
       </header>
 
-      <div className="px-4 py-6">
+      <div className="px-2 sm:px-4 py-4 sm:py-6">
         {/* 검색 및 필터 */}
-        <div className="mb-6 space-y-4">
+        <div className="mb-4 sm:mb-6 space-y-4">
           <QueryBar
             searchTerm={searchTerm}
             onSearchTermChange={setSearchTerm}
@@ -403,14 +405,14 @@ export default function CommunityPage() {
 
         {/* 에러 메시지 */}
         {error && (
-          <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400">
+          <div className="mb-4 p-2.5 sm:p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400 text-xs sm:text-sm">
             {error}
           </div>
         )}
 
         {/* 게시글 목록 */}
         {isLoadingPosts ? (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {Array.from({ length: 6 }).map((_, index) => (
               <GlassCard key={index} className="border border-white/20">
                 <SkeletonCard />
@@ -418,56 +420,61 @@ export default function CommunityPage() {
             ))}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {posts.map((post: any) => (
               <GlassCard 
                 key={post.id} 
-                className="p-4 hover:bg-white/20 transition-colors cursor-pointer border border-white/20"
+                className="p-3 sm:p-4 hover:bg-white/20 transition-colors cursor-pointer border border-white/20"
                 onClick={() => handlePostClick(post.id)}
               >
-                                 <div className="flex items-center justify-between">
-                   <div className="flex-1 flex items-center space-x-3">
-                      <span className={`px-1 py-0.5 text-xs rounded border ${getCategoryColor(post.category)}`}>
-                        {getCategoryLabel(post.category)}
+                {/* 모바일: 세로 배치, 데스크톱: 가로 배치 */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+                  {/* 제목 영역 */}
+                  <div className="flex-1 flex items-center gap-2 sm:gap-3 min-w-0">
+                    <span className={`px-1.5 py-0.5 text-[10px] sm:text-xs rounded border flex-shrink-0 ${getCategoryColor(post.category)}`}>
+                      {getCategoryLabel(post.category)}
+                    </span>
+                    <span className="text-white font-medium text-sm sm:text-base truncate min-w-0">
+                      {post.title}
+                    </span>
+                    {/* 이미지 아이콘 표시 */}
+                    {post.images && post.images.length > 0 && (
+                      <span className="flex items-center text-blue-400 text-[10px] sm:text-xs flex-shrink-0">
+                        <FontAwesomeIcon icon={faImage} className="mr-0.5 sm:mr-1 w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                        {post.images.length}
                       </span>
-                     <span className="text-white font-medium">{post.title}</span>
-                     {/* 이미지 아이콘 표시 */}
-                     {post.images && post.images.length > 0 && (
-                       <span className="flex items-center text-blue-400 text-xs">
-                         <FontAwesomeIcon icon={faImage} className="mr-1" />
-                         {post.images.length}
-                       </span>
-                     )}
-                   </div>
-                                     <div className="flex items-center space-x-2 text-sm text-gray-300 ml-4">
-
-                      <span className="flex items-center">
-                        {post.author_gen}기 {post.author_name}
-                      </span>
-                                           <span className="text-gray-500 text-xs">|</span>
-                      <span className="flex items-center">
-                        <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" />
-                          {formatDate(post.created_at)}
-                      </span>
-                      <span className="text-gray-500 text-xs">|</span>
-                     <span className="flex items-center">
-                       <FontAwesomeIcon icon={faHeart} className="mr-1 text-white" />
-                       {post.like_count || 0}
-                     </span>
-                     <span className="flex items-center">
-                         <FontAwesomeIcon icon={faComments} className="mr-1 text-gray-400" />
-                       {post.comment_count || 0}
-                     </span>
+                    )}
+                  </div>
+                  
+                  {/* 메타 정보 영역 */}
+                  <div className="flex items-center flex-wrap gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-gray-300 sm:ml-4">
+                    <span className="flex items-center whitespace-nowrap">
+                      {post.author_gen}기 {post.author_name}
+                    </span>
+                    <span className="text-gray-500 hidden sm:inline">|</span>
+                    <span className="flex items-center whitespace-nowrap">
+                      <FontAwesomeIcon icon={faCalendarAlt} className="mr-0.5 sm:mr-1 w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                      {formatDate(post.created_at)}
+                    </span>
+                    <span className="text-gray-500 hidden sm:inline">|</span>
+                    <span className="flex items-center whitespace-nowrap">
+                      <FontAwesomeIcon icon={faHeart} className="mr-0.5 sm:mr-1 w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
+                      {post.like_count || 0}
+                    </span>
+                    <span className="flex items-center whitespace-nowrap">
+                      <FontAwesomeIcon icon={faComments} className="mr-0.5 sm:mr-1 w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-400" />
+                      {post.comment_count || 0}
+                    </span>
                     {user && user.id === post.author_id && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDeletePost(post.id);
                         }}
-                        className="text-red-400 hover:text-red-300 flex items-center"
+                        className="text-red-400 hover:text-red-300 flex items-center whitespace-nowrap ml-auto sm:ml-0"
                       >
-                        <FontAwesomeIcon icon={faTrash} className="mr-1" />
-                        삭제
+                        <FontAwesomeIcon icon={faTrash} className="mr-0.5 sm:mr-1 w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                        <span className="hidden sm:inline">삭제</span>
                       </button>
                     )}
                   </div>
@@ -479,11 +486,11 @@ export default function CommunityPage() {
 
         {/* 빈 상태 */}
         {!isLoadingPosts && posts.length === 0 && (
-          <div className="px-4 py-5 sm:p-6">
+          <div className="px-2 py-4 sm:px-4 sm:py-5 sm:p-6">
             <div className="text-center">
-              <FontAwesomeIcon icon={faComments} className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="mt-2 text-sm font-medium text-white">게시글이 없습니다.</h3>
-              <p className="mt-1 text-sm text-gray-300">
+              <FontAwesomeIcon icon={faComments} className="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mb-3 sm:mb-4" />
+              <h3 className="mt-2 text-xs sm:text-sm font-medium text-white">게시글이 없습니다.</h3>
+              <p className="mt-1 text-xs sm:text-sm text-gray-300">
                 {(appliedSearchTerm || appliedCategory !== 'all') ? '검색 결과가 없습니다.' : '아직 등록된 게시글이 없습니다.'}
               </p>
             </div>
@@ -492,12 +499,12 @@ export default function CommunityPage() {
 
         {/* 페이지네이션 */}
         {!isLoadingPosts && posts.length > 0 && totalPages > 1 && (
-          <div className="flex justify-center mt-8">
-            <div className="flex items-center space-x-2">
+          <div className="flex justify-center mt-6 sm:mt-8">
+            <div className="flex items-center space-x-1 sm:space-x-2">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="px-3 py-2 text-sm text-gray-300 hover:text-white disabled:text-gray-600 disabled:cursor-not-allowed transition-colors"
+                className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm text-gray-300 hover:text-white disabled:text-gray-600 disabled:cursor-not-allowed transition-colors"
               >
                 이전
               </button>
@@ -518,7 +525,7 @@ export default function CommunityPage() {
                   <button
                     key={pageNum}
                     onClick={() => handlePageChange(pageNum)}
-                    className={`px-3 py-2 text-sm rounded transition-colors ${
+                    className={`px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm rounded transition-colors ${
                       currentPage === pageNum
                         ? 'bg-[#c2402a] text-white'
                         : 'text-gray-300 hover:text-white hover:bg-white/10'
@@ -532,7 +539,7 @@ export default function CommunityPage() {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="px-3 py-2 text-sm text-gray-300 hover:text-white disabled:text-gray-600 disabled:cursor-not-allowed transition-colors"
+                className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm text-gray-300 hover:text-white disabled:text-gray-600 disabled:cursor-not-allowed transition-colors"
               >
                 다음
               </button>
