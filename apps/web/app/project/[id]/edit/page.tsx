@@ -22,10 +22,16 @@ export default function EditProjectPage() {
   // useProject 훅 사용
   const {
     selectedProject,
+    projectMembers,
     isLoadingProject,
     fetchProject,
+    fetchProjectMembers,
     updateProject,
     updateProjectForAdmin,
+    addProjectMember,
+    updateProjectMember,
+    updateProjectMemberForAdmin,
+    removeProjectMember,
     isProjectLeader,
     isProjectMember
   } = useProject();
@@ -44,6 +50,8 @@ export default function EditProjectPage() {
     try {
       setError('');
       await fetchProject(parseInt(projectId));
+      // 프로젝트 멤버 목록도 함께 로드
+      await fetchProjectMembers(parseInt(projectId), { page: 1, size: 100 });
     } catch (e) {
       console.error('프로젝트 로드 실패:', e);
       setError('프로젝트를 불러오지 못했습니다.');
@@ -57,11 +65,79 @@ export default function EditProjectPage() {
       
       console.log('Updating project:', formData);
       
-      // Admin 권한이 있으면 admin용 API 호출, 아니면 일반 API 호출
+      // 프로젝트 정보와 멤버 정보 분리
+      const { members, ...projectData } = formData;
+      
+      // 1. 프로젝트 정보 업데이트 (멤버 정보 제외)
       if (canManage) {
-        await updateProjectForAdmin(parseInt(projectId), formData);
+        await updateProjectForAdmin(parseInt(projectId), projectData);
       } else {
-        await updateProject(parseInt(projectId), formData);
+        await updateProject(parseInt(projectId), projectData);
+      }
+      
+      // 2. 멤버 정보 처리 (Admin 권한이 있을 때만)
+      if (canManage && members) {
+        // 멤버 목록이 아직 로드되지 않았다면 먼저 로드
+        if (projectMembers.length === 0) {
+          await fetchProjectMembers(parseInt(projectId), { page: 1, size: 100 });
+        }
+        
+        const currentMemberIds = new Set(projectMembers.map(m => m.member_id));
+        const newMemberIds = new Set(members.map((m: any) => m.member_id));
+        
+        // 삭제된 멤버 처리
+        for (const currentMember of projectMembers) {
+          if (!newMemberIds.has(currentMember.member_id)) {
+            try {
+              await removeProjectMember(parseInt(projectId), currentMember.member_id);
+            } catch (e: any) {
+              console.error(`멤버 ${currentMember.member_id} 제거 실패:`, e);
+              // 멤버 제거 실패는 경고만 하고 계속 진행
+            }
+          }
+        }
+        
+        // 추가/수정된 멤버 처리
+        for (const newMember of members) {
+          const memberId = newMember.member_id;
+          const currentMember = projectMembers.find(m => m.member_id === memberId);
+          
+          if (!currentMember) {
+            // 새 멤버 추가
+            try {
+              await addProjectMember(parseInt(projectId), {
+                member_id: memberId,
+                role: newMember.role || 'team_member',
+                contribution: newMember.contribution || ''
+              });
+            } catch (e: any) {
+              console.error(`멤버 ${memberId} 추가 실패:`, e);
+              throw new Error(`멤버 추가 실패: ${e?.message || '알 수 없는 오류'}`);
+            }
+          } else {
+            // 기존 멤버 수정 (role 또는 contribution 변경 확인)
+            const needsUpdate = 
+              currentMember.role !== (newMember.role || 'team_member') ||
+              currentMember.contribution !== (newMember.contribution || '');
+            
+            if (needsUpdate) {
+              try {
+                const updateData: any = {};
+                if (currentMember.role !== (newMember.role || 'team_member')) {
+                  updateData.role = newMember.role || 'team_member';
+                }
+                if (currentMember.contribution !== (newMember.contribution || '')) {
+                  updateData.contribution = newMember.contribution || '';
+                }
+                
+                await updateProjectMemberForAdmin(parseInt(projectId), memberId, updateData);
+              } catch (e: any) {
+                console.error(`멤버 ${memberId} 수정 실패:`, e);
+                throw new Error(`멤버 수정 실패: ${e?.message || '알 수 없는 오류'}`);
+              }
+            }
+          }
+        }
       }
       
       alert('프로젝트가 수정되었습니다!');
