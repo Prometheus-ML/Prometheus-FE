@@ -208,96 +208,101 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
       <Portal>
       <div className="fixed inset-0 z-50 overflow-y-auto">
         {/* Prometheus background */}
-        <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0 relative z-10">
+        <div className="flex items-center justify-center min-h-screen pt-2 px-2 sm:pt-4 sm:px-4 pb-20 text-center sm:p-0 relative z-10">
           {/* 배경 오버레이 */}
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={onClose} />
 
           {/* 모달 컨텐츠 */}
-          <div className="inline-block align-middle bg-black/80 backdrop-blur-lg rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle md:max-w-4xl max-w-lg sm:w-full relative border border-white/20 max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div className="inline-block align-middle bg-black/80 backdrop-blur-lg rounded-lg sm:rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle md:max-w-4xl w-full max-w-[calc(100%-1rem)] sm:max-w-lg relative border border-white/20 max-h-[95vh] sm:max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             {/* 헤더 */}
-            <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex-shrink-0 border-b border-white/20">
-              <div className="text-center w-full">
-                <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-500/20 mb-4">
-                  <svg className="h-6 w-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="px-3 pt-4 pb-3 sm:px-4 sm:pt-5 sm:pb-4 sm:p-6 sm:pb-4 flex-shrink-0 border-b border-white/20">
+              <div className="text-center w-full relative">
+                <div className="mx-auto flex-shrink-0 flex items-center justify-center h-8 w-8 sm:h-12 sm:w-12 rounded-full bg-red-500/20 mb-2 sm:mb-4">
+                  <svg className="h-4 w-4 sm:h-6 sm:w-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
                 </div>
-                <h3 className="text-lg leading-6 font-kimm-bold text-white mb-2">게시글 상세</h3>
+                <h3 className="text-base sm:text-lg leading-6 font-kimm-bold text-white mb-1 sm:mb-2">게시글 상세</h3>
                 {reportToast && (
-                  <div className="mx-auto mb-3 max-w-md rounded-full border border-red-500/30 bg-red-500/10 px-4 py-1 text-xs text-red-200">
+                  <div className="mx-auto mb-2 sm:mb-3 max-w-md rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 sm:px-4 sm:py-1 text-[10px] sm:text-xs text-red-200">
                     {reportToast}
                   </div>
                 )}
                 
                 <button 
                   onClick={onClose} 
-                  className="absolute top-3 right-3 text-gray-400 hover:text-gray-200 cursor-pointer"
+                  className="absolute top-2 right-2 sm:top-3 sm:right-3 text-gray-400 hover:text-gray-200 cursor-pointer"
                 >
-                  <FontAwesomeIcon icon={faTimes} className="w-5 h-5" />
+                  <FontAwesomeIcon icon={faTimes} className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
             </div>
 
             {/* 스크롤 가능한 컨텐츠 영역 */}
-            <div className="flex-1 overflow-y-auto px-4 pb-4 sm:px-6 font-pretendard">
-              <div className="mt-6">
+            <div className="flex-1 overflow-y-auto px-3 pb-3 sm:px-4 sm:pb-4 sm:px-6 font-pretendard">
+              <div className="mt-4 sm:mt-6">
             {isLoadingPost ? (
-              <div className="flex justify-center items-center py-20">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
+              <div className="flex justify-center items-center py-12 sm:py-20">
+                <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-red-600" />
               </div>
             ) : selectedPost ? (
               <>
                 {/* 게시글 정보 */}
-                <div className="mb-6">
+                <div className="mb-4 sm:mb-6">
                   {/* 제목과 기수 */}
-                  <div className="flex items-center gap-2 mb-4">
-                    <h1 className="text-2xl font-semibold text-white">{selectedPost.title}</h1>
-                    <span className={`px-1.5 py-0.5 text-xs rounded-full font-medium flex font-semibold items-center gap-1 flex-shrink-0 ${getGenColor(selectedPost.author_gen)}`}>
+                  <div className="flex items-start sm:items-center gap-2 mb-3 sm:mb-4">
+                    <h1 className="text-lg sm:text-2xl font-semibold text-white break-words flex-1 min-w-0">{selectedPost.title}</h1>
+                    <span className={`px-1.5 py-0.5 text-[10px] sm:text-xs rounded-full font-medium flex font-semibold items-center gap-1 flex-shrink-0 ${getGenColor(selectedPost.author_gen)}`}>
                       {selectedPost.author_gen <= 4 ? '이전기수' : `${selectedPost.author_gen}기`}
                     </span>
                   </div>
 
                   {/* 카테고리와 작성자 정보 */}
-                  <div className="flex items-center space-x-2 mb-4">
-                    <span className={`px-2 py-1 text-xs rounded-full border ${getCategoryColor(selectedPost.category)}`}>
-                      {getCategoryLabel(selectedPost.category)}
-                    </span>
-                    <span className="text-sm text-gray-300 flex items-center">
-                      <FontAwesomeIcon icon={faUser} className="mr-1" />
-                      {selectedPost.author_name}
-                    </span>
-                    <span className="text-sm text-gray-300 flex items-center">
-                      <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" />
-                      {new Date(selectedPost.created_at).toLocaleString('ko-KR')}
-                    </span>
-                    <div className="ml-auto flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:space-x-2 mb-3 sm:mb-4">
+                    <div className="flex items-center flex-wrap gap-2">
+                      <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 text-[10px] sm:text-xs rounded-full border ${getCategoryColor(selectedPost.category)}`}>
+                        {getCategoryLabel(selectedPost.category)}
+                      </span>
+                      <span className="text-xs sm:text-sm text-gray-300 flex items-center">
+                        <FontAwesomeIcon icon={faUser} className="mr-0.5 sm:mr-1 w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                        {selectedPost.author_name}
+                      </span>
+                      <span className="text-xs sm:text-sm text-gray-300 flex items-center">
+                        <FontAwesomeIcon icon={faCalendarAlt} className="mr-0.5 sm:mr-1 w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                        <span className="hidden sm:inline">{new Date(selectedPost.created_at).toLocaleString('ko-KR')}</span>
+                        <span className="sm:hidden">{new Date(selectedPost.created_at).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}</span>
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 sm:gap-3 sm:ml-auto">
                       {user && user.id !== selectedPost.author_id && (
                         <button
                           onClick={() => setIsReportModalOpen(true)}
-                          className="flex items-center gap-1 text-xs font-semibold text-red-300 transition hover:text-red-100"
+                          className="flex items-center gap-1 text-[10px] sm:text-xs font-semibold text-red-300 transition hover:text-red-100"
                         >
-                          <FontAwesomeIcon icon={faFlag} className="h-3 w-3" />
-                          신고하기
+                          <FontAwesomeIcon icon={faFlag} className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                          <span className="hidden sm:inline">신고하기</span>
+                          <span className="sm:hidden">신고</span>
                         </button>
                       )}
                       {user && user.id === selectedPost.author_id && (
                         <button
                           onClick={handleDeletePost}
-                          className="text-red-400 hover:text-red-300 text-sm"
+                          className="text-red-400 hover:text-red-300 text-xs sm:text-sm"
                         >
-                          게시글 삭제
+                          <span className="hidden sm:inline">게시글 삭제</span>
+                          <span className="sm:hidden">삭제</span>
                         </button>
                       )}
                     </div>
                   </div>
 
                   {/* 좋아요 버튼 - 제목 오른쪽에 */}
-                  <div className="flex items-center space-x-4 mb-4">
+                  <div className="flex items-center space-x-3 sm:space-x-4 mb-3 sm:mb-4">
                     {user && (
                       <button
                         onClick={handleToggleLike}
                         disabled={isTogglingLike}
-                        className={`inline-flex items-center px-1 py-1 text-sm transition-colors ${
+                        className={`inline-flex items-center px-1 py-1 text-xs sm:text-sm transition-colors ${
                           selectedPost.is_liked
                             ? 'text-red-300 hover:text-red-200'
                             : 'text-white hover:text-gray-300'
@@ -305,36 +310,36 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                       >
                         <FontAwesomeIcon 
                           icon={faHeart} 
-                          className={`mr-1 h-3 w-3 ${isTogglingLike ? 'animate-pulse' : ''} ${selectedPost.is_liked ? 'text-red-300' : 'text-white'}`}
+                          className={`mr-0.5 sm:mr-1 h-3 w-3 sm:h-3.5 sm:w-3.5 ${isTogglingLike ? 'animate-pulse' : ''} ${selectedPost.is_liked ? 'text-red-300' : 'text-white'}`}
                         />
                         {isTogglingLike ? '...' : (selectedPost.like_count || 0)}
                       </button>
                     )}
                     {!user && (
-                      <div className="text-gray-400 text-sm">
-                        <FontAwesomeIcon icon={faHeart} className="mr-1 h-3 w-3" />
+                      <div className="text-gray-400 text-xs sm:text-sm">
+                        <FontAwesomeIcon icon={faHeart} className="mr-0.5 sm:mr-1 h-3 w-3 sm:h-3.5 sm:w-3.5" />
                         {selectedPost.like_count || 0}
                       </div>
                     )}
                   </div>
 
                   <div className="prose max-w-none">
-                    <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                    <p className="text-sm sm:text-base text-gray-300 whitespace-pre-wrap leading-relaxed break-words">
                       {selectedPost.content}
                     </p>
                   </div>
 
                   {/* 이미지 표시 */}
                   {selectedPost.images && selectedPost.images.length > 0 && (
-                    <div className="mt-4">
-                      <h4 className="text-sm font-medium text-gray-300 mb-3">첨부된 이미지 ({selectedPost.images.length}개)</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div className="mt-3 sm:mt-4">
+                      <h4 className="text-xs sm:text-sm font-medium text-gray-300 mb-2 sm:mb-3">첨부된 이미지 ({selectedPost.images.length}개)</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                         {selectedPost.images.map((imageUrl, index) => (
                           <div key={index} className="relative group">
                             <Image
                               src={getThumbnailUrl(imageUrl, 200)}
                               alt={`게시글 이미지 ${index + 1}`}
-                              className="w-full h-32 object-cover rounded-lg border border-white/20 hover:border-white/40 transition-colors cursor-pointer"
+                              className="w-full h-24 sm:h-32 object-cover rounded-lg border border-white/20 hover:border-white/40 transition-colors cursor-pointer"
                               width={200}
                               height={150}
                               onClick={() => window.open(imageUrl, '_blank')}
@@ -354,23 +359,23 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                 </div>
 
                 {/* 댓글 섹션 */}
-                <div className="border-t border-white/20 pt-6">
-                  <h3 className="text-lg font-semibold mb-4 text-white flex items-center">
-                    <FontAwesomeIcon icon={faComments} className="mr-2" />
+                <div className="border-t border-white/20 pt-4 sm:pt-6">
+                  <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-white flex items-center">
+                    <FontAwesomeIcon icon={faComments} className="mr-1.5 sm:mr-2 w-4 h-4 sm:w-5 sm:h-5" />
                     댓글 ({comments.length})
                   </h3>
                   
                   {/* 댓글 로딩 상태 */}
                   {isLoadingComments && (
-                    <div className="flex justify-center items-center py-8">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600" />
-                      <span className="ml-2 text-gray-300">댓글을 불러오는 중...</span>
+                    <div className="flex justify-center items-center py-6 sm:py-8">
+                      <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-b-2 border-red-600" />
+                      <span className="ml-2 text-xs sm:text-sm text-gray-300">댓글을 불러오는 중...</span>
                     </div>
                   )}
 
                   {/* 댓글 작성 폼 */}
                   {user && !isLoadingComments && (
-                    <div className="mb-6">
+                    <div className="mb-4 sm:mb-6">
                       <form onSubmit={handleCreateComment}>
                         <div className="relative">
                           <textarea
@@ -378,18 +383,18 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                             onChange={(e) => setNewComment({ content: e.target.value })}
                             placeholder="댓글을 입력하세요..."
                             rows={3}
-                            className="w-full bg-white/20 text-gray-300 border border-white/30 rounded-md px-3 py-2 pr-12 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                            className="w-full bg-white/20 text-xs sm:text-sm text-gray-300 border border-white/30 rounded-md px-2.5 py-2 sm:px-3 sm:py-2 pr-10 sm:pr-12 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
                           />
                           <button
                             type="submit"
                             disabled={isCreatingComment || !newComment.content.trim()}
-                            className="absolute right-5 top-1/2 transform -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="absolute right-2 sm:right-5 top-1/2 transform -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             title="댓글 작성"
                           >
                             {isCreatingComment ? (
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                              <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white" />
                             ) : (
-                              <FontAwesomeIcon icon={faPaperPlane} className="w-4 h-4" />
+                              <FontAwesomeIcon icon={faPaperPlane} className="w-3 h-3 sm:w-4 sm:h-4" />
                             )}
                           </button>
                         </div>
@@ -399,19 +404,19 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
 
                   {/* 에러 메시지 */}
                   {error && (
-                    <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400 text-sm">
+                    <div className="mb-3 sm:mb-4 p-2.5 sm:p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400 text-xs sm:text-sm">
                       {error}
                     </div>
                   )}
 
                   {/* 댓글 목록 */}
                   {!isLoadingComments && (
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       {comments.length === 0 ? (
-                        <div className="text-center text-gray-300 py-8">
-                          아직 댓글이 없습니다.
+                        <div className="text-center text-gray-300 py-6 sm:py-8">
+                          <p className="text-xs sm:text-sm">아직 댓글이 없습니다.</p>
                           {!user && (
-                            <p className="mt-2 text-sm">
+                            <p className="mt-2 text-xs sm:text-sm">
                               댓글을 작성하려면 로그인이 필요합니다.
                             </p>
                           )}
@@ -420,25 +425,26 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                         comments
                           .filter(comment => comment && comment.id && comment.author_id && comment.created_at) // 유효한 댓글만 필터링
                           .map((comment) => (
-                            <div key={comment.id} className="bg-white/10 rounded-lg p-4">
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center space-x-2 mb-2">
-                                    <span className="text-sm font-medium text-white">
+                            <div key={comment.id} className="bg-white/10 rounded-lg p-3 sm:p-4">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center flex-wrap gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                                    <span className="text-xs sm:text-sm font-medium text-white">
                                       {comment.author_gen}기 {comment.author_name}
                                     </span>
-                                    <span className="text-xs text-gray-300">
-                                      {new Date(comment.created_at).toLocaleString('ko-KR')}
+                                    <span className="text-[10px] sm:text-xs text-gray-300">
+                                      <span className="hidden sm:inline">{new Date(comment.created_at).toLocaleString('ko-KR')}</span>
+                                      <span className="sm:hidden">{new Date(comment.created_at).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}</span>
                                     </span>
                                   </div>
-                                  <p className="text-gray-300 whitespace-pre-wrap">
+                                  <p className="text-xs sm:text-sm text-gray-300 whitespace-pre-wrap break-words">
                                     {comment.content || '내용 없음'}
                                   </p>
                                 </div>
                                 {user && (user.id === comment.author_id || canAccessAdministrator()) && (
                                   <button
                                     onClick={() => handleDeleteComment(comment.id)}
-                                    className="text-red-400 hover:text-red-300 text-sm ml-4"
+                                    className="text-red-400 hover:text-red-300 text-xs sm:text-sm ml-2 sm:ml-4 flex-shrink-0"
                                   >
                                     삭제
                                   </button>
@@ -452,8 +458,8 @@ export default function PostModal({ postId, isOpen, onClose }: PostModalProps) {
                 </div>
               </>
             ) : (
-              <div className="py-20 text-center text-gray-300">
-                게시글을 찾을 수 없습니다.
+              <div className="py-12 sm:py-20 text-center text-gray-300">
+                <p className="text-sm sm:text-base">게시글을 찾을 수 없습니다.</p>
               </div>
             )}
               </div>
