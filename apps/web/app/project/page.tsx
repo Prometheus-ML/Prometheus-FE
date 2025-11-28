@@ -195,7 +195,7 @@ export default function ProjectPage() {
   // Skeleton UI Component
   const SkeletonCard = () => (
     <div className="p-4 animate-pulse">
-      <div className="w-full h-48 bg-gray-600 rounded-lg mb-4"></div>
+      <div className="w-full aspect-video bg-gray-600 rounded-lg mb-4"></div>
       <div className="space-y-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2 flex-1 mr-2">
@@ -352,13 +352,13 @@ export default function ProjectPage() {
                 <div className="p-4">
                   {/* 프로젝트 이미지 */}
                   <div className="mb-4">
-                    <div className="w-full h-48 rounded-lg overflow-hidden bg-white/10">
+                    <div className="w-full aspect-video rounded-lg overflow-hidden bg-white/10">
                       {project.thumbnail_url && !imageErrors[project.id.toString()] ? (
                         <Image
                           src={getThumbnailUrl(project.thumbnail_url, 400)}
                           alt={project.title}
                           width={400}
-                          height={200}
+                          height={225}
                           className="w-full h-full object-cover"
                           onError={() => handleImageError(project.id.toString())}
                         />
