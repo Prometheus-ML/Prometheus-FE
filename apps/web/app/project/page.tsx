@@ -155,6 +155,19 @@ export default function ProjectPage() {
     fetchProjectList(true);
   }, [fetchProjectList]);
 
+  // 페이지 이동
+  const prevPage = useCallback(() => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  }, [page]);
+
+  const nextPage = useCallback(() => {
+    if (page < totalPages) {
+      setPage(page + 1);
+    }
+  }, [page, totalPages]);
+
   // 기수별 색상 반환 (멤버 페이지와 동일한 스타일)
   const getGenColor = (gen: number) => {
     if (gen <= 4) return 'bg-gray-500/20 text-gray-300'; // 4기 이하는 이전기수로 회색
@@ -435,56 +448,26 @@ export default function ProjectPage() {
           </div>
         )}
 
-        {/* 페이지네이션 - 전체 기수가 아니고 검색어가 없을 때만 표시 */}
-        {!isLoading && !isSearchLoading && filteredProjects.length > 0 && totalPages > 1 && 
-         !(appliedGen === 'all' && !appliedSearchTerm.trim()) && (
-          <div className="flex justify-center mt-8">
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setPage(page - 1)}
-                disabled={page === 1}
-                className="px-3 py-2 text-sm text-gray-300 hover:text-white disabled:text-gray-600 disabled:cursor-not-allowed transition-colors"
-              >
-                이전
-              </button>
-              
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum;
-                if (totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (page <= 3) {
-                  pageNum = i + 1;
-                } else if (page >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i;
-                } else {
-                  pageNum = page - 2 + i;
-                }
-                
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => setPage(pageNum)}
-                    className={`px-3 py-2 text-sm rounded transition-colors ${
-                      page === pageNum
-                        ? 'bg-[#c2402a] text-white'
-                        : 'text-gray-300 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-              
-              <button
-                onClick={() => setPage(page + 1)}
-                disabled={page === totalPages}
-                className="px-3 py-2 text-sm text-gray-300 hover:text-white disabled:text-gray-600 disabled:cursor-not-allowed transition-colors"
-              >
-                다음
-              </button>
-            </div>
-          </div>
-        )}
+        {/* 페이지네이션 */}
+        <div className="mt-4 sm:mt-6 flex items-center justify-center space-x-[1vw] sm:space-x-2">
+          <RedButton 
+            onClick={prevPage} 
+            disabled={page === 1 || totalPages <= 1} 
+            className="px-[2vw] sm:px-3 py-[1vh] sm:py-1 text-[3vw] sm:text-xs md:text-sm disabled:opacity-50"
+          >
+            이전
+          </RedButton>
+          <span className="text-[3vw] sm:text-xs md:text-sm text-[#FFFFFF] whitespace-nowrap">
+            {page} / {totalPages || 1}
+          </span>
+          <RedButton 
+            onClick={nextPage} 
+            disabled={page === totalPages || totalPages <= 1} 
+            className="px-[2vw] sm:px-3 py-[1vh] sm:py-1 text-[3vw] sm:text-xs md:text-sm disabled:opacity-50"
+          >
+            다음
+          </RedButton>
+        </div>
       </div>
     </div>
   );
