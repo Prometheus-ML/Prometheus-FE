@@ -129,7 +129,7 @@ export default function MyPage() {
   return (
     <div className="md:max-w-4xl max-w-lg mx-auto min-h-screen font-pretendard">
       {/* Header */}
-      <header className="mx-4 px-6 py-6 border-b border-white/20">
+      <header className="mx-4 px-2 sm:px-6 py-4 sm:py-6 border-b border-white/20 relative">
         <div className="flex items-center justify-between">
           {/* Left: Logo */}
           <div className="flex items-center gap-3">
@@ -150,11 +150,6 @@ export default function MyPage() {
 
           {/* Right: Icons */}
           <div className="flex items-center gap-4">
-            {canAccessAdministrator() && (
-              <RedButton href="/admin" className="text-sm px-3 py-1">
-                Admin
-              </RedButton>
-            )}
             <Link href="/profile" className="text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors">
               <FontAwesomeIcon icon={faUser} className="w-5 h-5" />
             </Link>
@@ -176,20 +171,28 @@ export default function MyPage() {
         {user && myProfile ? (
           <>
             {/* Personalized Greeting */}
-            <div className="mb-8 pt-6">
-              <h2 className="text-2xl font-pretendard text-[#FFFFFF] mb-2">
-                <span className="text-[#FFFFFF]">{myProfile.name}</span> 님은{' '}
-                <br/>
-                <span className="font-bold text-[#FF4500]">PROMETHEUS</span>와{' '}
-                <span className="text-[#FFFFFF]">{daysCount}</span>일째
-              </h2>
-              <div className="inline-block bg-[#8B0000]/20 border border-[#c2402a]/30 rounded-full px-3 py-1">
-                <span className="text-[#ffa282] text-sm font-pretendard">{myProfile.gen || 0}기</span>
+            <div className="mb-8 pt-6 flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-pretendard text-[#FFFFFF] mb-2">
+                  <span className="text-[#FFFFFF]">{myProfile.name}</span> 님은{' '}
+                  <br/>
+                  <span className="font-bold text-[#FF4500]">PROMETHEUS</span>와{' '}
+                  <span className="text-[#FFFFFF]">{daysCount}</span>일째
+                </h2>
+                <div className="inline-block bg-[#8B0000]/20 border border-[#c2402a]/30 rounded-full px-3 py-1">
+                  <span className="text-[#ffa282] text-sm font-pretendard">{myProfile.gen || 0}기</span>
+                </div>
               </div>
+              {canAccessAdministrator() && (
+                <RedButton href="/admin" className="text-sm px-3 py-1 flex-shrink-0">
+                  Admin
+                </RedButton>
+              )}
             </div>
 
             {/* Routing Cards - Custom Grid Layout */}
-            <div className="grid grid-cols-5 gap-4 h-2/3">
+            {/* 큰 화면: 기존 레이아웃 유지 */}
+            <div className="hidden md:grid grid-cols-5 gap-4 h-2/3">
               {/* 출석하기 - 2/5 columns */}
               <GlassCard href="/event" className="p-4 flex flex-col justify-center items-center col-span-2 row-span-2">
                 <div className="flex flex-col items-center text-center">
@@ -242,6 +245,64 @@ export default function MyPage() {
                   </div>
                   <h3 className="text-[#FFFFFF] font-semibold font-kimm-bold text-lg">프로젝트</h3>
                   <p className="text-[#e0e0e0] text-sm mt-2">프로젝트 관리</p>
+                </div>
+              </GlassCard>
+            </div>
+
+            {/* 작은 화면: 45:55 비율 레이아웃 */}
+            <div className="md:hidden grid grid-cols-[45fr_55fr] gap-4">
+              {/* 첫 번째 줄: 모임/스터디 (45%), 커뮤니티 (55%) */}
+              <GlassCard href="/event" className="p-4 flex row-span-2 flex-col justify-center items-center">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 bg-[#8B0000]/20 rounded-full flex items-center justify-center mb-3 border border-[#c2402a]/30">
+                    <FontAwesomeIcon icon={faCheck} className="w-6 h-6 text-[#ffa282]" />
+                  </div>
+                  <h3 className="text-[#FFFFFF] font-semibold font-kimm-bold text-sm">출석하기</h3>
+                  <p className="text-[#e0e0e0] text-xs mt-1">정기 출석 체크</p>
+                </div>
+              </GlassCard>
+              <GlassCard href="/group" className="p-4 flex flex-col justify-center items-center">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 bg-[#8B0000]/20 rounded-full flex items-center justify-center mb-3 border border-[#c2402a]/30">
+                    <FontAwesomeIcon icon={faUsers} className="w-6 h-6 text-[#ffa282]" />
+                  </div>
+                  <h3 className="text-[#FFFFFF] font-semibold font-kimm-bold text-sm">모임/스터디</h3>
+                  <p className="text-[#e0e0e0] text-xs mt-1">팀 활동 관리</p>
+                </div>
+              </GlassCard>
+              <GlassCard href="/community" className="p-4 flex flex-col justify-center items-center">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 bg-[#8B0000]/20 rounded-full flex items-center justify-center mb-3 border border-[#c2402a]/30">
+                    <FontAwesomeIcon icon={faComments} className="w-6 h-6 text-[#ffa282]" />
+                  </div>
+                  <h3 className="text-[#FFFFFF] font-semibold font-kimm-bold text-sm">커뮤니티</h3>
+                  <p className="text-[#e0e0e0] text-xs mt-1">소통과 공유</p>
+                </div>
+              </GlassCard>
+
+          
+            </div>
+            <div className="md:hidden grid grid-cols-[55fr_45fr] mt-4 gap-4">
+                {/* 두 번째 줄: 멤버 (55%), 두 번째 줄: 프로젝트 (45%) */}
+                <GlassCard href="/member" className="p-4 flex flex-col justify-center items-center">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 bg-[#8B0000]/20 rounded-full flex items-center justify-center mb-3 border border-[#c2402a]/30">
+                    <FontAwesomeIcon icon={faUserFriends} className="w-6 h-6 text-[#ffa282]" />
+                  </div>
+                  <h3 className="text-[#FFFFFF] font-semibold font-kimm-bold text-sm">멤버</h3>
+                  <p className="text-[#e0e0e0] text-xs mt-1">멤버 정보</p>
+                </div>
+              </GlassCard>
+              
+
+              {/*  */}
+              <GlassCard href="/project" className="p-4 flex flex-col justify-center items-center">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 bg-[#8B0000]/20 rounded-full flex items-center justify-center mb-3 border border-[#c2402a]/30">
+                    <FontAwesomeIcon icon={faProjectDiagram} className="w-6 h-6 text-[#ffa282]" />
+                  </div>
+                  <h3 className="text-[#FFFFFF] font-semibold font-kimm-bold text-sm">프로젝트</h3>
+                  <p className="text-[#e0e0e0] text-xs mt-1">프로젝트 관리</p>
                 </div>
               </GlassCard>
             </div>

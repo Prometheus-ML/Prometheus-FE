@@ -323,6 +323,24 @@ export default function MemberModal({ isOpen, member, onClose, onSubmit, onDelet
 
   // 폼 제출 처리
   const handleSubmit = useCallback(async (): Promise<void> => {
+    // 추가 모드일 때 필수항목 검증
+    if (!isEdit) {
+      if (!form.name || !form.name.trim()) {
+        alert('이름은 필수 항목입니다.');
+        return;
+      }
+      if (!form.email || !form.email.trim()) {
+        alert('이메일은 필수 항목입니다.');
+        return;
+      }
+      // 이메일 형식 검증
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(form.email.trim())) {
+        alert('유효한 이메일 주소를 입력해주세요.');
+        return;
+      }
+    }
+    
     if (isEdit) {
       if (!confirm(`정말로 ${form.name}님의 정보를 수정하시겠습니까?`)) {
         return;
@@ -389,7 +407,22 @@ export default function MemberModal({ isOpen, member, onClose, onSubmit, onDelet
     const file = files && files[0] ? files[0] : null;
     if (!file) return;
 
-    // 파일 검증
+    // 이미지 파일 타입 검증
+    if (!file.type.startsWith('image/')) {
+      alert('이미지 파일만 업로드 가능합니다.');
+      if (event.target) event.target.value = '';
+      return;
+    }
+
+    // 파일 크기 검증 (10MB 제한)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      alert('이미지 파일 크기는 10MB를 초과할 수 없습니다.');
+      if (event.target) event.target.value = '';
+      return;
+    }
+
+    // 파일 검증 (useImage 훅의 validateImageFile 사용)
     const validationError = validateImageFile(file);
     if (validationError) {
       alert(validationError);
