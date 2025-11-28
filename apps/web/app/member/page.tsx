@@ -288,7 +288,7 @@ export default function MemberPage() {
   return (
     <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
       {/* 헤더 */}
-      <header className="mx-4 px-6 py-6 border-b border-white/20">
+      <header className="mx-4 px-4 md:px-6 py-6 border-b border-white/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button 
