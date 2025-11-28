@@ -34,13 +34,13 @@ const TabBar: React.FC<TabBarProps> = ({
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
-            className={`flex-shrink-0 flex items-center justify-center px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
+            className={`flex-shrink-0 flex items-center justify-center px-[2vw] sm:px-4 py-[1.5vw] sm:py-3 text-[3vw] sm:text-sm font-medium transition-colors whitespace-nowrap ${
               activeTab === tab.id
                 ? 'text-white border-b-2 border-white'
                 : 'text-gray-400 hover:text-gray-300'
             }`}
           >
-            {tab.icon && <span className="mr-2">{tab.icon}</span>}
+            {tab.icon && <span className="mr-[1vw] sm:mr-2">{tab.icon}</span>}
             {tab.label}
           </button>
         ))}
@@ -134,14 +134,14 @@ export const QueryBar: React.FC<QueryBarProps> = ({
   };
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div className={`space-y-[1.5vw] sm:space-y-4 ${className}`}>
       {/* 탭 필터링 (최상단) */}
       {tabs && activeTab && onTabChange && (
         <TabBar
           tabs={tabs}
           activeTab={activeTab}
           onTabChange={handleTabChange}
-          className="mb-4"
+          className="mb-[1.5vw] sm:mb-4"
         />
       )}
 
@@ -149,7 +149,7 @@ export const QueryBar: React.FC<QueryBarProps> = ({
       <div className="relative">
         <FontAwesomeIcon 
           icon={faSearch} 
-          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#e0e0e0] w-4 h-4" 
+          className="absolute left-[1vw] sm:left-3 top-1/2 transform -translate-y-1/2 text-[#e0e0e0] w-[3vw] h-[3vw] sm:w-4 sm:h-4 max-w-4 max-h-4" 
         />
         <input
           type="text"
@@ -158,21 +158,21 @@ export const QueryBar: React.FC<QueryBarProps> = ({
           onKeyPress={handleKeyPress}
           placeholder={placeholder}
           disabled={disabled}
-          className="w-full border border-[#404040] rounded-md px-10 py-3 bg-[#1A1A1A] text-[#FFFFFF] placeholder-[#e0e0e0] focus:border-[#c2402a] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full border border-[#404040] rounded-md pl-[4vw] sm:pl-10 pr-[2vw] sm:pr-3 py-[1.5vw] sm:py-3 bg-[#1A1A1A] text-[#FFFFFF] placeholder-[#e0e0e0] focus:border-[#c2402a] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed text-[3vw] sm:text-base"
         />
       </div>
 
       {/* Select 필터들과 버튼들 (아랫줄) */}
-      <div className="grid grid-cols-12 gap-3">
+      <div className="grid grid-cols-12 gap-[1vw] sm:gap-3">
         {/* Select 필터들 */}
-        <div className={`${selects.length > 0 ? 'col-span-10' : 'col-span-10'} flex gap-3`}>
+        <div className={`${selects.length > 0 ? 'col-span-9' : 'col-span-10'} flex gap-[1vw] sm:gap-3`}>
           {selects.map((select, index) => (
             <select
               key={select.id}
               value={select.value}
               onChange={(e) => select.onChange(e.target.value)}
               disabled={disabled}
-              className="flex-1 border border-[#404040] rounded-md px-3 py-2 bg-[#1A1A1A] text-[#FFFFFF] focus:border-[#c2402a] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 border border-[#404040] rounded-md px-[1.2vw] sm:px-2.5 py-[1vw] sm:py-1.5 bg-[#1A1A1A] text-[#FFFFFF] focus:border-[#c2402a] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed text-[2.5vw] sm:text-sm"
             >
               {select.options.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -184,32 +184,32 @@ export const QueryBar: React.FC<QueryBarProps> = ({
         </div>
 
         {/* 검색 버튼과 초기화 버튼 (2개 열로 배치) */}
-        <div className="col-span-2 flex gap-2">
+        <div className="col-span-3 flex gap-[1vw] sm:gap-2">
           <button
             onClick={handleSearch}
             disabled={disabled || isLoading}
-            className="flex-1 inline-flex items-center justify-center px-2 py-2 border border-transparent rounded-md bg-[#c2402a] text-white hover:bg-[#a03020] focus:outline-none focus:ring-2 focus:ring-[#c2402a] focus:ring-offset-2 focus:ring-offset-[#1A1A1A] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 inline-flex items-center justify-center min-w-[8vw] sm:min-w-[40px] px-[1.2vw] sm:px-2 py-[1.2vw] sm:py-2 border border-transparent rounded-md bg-[#c2402a] text-white hover:bg-[#a03020] focus:outline-none focus:ring-2 focus:ring-[#c2402a] focus:ring-offset-2 focus:ring-offset-[#1A1A1A] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="검색"
           >
-            {!isLoading && <FontAwesomeIcon icon={faSearch} className="w-3 h-3" />}
+            {!isLoading && <FontAwesomeIcon icon={faSearch} className="w-[2.5vw] h-[2.5vw] sm:w-3.5 sm:h-3.5 max-w-3.5 max-h-3.5" />}
           </button>
           <button
             onClick={handleReset}
             disabled={disabled}
-            className="flex-1 inline-flex items-center justify-center px-2 py-2 border border-[#404040] rounded-md bg-[#1A1A1A] text-[#e0e0e0] hover:bg-[#2A2A2A] hover:border-[#c2402a] focus:outline-none focus:ring-2 focus:ring-[#c2402a] focus:ring-offset-2 focus:ring-offset-[#1A1A1A] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 inline-flex items-center justify-center min-w-[8vw] sm:min-w-[40px] px-[1.2vw] sm:px-2 py-[1.2vw] sm:py-2 border border-[#404040] rounded-md bg-[#1A1A1A] text-[#e0e0e0] hover:bg-[#2A2A2A] hover:border-[#c2402a] focus:outline-none focus:ring-2 focus:ring-[#c2402a] focus:ring-offset-2 focus:ring-offset-[#1A1A1A] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="초기화"
           >
-            {!isLoading && <FontAwesomeIcon icon={faRotateLeft} className="w-3 h-3" />}
+            {!isLoading && <FontAwesomeIcon icon={faRotateLeft} className="w-[2.5vw] h-[2.5vw] sm:w-3.5 sm:h-3.5 max-w-3.5 max-h-3.5" />}
           </button>
         </div>
       </div>
 
       {/* 로딩 상태 표시 (검색바 아래) */}
       {isLoading && (
-        <div className="space-y-3">
-          <div className="h-4 bg-white/10 rounded animate-pulse"></div>
-          <div className="h-4 bg-white/10 rounded animate-pulse w-3/4"></div>
-          <div className="h-4 bg-white/10 rounded animate-pulse w-1/2"></div>
+        <div className="space-y-[1.5vw] sm:space-y-3">
+          <div className="h-[1.5vw] sm:h-4 bg-white/10 rounded animate-pulse"></div>
+          <div className="h-[1.5vw] sm:h-4 bg-white/10 rounded animate-pulse w-3/4"></div>
+          <div className="h-[1.5vw] sm:h-4 bg-white/10 rounded animate-pulse w-1/2"></div>
         </div>
       )}
     </div>

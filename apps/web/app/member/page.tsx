@@ -240,40 +240,40 @@ export default function MemberPage() {
 
   // Skeleton UI Component
   const SkeletonCard = () => (
-    <div className="p-4 flex flex-col items-center animate-pulse">
-      <div className="relative mb-3">
-        <div className="w-16 h-16 bg-gray-600 rounded-full"></div>
+    <div className="p-2 sm:p-4 flex flex-col items-center animate-pulse">
+      <div className="relative mb-2 sm:mb-3">
+        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-600 rounded-full"></div>
       </div>
-      <div className="w-20 h-5 bg-gray-600 rounded mb-2"></div>
-      <div className="w-32 h-4 bg-gray-600 rounded"></div>
+      <div className="w-16 sm:w-20 h-4 sm:h-5 bg-gray-600 rounded mb-1 sm:mb-2"></div>
+      <div className="w-24 sm:w-32 h-3 sm:h-4 bg-gray-600 rounded"></div>
     </div>
   );
 
   // Loading state
   if (isLoading && !appliedSearchTerm && appliedGen === 'all' && appliedStatus === 'all') {
   return (
-      <div className="md:max-w-6xl max-w-lg mx-auto min-h-screen font-pretendard">
+      <div className="md:max-w-6xl max-w-full mx-auto min-h-screen font-pretendard">
         {/* Header */}
-        <header className="mx-4 px-6 py-6 border-b border-white/20">
+        <header className="mx-2 sm:mx-4 px-3 sm:px-6 py-4 sm:py-6 border-b border-white/20">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <button 
                 onClick={() => window.history.back()}
-                className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
+                className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
               >
-                <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
+                <FontAwesomeIcon icon={faArrowLeft} className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
               <div>
-                <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">멤버</h1>
-                <p className="text-sm font-pretendard text-[#e0e0e0]">프로메테우스 멤버 목록</p>
+                <h1 className="text-lg sm:text-xl font-kimm-bold text-[#FFFFFF]">멤버</h1>
+                <p className="text-xs sm:text-sm font-pretendard text-[#e0e0e0]">프로메테우스 멤버 목록</p>
               </div>
             </div>
           </div>
         </header>
 
-        <div className="px-4 py-6">
+        <div className="px-2 sm:px-4 py-4 sm:py-6">
           {/* Member Cards Skeleton */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2 sm:gap-4">
             {Array.from({ length: 6 }).map((_, index) => (
               <GlassCard key={index} className="animate-pulse">
                 <SkeletonCard />
@@ -286,32 +286,32 @@ export default function MemberPage() {
   }
 
   return (
-    <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
+    <div className="md:max-w-6xl max-w-full mx-auto min-h-screen font-pretendard">
       {/* 헤더 */}
-      <header className="mx-4 px-6 py-6 border-b border-white/20">
+      <header className="mx-2 sm:mx-4 px-3 sm:px-6 py-4 sm:py-6 border-b border-white/20">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button 
               onClick={() => window.history.back()}
-              className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
+              className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
             >
-              <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
+              <FontAwesomeIcon icon={faArrowLeft} className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
             <div>
-              <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">멤버</h1>
-              <p className="text-sm font-pretendard text-[#e0e0e0]">프로메테우스 멤버 목록</p>
+              <h1 className="text-lg sm:text-xl font-kimm-bold text-[#FFFFFF]">멤버</h1>
+              <p className="text-xs sm:text-sm font-pretendard text-[#e0e0e0]">프로메테우스 멤버 목록</p>
             </div>
           </div>
            <div className="text-right">
-             <p className="text-sm text-[#e0e0e0]">전체 <span className="text-[#ffa282] font-bold">{totalAll}</span>명</p>
+             <p className="text-xs sm:text-sm text-[#e0e0e0]">전체 <span className="text-[#ffa282] font-bold">{totalAll}</span>명</p>
            </div>
         </div>
       </header>
 
-      <div className="px-4 py-6">
+      <div className="px-2 sm:px-4 py-4 sm:py-6">
         {/* 검색 및 필터 - 로그인 상태에서만 표시 */}
         {isPrivate && (
-          <div className="mb-6 space-y-4">
+          <div className="mb-4 sm:mb-6 space-y-3 sm:space-y-4">
             {/* 검색 바 */}
             <QueryBar
               searchTerm={searchTerm}
@@ -350,19 +350,19 @@ export default function MemberPage() {
         )}
         
         {/* 멤버 카드 그리드 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2 sm:gap-4">
           {members.map((member, index) => (
             <GlassCard
               key={'id' in member ? member.id : index}
-              className={`relative p-4 text-center transition-transform duration-200 hover:scale-105 ${
+              className={`relative p-2 sm:p-4 text-center transition-transform duration-200 hover:scale-105 ${
                 isPrivate ? 'cursor-pointer' : 'cursor-default'
               }`}
               onClick={() => onCardClick(member)}
             >
                 <div className="flex flex-col items-center">
-                  <div className="relative mb-3">
+                  <div className="relative mb-2 sm:mb-3">
                     {member.profile_image_url && !imageErrors['id' in member ? member.id : index] ? (
-                      <div className="relative w-16 h-16">
+                      <div className="relative w-12 h-12 sm:w-16 sm:h-16">
                         <Image
                           src={getThumbnailUrl(member.profile_image_url, 128)}
                           alt={member.name}
@@ -373,32 +373,32 @@ export default function MemberPage() {
                         />
                       </div>
                     ) : (
-                      <div className="w-16 h-16 rounded-full bg-[#404040] flex items-center justify-center text-[#e0e0e0] font-medium">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#404040] flex items-center justify-center text-[#e0e0e0] font-medium text-sm sm:text-base">
                         {getFirstLetter(member.name)}
                       </div>
                     )}
                   </div>
                   
                   {/* 이름 */}
-                  <h3 className="text-lg font-semibold text-[#FFFFFF] mb-2">{member.name}</h3>
+                  <h3 className="text-sm sm:text-lg font-semibold text-[#FFFFFF] mb-1 sm:mb-2">{member.name}</h3>
                   
                   {/* 기수와 커피챗 아이콘 */}
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
                     {'gen' in member && (
-                      <span className={`px-1.5 py-0.5 text-xs rounded-full font-medium flex items-center gap-1 ${
+                      <span className={`px-1 sm:px-1.5 py-0.5 text-[10px] sm:text-xs rounded-full font-medium flex items-center gap-0.5 sm:gap-1 ${
                         'status' in member && member.status === 'active' 
                           ? 'bg-[#8B0000] text-[#ffa282]' 
                           : 'bg-gray-500/20 text-gray-300'
                       }`}>
                         {'status' in member && member.status === 'active' && (
-                          <FontAwesomeIcon icon={faCircle} className="w-1 h-1" />
+                          <FontAwesomeIcon icon={faCircle} className="w-0.5 h-0.5 sm:w-1 sm:h-1" />
                         )}
                         {member.gen === 0 ? '창립멤버' : `${member.gen}기`}
                       </span>
                     )}
                     {isPrivate && 'coffee_chat_enabled' in member && member.coffee_chat_enabled && (
-                      <div className="w-6 h-6 bg-[#00654D] rounded-full flex items-center justify-center">
-                        <FontAwesomeIcon icon={faCoffee} className="w-3 h-3 text-white" />
+                      <div className="w-4 h-4 sm:w-6 sm:h-6 bg-[#00654D] rounded-full flex items-center justify-center">
+                        <FontAwesomeIcon icon={faCoffee} className="w-2 h-2 sm:w-3 sm:h-3 text-white" />
                       </div>
                     )}
                   </div>
@@ -408,12 +408,12 @@ export default function MemberPage() {
                     {!isPrivate ? (
                       <>
                         {member.school && (
-                           <span className="px-0.5 py-0.5 rounded-full text-[#e0e0e0] text-xs">
+                           <span className="px-0.5 py-0.5 rounded-full text-[#e0e0e0] text-[10px] sm:text-xs">
                              {member.school}
                            </span>
                          )}
                         {member.major && (
-                          <span className="py-0.5 rounded-full text-[#e0e0e0] text-xs">
+                          <span className="py-0.5 rounded-full text-[#e0e0e0] text-[10px] sm:text-xs">
                             {member.major}
                           </span>
                         )}
@@ -421,12 +421,12 @@ export default function MemberPage() {
                     ) : (
                       <>
                         {member.school && (
-                           <span className="px-0.5 py-0.5 text-[#e0e0e0] text-xs rounded-full">
+                           <span className="px-0.5 py-0.5 text-[#e0e0e0] text-[10px] sm:text-xs rounded-full">
                              {member.school}
                            </span>
                          )}
                         {member.major && (
-                          <span className="py-0.5 text-[#e0e0e0] text-xs rounded-full">
+                          <span className="py-0.5 text-[#e0e0e0] text-[10px] sm:text-xs rounded-full">
                             {member.major}
                           </span>
                         )}
@@ -439,30 +439,36 @@ export default function MemberPage() {
           </div>
 
         {!isLoading && !isSearchLoading && members.length === 0 && (
-          <div className="px-4 py-5 sm:p-6">
+          <div className="px-2 sm:px-4 py-4 sm:py-5 sm:p-6">
             <div className="text-center">
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-              <h3 className="mt-2 text-sm font-medium text-white">멤버가 없습니다.</h3>
+              <h3 className="mt-2 text-xs sm:text-sm font-medium text-white">멤버가 없습니다.</h3>
             </div>
           </div>
         )}
 
         {/* 페이지네이션 */}
-        {totalPages > 1 && (
-          <div className="mt-6 flex items-center justify-center space-x-2">
-            <RedButton onClick={prevPage} disabled={page === 1} className="px-3 py-1 text-sm disabled:opacity-50">
-              이전
-            </RedButton>
-            <span className="text-sm text-[#FFFFFF]">
-              {page} / {totalPages}
-            </span>
-            <RedButton onClick={nextPage} disabled={page === totalPages} className="px-3 py-1 text-sm disabled:opacity-50">
-              다음
-            </RedButton>
-          </div>
-        )}
+        <div className="mt-4 sm:mt-6 flex items-center justify-center space-x-[1vw] sm:space-x-2">
+          <RedButton 
+            onClick={prevPage} 
+            disabled={page === 1 || totalPages <= 1} 
+            className="px-[2vw] sm:px-3 py-[1vh] sm:py-1 text-[3vw] sm:text-xs md:text-sm disabled:opacity-50"
+          >
+            이전
+          </RedButton>
+          <span className="text-[3vw] sm:text-xs md:text-sm text-[#FFFFFF] whitespace-nowrap">
+            {page} / {totalPages || 1}
+          </span>
+          <RedButton 
+            onClick={nextPage} 
+            disabled={page === totalPages || totalPages <= 1} 
+            className="px-[2vw] sm:px-3 py-[1vh] sm:py-1 text-[3vw] sm:text-xs md:text-sm disabled:opacity-50"
+          >
+            다음
+          </RedButton>
+        </div>
       </div>
 
       {/* 프로필 모달 */}
