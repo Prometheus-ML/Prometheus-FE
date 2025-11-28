@@ -280,14 +280,14 @@ export default function ProjectPage() {
   return (
     <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
       {/* 헤더 */}
-      <header className="mx-4 px-6 py-6 border-b border-white/20">
+      <header className="mx-4 px-4 sm:px-6 py-2 sm:py-4 border-b border-white/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => window.history.back()}
-              className="w-10 h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
+              className="w-6 h-6 md:w-10 md:h-10 flex items-center justify-center text-[#FFFFFF] hover:text-[#e0e0e0] transition-colors"
             >
-              <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
+              <FontAwesomeIcon icon={faArrowLeft} className="w-4 h-4 md:w-5 md:h-5" />
             </button>
             <div>
               <h1 className="text-xl font-kimm-bold text-[#FFFFFF]">프로젝트</h1>
