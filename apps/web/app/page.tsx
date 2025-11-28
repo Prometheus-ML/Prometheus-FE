@@ -130,7 +130,7 @@ export default function HomePage() {
   }, [recentProjects.length]);
 
   return (
-    <div className="max-w-full mx-auto min-h-screen text-white w-full bg-black">
+    <div className="mx-auto text-white w-full bg-black">
       {/* Side Navigation */}
       <div className="hidden md:block fixed right-0 top-1/2 transform -translate-y-1/2 z-50">
         <ul className="space-y-4">
@@ -151,7 +151,7 @@ export default function HomePage() {
       </div>
 
       {/* Hero Section */}
-      <section id="hero" className="h-screen flex items-center justify-center px-4 w-full relative" style={{ marginBottom: '0.5vh' }}>
+      <section id="hero" className="h-screen flex items-center justify-center px-4 w-full relative">
         <div 
           className="absolute inset-0 bg-center bg-no-repeat opacity-20"
           style={{ 
@@ -161,33 +161,33 @@ export default function HomePage() {
         />
         <div className="relative z-10 w-full max-w-6xl mx-auto text-center">
           <div className="mb-8">
-            <div className="flex items-center justify-center mt-12 mb-36 relative -ml-8">
+            <div className="flex items-center justify-center mt-12 mb-36 -ml-8 relative">
               <Image
                 src="/icons/logo.png"
                 alt="Prometheus Logo"
                 width={120}
                 height={120}
-                className="w-24 h-24 md:w-32 md:h-32"
+                className="w-16 h-16 md:w-32 md:h-32"
               />
               <div className="relative">
                 <div className="absolute -top-4 right-1 md:right-2 text-right">
                   <p className="md:text-sm text-xs text-[#e0e0e0] font-medium">대학생 인공지능 단체</p>
                 </div>
-                <h1 className="text-5xl md:text-7xl font-kimm-bold bg-gradient-to-r from-[#8B0000] from-20% via-[#c2402a] to-[#FFFFFF] bg-clip-text text-transparent tracking-wider -ml-5">
+                <h1 className="text-4xl md:text-7xl font-kimm-bold bg-gradient-to-r from-[#8B0000] from-20% via-[#c2402a] to-[#FFFFFF] bg-clip-text text-transparent tracking-wider -ml-4 md:-ml-5">
                   rometheus
                 </h1>
               </div>
             </div>
-            <p className="text-xl md:text-2xl text-[#e0e0e0] mb-6 font-pretendard">
+            <p className="text-lg md:text-2xl text-[#e0e0e0] mb-6 font-pretendard">
               프로메테우스는 인공지능으로 가치 있는 도전과 경험을 하고자 하는<br />
-              <span className="text-[#e83225]">UP</span>에 대한 열정을 지닌 대학생들이 모인 인공지능 동아리입니다.
+              <span className="text-[#e83225]"> UP</span>에 대한 열정을 지닌 대학생들이 모인 인공지능 동아리입니다.
             </p>
           </div>
         </div>
       </section>
 
       {/* WE ARE Section */}
-      <section id="we-are" className="h-screen flex items-center justify-center px-4 relative w-full" style={{ marginBottom: '0.5vh' }}>
+      <section id="we-are" className="my-10 h-screen flex items-center justify-center px-4 relative w-full">
         <div 
           className="absolute inset-0 bg-center bg-no-repeat opacity-20"
           style={{ 
@@ -195,55 +195,54 @@ export default function HomePage() {
             backgroundSize: '100% 100%'
           }}
         />
-        <div className="relative z-10 w-full max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-xs md:text-lg lg:text-xl font-bold mb-1 md:mb-2.5 text-red-700 uppercase tracking-wider font-kimm-light">
+        <div className="relative w-full max-w-6xl max-h-screen mx-auto">
+          <div className="text-center mb-5 md:mb-8">
+            <h2 className="text-xs md:text-lg lg:text-2xl font-bold mb-1 text-red-700 uppercase tracking-wider font-kimm-light">
               WE ARE
             </h2>
-            <p className="text-sm md:text-xl lg:text-4xl font-bold text-[#e0e0e0] mb-1 md:mb-2.5 font-pretendard">
+            <p className="text-sm md:text-xl lg:text-2xl font-bold text-[#e0e0e0] font-pretendard">
               협업과 도전으로
             </p>
-            <p className="text-sm md:text-xl lg:text-4xl font-bold text-[#e0e0e0] mb-6 md:mb-10 font-pretendard">
+            <p className="text-sm md:text-xl lg:text-2xl font-bold text-[#e0e0e0] font-pretendard">
               이루어지는 활동들
             </p>
           </div>
           
-          <div className="grid grid-cols-2 gap-5 max-w-4xl mx-auto mb-10">
+          <div className="grid grid-cols-2 gap-5 md:mx-20 lg:mx-40 mb-10">
             {intro.map((section, index) => (
-              <div key={index} className="relative">
-                <div 
-                  className="rounded-lg relative h-[150px] md:h-[200px] lg:h-[250px] bg-center bg-cover cursor-pointer transition-all duration-300"
-                  style={{ backgroundImage: `url(${section.img})` }}
-                  onMouseEnter={() => setHoveredActivity(index)}
-                  onMouseLeave={() => setHoveredActivity(null)}
-                >
-                  {/* 빨간 반투명 배경 */}
-                  <div className={`absolute inset-0 bg-red-600 transition-opacity duration-300 z-10 rounded-lg ${
-                    hoveredActivity === index ? 'opacity-50' : 'opacity-0'
-                  }`}></div>
-                  
-                  {/* 텍스트 컨텐츠 */}
-                  <div className="absolute w-full h-full z-20 flex flex-col justify-center items-center text-center pt-[20%] px-[15%] md:px-[10%] lg:px-[15%]">
-                    <p className={`text-xs md:text-xl lg:text-2xl transition-all duration-300 font-bold text-white mb-1 md:mb-3 font-kimm-light ${
-                      hoveredActivity === index ? 'translate-y-[-1rem] lg:translate-y-[-2rem]' : ''
-                    }`}>
-                      {section.summary}
-                    </p>
-                    <p className={`font-bold text-xs md:text-xl lg:text-2xl transition-all duration-300 text-white mb-1 md:mb-3 font-pretendard ${
-                      hoveredActivity === index ? 'translate-y-[-1rem] lg:translate-y-[-2rem]' : ''
-                    }`}>
-                      {section.title}
-                    </p>
-                    <p className={`text-3xs md:text-sm lg:text-base transition-all duration-300 text-white font-pretendard ${
-                      hoveredActivity === index ? 'translate-y-[-1rem] lg:translate-y-[-2rem] opacity-100' : 'opacity-0'
-                    }`}>
+              <div 
+                className="rounded-lg relative h-[150px] md:h-[200px] bg-center bg-cover cursor-pointer transition-all duration-300"
+                style={{ backgroundImage: `url(${section.img})` }}
+                onMouseEnter={() => setHoveredActivity(index)}
+                onMouseLeave={() => setHoveredActivity(null)}
+                key={index}
+              >
+                {/* 빨간 반투명 배경 */}
+                <div className={`absolute inset-0 bg-red-600 transition-opacity duration-300 z-10 rounded-lg ${
+                  hoveredActivity === index ? 'opacity-50' : 'opacity-0'
+                }`}></div>
+                
+                {/* 텍스트 컨텐츠 */}
+                <div className="absolute w-full h-full z-20 flex flex-col justify-center items-center text-center pt-[20%] px-[15%] md:px-[10%] lg:px-[15%]">
+                  <p className={`text-xs md:text-xl lg:text-2xl transition-all duration-300 font-bold text-white mb-1 md:mb-3 font-kimm-light ${
+                    hoveredActivity === index ? 'translate-y-[-1rem] lg:translate-y-[-2rem]' : ''
+                  }`}>
+                    {section.summary}
+                  </p>
+                  <p className={`font-bold text-xs md:text-xl lg:text-2xl transition-all duration-300 text-white mb-1 md:mb-3 font-pretendard ${
+                    hoveredActivity === index ? 'translate-y-[-1rem] lg:translate-y-[-2rem]' : ''
+                  }`}>
+                    {section.title}
+                  </p>
+                  {hoveredActivity === index && (
+                    <p className={`text-xs md:text-sm lg:text-base transition-all duration-300 text-white font-pretendard translate-y-[-1rem] lg:translate-y-[-2rem]`}>
                       {section.desc}
                     </p>
-                  </div>
-              </div>
+                  )}
+                </div>
               </div>
             ))}
-              </div>
+          </div>
 
           <div className="text-center">
             <Link href="/about">
@@ -257,7 +256,7 @@ export default function HomePage() {
       </section>
 
       {/* PROJECTS Section */}
-      <section id="projects" className="h-screen flex items-center justify-center px-4 w-full relative" style={{ marginBottom: '0.5vh' }}>
+      <section id="projects" className="my-10 h-screen flex items-center justify-center px-4 w-full relative">
         <div 
           className="absolute inset-0 bg-center bg-no-repeat opacity-20"
           style={{ 
@@ -265,15 +264,12 @@ export default function HomePage() {
             backgroundSize: 'cover'
           }}
         />
-        <div className="relative z-10 w-full max-w-6xl mx-auto text-center">
+        <div className="relative z-10 w-full max-w-6xl max-h-screen mx-auto text-center">
           <h2 className="text-xs md:text-lg lg:text-xl font-bold mb-1 md:mb-2.5 text-red-700 uppercase tracking-wider font-kimm-light">
             PROJECTS
           </h2>
           <p className="text-sm md:text-xl lg:text-4xl font-bold text-[#e0e0e0] mb-1 md:mb-2.5 font-pretendard">
-            멤버들의 활동을
-          </p>
-          <p className="text-sm md:text-xl lg:text-4xl font-bold text-[#e0e0e0] mb-6 md:mb-10 font-pretendard">
-            확인해보세요
+            멤버들의 활동을 확인해보세요
           </p>
           
           {/* 프로젝트 카드들 */}
@@ -378,7 +374,7 @@ export default function HomePage() {
       </section>
 
       {/* SPONSORS Section */}
-      <section id="sponsors" className="h-screen flex items-center justify-center px-4 w-full" style={{ marginBottom: '0.5vh' }}>
+      <section id="sponsors" className="my-10 flex items-center justify-center px-4 w-full">
         <div className="w-full max-w-6xl mx-auto text-center">
           <h2 className="text-xs md:text-lg lg:text-xl font-bold mb-1 md:mb-2.5 text-red-700 uppercase tracking-wider font-kimm-light">
             SPONSOR
