@@ -19,6 +19,7 @@ export default function HomePage() {
   const [recentProjects, setRecentProjects] = useState<Project[]>([]);
   const [hoveredActivity, setHoveredActivity] = useState<number | null>(null);
   const [currentProjectSlide, setCurrentProjectSlide] = useState<number>(0);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const { fetchProjects } = useProject();
   const { 
     sponsors, 
@@ -115,19 +116,31 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // 화면 크기 감지
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // 자동 슬라이드 기능
   useEffect(() => {
-    if (recentProjects.length <= 3) return;
+    const itemsPerSlide = isMobile ? 1 : 3;
+    if (recentProjects.length <= itemsPerSlide) return;
 
     const interval = setInterval(() => {
       setCurrentProjectSlide(prev => {
-        const maxSlide = Math.ceil(recentProjects.length / 3) - 1;
+        const maxSlide = Math.ceil(recentProjects.length / itemsPerSlide) - 1;
         return prev >= maxSlide ? 0 : prev + 1;
       });
     }, 4000); // 4초마다 자동 넘김
 
     return () => clearInterval(interval);
-  }, [recentProjects.length]);
+  }, [recentProjects.length, isMobile]);
 
   return (
     <div className="mx-auto text-white w-full bg-black">
@@ -276,7 +289,7 @@ export default function HomePage() {
           <div className="relative max-w-6xl mx-auto mb-8 overflow-hidden">
             <div 
               className="flex transition-transform duration-500 ease-in-out"
-              style={{ transform: `translateX(-${currentProjectSlide * 33.333}%)` }}
+              style={{ transform: `translateX(-${currentProjectSlide * (isMobile ? 100 : 33.333)}%)` }}
             >
               {recentProjects.map((project) => (
                 <div key={project.id} className="w-full md:w-1/3 flex-shrink-0 px-3">
@@ -352,19 +365,23 @@ export default function HomePage() {
             </div>
             
             {/* 슬라이드 네비게이션 */}
-            {recentProjects.length > 3 && (
-              <div className="flex justify-center mt-6 space-x-2">
-                {Array.from({ length: Math.ceil(recentProjects.length / 3) }).map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentProjectSlide(index)}
-                    className={`w-3 h-3 rounded-full transition-colors ${
-                      currentProjectSlide === index ? 'bg-[#B91C1C]' : 'bg-gray-600'
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
+            {(() => {
+              const itemsPerSlide = isMobile ? 1 : 3;
+              const totalSlides = Math.ceil(recentProjects.length / itemsPerSlide);
+              return recentProjects.length > itemsPerSlide && (
+                <div className="flex justify-center mt-6 space-x-2">
+                  {Array.from({ length: totalSlides }).map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentProjectSlide(index)}
+                      className={`w-3 h-3 rounded-full transition-colors ${
+                        currentProjectSlide === index ? 'bg-[#B91C1C]' : 'bg-gray-600'
+                      }`}
+                    />
+                  ))}
+                </div>
+              );
+            })()}
           </div>
           
           <Link href="/project">
