@@ -495,7 +495,7 @@ export default function ProjectDetailPage() {
   return (
     <div className="md:max-w-6xl max-w-xl mx-auto min-h-screen font-pretendard">
       {/* 헤더 */}
-      <header className="mx-4 px-6 py-6 border-b border-white/20">
+      <header className="mx-4 px-4 md:px-6 py-6 border-b border-white/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button 
@@ -517,7 +517,7 @@ export default function ProjectDetailPage() {
         <div className="flex items-start justify-between mb-6">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-4">
-              <h1 className="text-2xl font-semibold text-white">{selectedProject.title}</h1>
+              <h1 className="text-xl md:text-2xl font-semibold text-white">{selectedProject.title}</h1>
               <span className={`px-1.5 py-0.5 text-xs rounded-full flex font-semibold items-center ${getGenColor(selectedProject.gen)}`}>
                 {selectedProject.gen <= 4 ? '이전기수' : `${selectedProject.gen}기`}
               </span>
@@ -539,8 +539,6 @@ export default function ProjectDetailPage() {
                 {likeLoading ? '...' : (selectedProject.like_count || 0)}
               </button>
             </div>
-            
-           
             
             {/* 프로젝트 링크 아이콘 - 제목 아래에 배경 없이 */}
             <div className="flex items-center gap-4 mb-6">
@@ -611,8 +609,8 @@ export default function ProjectDetailPage() {
         {/* 프로젝트 이미지 섹션 - 크게 표시 */}
       {(isValidUrl(selectedProject.thumbnail_url) || isValidUrl(selectedProject.panel_url)) && (
         <div className="mb-8">
-          {isValidUrl(selectedProject.thumbnail_url) && (
-              <div className="mb-6">
+          {/* {isValidUrl(selectedProject.thumbnail_url) && (
+            <div className="mb-6">
               <Image
                   src={getThumbnailUrl(selectedProject.thumbnail_url!, 800)}
                 alt="프로젝트 썸네일"
@@ -627,7 +625,7 @@ export default function ProjectDetailPage() {
                 }}
               />
             </div>
-          )}
+          )} */}
           {isValidUrl(selectedProject.panel_url) && (
               <div className="mb-6">
               <Image

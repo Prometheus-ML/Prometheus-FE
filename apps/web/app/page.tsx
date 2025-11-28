@@ -28,7 +28,7 @@ export default function HomePage() {
   } = useLanding();
   
   // useImage 훅 사용
-  const { getImageUrl } = useImage();
+  const { getImageUrl, getThumbnailUrl } = useImage();
 
   const sections = [
     { id: 'hero', name: 'HOME' },
@@ -303,7 +303,7 @@ export default function HomePage() {
                         <div className="w-full h-48 rounded-lg overflow-hidden bg-white/10">
                           {project.thumbnail_url ? (
                             <Image
-                              src={project.thumbnail_url}
+                              src={getThumbnailUrl(project.thumbnail_url, 300)}
                               alt={project.title}
                               width={300}
                               height={200}
