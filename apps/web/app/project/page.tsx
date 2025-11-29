@@ -52,35 +52,10 @@ export default function ProjectPage() {
   // 계산된 값들
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / size)), [total, size]);
 
-  // 필터링된 프로젝트 목록
+  // 서버에서 이미 필터링된 데이터를 사용 (클라이언트 사이드 필터링 제거)
   const filteredProjects = useMemo(() => {
-    let filtered = [...allProjects];
-
-    // 검색어 필터 적용
-    if (appliedSearchTerm.trim()) {
-      const searchLower = appliedSearchTerm.toLowerCase().trim();
-      filtered = filtered.filter(project => {
-        const titleMatch = project.title?.toLowerCase().includes(searchLower);
-        const descriptionMatch = project.description?.toLowerCase().includes(searchLower);
-        const keywordMatch = project.keywords?.some(keyword => 
-          keyword.toLowerCase().includes(searchLower)
-        );
-        return titleMatch || descriptionMatch || keywordMatch;
-      });
-    }
-
-    // 기수 필터 적용 (전체가 아닐 때만)
-    if (appliedGen !== 'all') {
-      if (appliedGen === 'previous') {
-        filtered = filtered.filter(project => project.gen <= 4);
-      } else {
-        const genNum = parseInt(appliedGen);
-        filtered = filtered.filter(project => project.gen === genNum);
-      }
-    }
-
-    return filtered;
-  }, [allProjects, appliedSearchTerm, appliedGen]);
+    return allProjects; // 서버에서 이미 필터링된 데이터를 그대로 사용
+  }, [allProjects]);
 
   // 프로젝트 목록 조회
   const fetchProjectList = useCallback(async (isSearch = false) => {
@@ -91,14 +66,9 @@ export default function ProjectPage() {
         setIsLoading(true);
       }
       
-      // 전체 기수이고 검색어가 없을 때는 모든 프로젝트를 한 번에 가져오기 (최대 100개)
-      const isAllGenNoSearch = appliedGen === 'all' && !appliedSearchTerm.trim();
-      const fetchSize = isAllGenNoSearch ? 100 : size;
-      const fetchPage = isAllGenNoSearch ? 1 : page;
-      
       let params: any = {
-        page: fetchPage,
-        size: fetchSize,
+        page: page,
+        size: size,
         // status 필터 제거: 모든 상태의 프로젝트 조회
       };
 
@@ -339,7 +309,7 @@ export default function ProjectPage() {
         {/* 검색 결과 수 */}
         {(appliedSearchTerm || appliedGen !== 'all') && (
           <div className="mb-4 text-sm text-[#e0e0e0]">
-            검색 결과: {filteredProjects.length}개
+            검색 결과: {total}개
           </div>
         )}
 
@@ -436,7 +406,7 @@ export default function ProjectPage() {
         )}
 
         {/* 빈 상태 */}
-        {!isLoading && !isSearchLoading && filteredProjects.length === 0 && (
+        {!isLoading && !isSearchLoading && allProjects.length === 0 && (
           <div className="px-4 py-5 sm:p-6">
             <div className="text-center">
               <FontAwesomeIcon icon={faFolder} className="mx-auto h-12 w-12 text-gray-400 mb-4" />
