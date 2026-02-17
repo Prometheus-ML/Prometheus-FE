@@ -12,10 +12,18 @@ import { DashboardApi } from './dashboardApi';
 
 // API 클라이언트 옵션 생성 함수
 export const createApiClientOptions = (): ApiClientOptions => {
-  const baseUrl =
+  let baseUrl =
     process.env.NEXT_PUBLIC_API_URI ||
     process.env.EXPO_PUBLIC_API_URI ||
     '';
+  // Mixed content 방지: HTTPS 페이지에서 http API URL이면 https로 치환 (배포 환경)
+  if (
+    typeof window !== 'undefined' &&
+    window.location.protocol === 'https:' &&
+    baseUrl.startsWith('http://')
+  ) {
+    baseUrl = baseUrl.replace(/^http:\/\//i, 'https://');
+  }
   return {
     baseUrl,
     defaultHeaders: {
