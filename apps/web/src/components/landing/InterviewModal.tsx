@@ -56,7 +56,7 @@ export default function InterviewModal({ isOpen, onClose, onSubmit }: InterviewM
       return;
     }
 
-    if (form.gen <= 0) {
+    if (form.gen < 0) {
       alert('유효한 기수를 입력해주세요.');
       return;
     }
@@ -82,8 +82,8 @@ export default function InterviewModal({ isOpen, onClose, onSubmit }: InterviewM
 
   return (
     <Portal>
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 pt-48">
-      <GlassCard className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <GlassCard className="w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-white flex items-center">
             <FontAwesomeIcon icon={faUser} className="mr-2" />
