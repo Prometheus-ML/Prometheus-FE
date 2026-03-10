@@ -106,7 +106,7 @@ export class ApiClient {
         
         // 403 에러 시 바로 onForbidden 콜백 호출 (메인 페이지로 이동)
         await this.authCallbacks.onForbidden?.(responseText);
-        throw { status: 403, data: null, message: 'Forbidden: Access denied' } as any;
+        throw { status: 403, data: null, message: '프로메테우스 회원이 아닙니다! 관리자에게 문의하시기 바랍니다.' } as any;
       }
 
       const contentType = response.headers.get('content-type') || '';
