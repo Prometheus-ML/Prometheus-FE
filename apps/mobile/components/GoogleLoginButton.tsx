@@ -18,7 +18,7 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   style,
   isTermsAgreed = true,
 }) => {
-  const { googleCallback, isLoading, error, clearError } = useAuthStore();
+  const { googleCallback, isLoading, clearError } = useAuthStore();
 
   const handleGoogleLogin = async () => {
     if (!isTermsAgreed) {
@@ -69,13 +69,11 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
           Alert.alert('로그인 성공', '프로메테우스에 성공적으로 로그인되었습니다!');
           router.replace('/');
         } else {
-          // 에러는 이미 auth store에 설정되어 있음
-          if (error) {
-            Alert.alert('Google 로그인 실패', error);
-            clearError();
-          } else {
-            Alert.alert('Google 로그인 실패', '로그인 처리 중 오류가 발생했습니다.');
+          const currentError = useAuthStore.getState().error;
+          if (currentError?.includes('프로메테우스 회원이 아닙니다')) {
+            Alert.alert('로그인 실패', currentError);
           }
+          clearError();
         }
       } else {
         console.error('No server auth code received from Google');
@@ -112,10 +110,7 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
           '복구할 수 없는 로그인 오류가 발생했습니다.\n\n해결 방법:\n1. Google Cloud Console에서 OAuth 클라이언트 설정 확인\n2. SHA-1 인증서 지문이 올바르게 등록되었는지 확인\n3. 앱을 완전히 종료하고 다시 시작\n4. Google Play Services 업데이트'
         );
       } else {
-        Alert.alert(
-          'Google 로그인 오류', 
-          `오류 코드: ${error.code}\n메시지: ${error.message}\n\n해결 방법:\n1. Google Play Services 업데이트\n2. 앱 재시작\n3. 네트워크 연결 확인`
-        );
+        Alert.alert('Google 로그인', '로그인에 실패했습니다. 다시 시도해주세요.');
       }
     }
   };

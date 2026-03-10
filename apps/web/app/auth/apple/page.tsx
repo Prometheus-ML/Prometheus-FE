@@ -61,7 +61,7 @@ export default function AppleCallbackPage() {
         } else if (err.message) {
           setLocalError(err.message);
         } else {
-          setLocalError('Apple 로그인 처리 중 오류가 발생했습니다.');
+          setLocalError('Apple 로그인에 실패했습니다.');
         }
       }
     };
