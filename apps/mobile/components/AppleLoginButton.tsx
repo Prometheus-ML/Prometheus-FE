@@ -9,7 +9,7 @@ interface AppleLoginButtonProps {
 }
 
 export default function AppleLoginButton({ isTermsAgreed = true }: AppleLoginButtonProps) {
-  const { appleLogin, error, clearError } = useAuthStore();
+  const { appleLogin, clearError } = useAuthStore();
 
   const handleAppleLogin = async () => {
     if (!isTermsAgreed) {
@@ -73,16 +73,11 @@ export default function AppleLoginButton({ isTermsAgreed = true }: AppleLoginBut
           Alert.alert('로그인 성공', '프로메테우스에 성공적으로 로그인되었습니다!');
           router.replace('/');
         } else {
-          console.log('Apple login failed, checking error state...');
-          // 에러는 이미 auth store에 설정되어 있음
-          if (error) {
-            console.log('Error from store:', error);
-            Alert.alert('Apple 로그인 실패', error);
-            clearError();
-          } else {
-            console.log('No error in store, showing generic error');
-            Alert.alert('Apple 로그인 실패', '로그인 처리 중 오류가 발생했습니다.');
+          const currentError = useAuthStore.getState().error;
+          if (currentError?.includes('프로메테우스 회원이 아닙니다')) {
+            Alert.alert('로그인 실패', currentError);
           }
+          clearError();
         }
       } else {
         console.error('No identity token received from Apple');

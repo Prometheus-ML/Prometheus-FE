@@ -301,15 +301,14 @@ export const useAuthStore = create<AuthState>()(
           } catch (error: any) {
             console.error('Google 로그인 실패:', error);
             
-            // 서버에서 받은 detail 메시지가 있으면 그것을 사용
-            let errorMessage = '로그인 처리 중 오류가 발생했습니다.';
-            
-            if (error?.response?.data?.detail) {
-              errorMessage = error.response.data.detail;
-            } else if (error?.detail) {
-              errorMessage = error.detail;
-            } else if (error?.message) {
-              errorMessage = error.message;
+            let errorMessage = '로그인에 실패했습니다. 관리자에게 문의하시기 바랍니다.';
+            const raw =
+              error?.response?.data?.detail ?? error?.detail ?? error?.message ?? '';
+            const isTechnical =
+              typeof raw === 'string' &&
+              (raw.includes('exchange') || raw.includes('authorization code') || raw.includes('for tokens') || raw.startsWith('Failed to'));
+            if (raw && !isTechnical) {
+              errorMessage = String(raw);
             }
             
             set({
@@ -357,15 +356,14 @@ export const useAuthStore = create<AuthState>()(
           } catch (error: any) {
             console.error('Apple 로그인 실패:', error);
             
-            // 서버에서 받은 detail 메시지가 있으면 그것을 사용
-            let errorMessage = '로그인 처리 중 오류가 발생했습니다.';
-            
-            if (error?.response?.data?.detail) {
-              errorMessage = error.response.data.detail;
-            } else if (error?.detail) {
-              errorMessage = error.detail;
-            } else if (error?.message) {
-              errorMessage = error.message;
+            let errorMessage = '로그인에 실패했습니다. 관리자에게 문의하시기 바랍니다.';
+            const raw =
+              error?.response?.data?.detail ?? error?.detail ?? error?.message ?? '';
+            const isTechnical =
+              typeof raw === 'string' &&
+              (raw.includes('exchange') || raw.includes('authorization code') || raw.includes('for tokens') || raw.startsWith('Failed to'));
+            if (raw && !isTechnical) {
+              errorMessage = String(raw);
             }
             
             set({
@@ -446,7 +444,7 @@ export const useAuthStore = create<AuthState>()(
             });
             
             // 서버에서 받은 detail 메시지가 있으면 그것을 사용
-            let errorMessage = '로그인 처리 중 오류가 발생했습니다.';
+            let errorMessage = '로그인에 실패했습니다. 관리자에게 문의하시기 바랍니다.';
             
             if (error?.response?.data?.detail) {
               errorMessage = error.response.data.detail;
@@ -493,7 +491,7 @@ export const useAuthStore = create<AuthState>()(
             console.error('임시 로그인 실패:', error);
             
             // 서버에서 받은 detail 메시지가 있으면 그것을 사용
-            let errorMessage = '로그인 처리 중 오류가 발생했습니다.';
+            let errorMessage = '로그인에 실패했습니다. 관리자에게 문의하시기 바랍니다.';
             
             if (error?.response?.data?.detail) {
               errorMessage = error.response.data.detail;
