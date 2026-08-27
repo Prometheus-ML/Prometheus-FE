@@ -7,7 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "prometheus",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "buildNumber": "10",
       "supportsTablet": true,
@@ -32,7 +31,6 @@
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#000000"
       },
-      "edgeToEdgeEnabled": true,
       "package": "com.prometheusai.app",
       "versionCode": 10,
       "permissions": [
@@ -53,7 +51,11 @@
           "photosPermission": "그룹 썸네일과 프로필 이미지를 업로드하려면 사진 접근 권한이 필요합니다.",
           "cameraPermission": "카메라로 촬영한 이미지를 업로드하려면 카메라 접근 권한이 필요합니다."
         }
-      ]
+      ],
+      "expo-audio",
+      "expo-image",
+      "expo-localization",
+      "expo-video"
     ],
     "extra": {
       "router": {},

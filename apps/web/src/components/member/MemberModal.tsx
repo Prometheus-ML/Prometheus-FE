@@ -414,10 +414,10 @@ export default function MemberModal({ isOpen, member, onClose, onSubmit, onDelet
       return;
     }
 
-    // 파일 크기 검증 (10MB 제한)
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    // 파일 크기 검증 (50MB 제한)
+    const maxSize = 50 * 1024 * 1024; // 50MB
     if (file.size > maxSize) {
-      alert('이미지 파일 크기는 10MB를 초과할 수 없습니다.');
+      alert('이미지 파일 크기는 50MB를 초과할 수 없습니다.');
       if (event.target) event.target.value = '';
       return;
     }

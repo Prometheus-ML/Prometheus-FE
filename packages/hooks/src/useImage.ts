@@ -83,10 +83,10 @@ export function useImage(options: UseImageOptions = {}) {
       return '이미지 파일만 업로드 가능합니다.';
     }
 
-    // 파일 크기 검증 (10MB 제한)
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    // 파일 크기 검증 (50MB 제한)
+    const maxSize = 50 * 1024 * 1024; // 50MB
     if (file.size > maxSize) {
-      return '파일 크기는 10MB를 초과할 수 없습니다.';
+      return '파일 크기는 50MB를 초과할 수 없습니다.';
     }
 
     return null;

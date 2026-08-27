@@ -120,10 +120,10 @@ export default function GroupForm({ visible, onSubmit, onCancel, isSubmitting = 
       }
 
       const asset = result.assets[0];
-      const maxSize = 10 * 1024 * 1024; // 10MB
+      const maxSize = 50 * 1024 * 1024; // 50MB
 
       if (asset.fileSize && asset.fileSize > maxSize) {
-        Alert.alert('오류', '파일 크기는 10MB를 초과할 수 없습니다.');
+        Alert.alert('오류', '파일 크기는 50MB를 초과할 수 없습니다.');
         return;
       }
 
