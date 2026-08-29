@@ -20,7 +20,7 @@
     "@prometheus-fe/context": "workspace:*",
     "@prometheus-fe/hooks": "workspace:*",
     "@prometheus-fe/types": "workspace:*",
-    "next": "^15.2.4",
+    "next": "15.5.24",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zustand": "^5.0.0"
